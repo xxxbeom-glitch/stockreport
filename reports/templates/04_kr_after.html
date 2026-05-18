@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header" style="background:#b45309;">
+  <div class="label">국장 장후</div>
+  <div class="title">국내장 마감 복기 리포트</div>
+  <div class="date">{{ date }} 16:00 KST</div>
+</div>
+
+<div class="card">
+  <div class="section-title">마감 총평</div>
+  <div>{{ market_phase }}</div>
+  <div class="muted">{{ one_line_summary }}</div>
+</div>
+
+<div class="card">
+  <div class="section-title">오늘 할 일 점검</div>
+  <ul>
+    {% for item in action_items %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <div class="section-title">리스크 관리 메모</div>
+  <div>{{ risk_warning }}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    @font-face {
+      font-family: 'Pretendard';
+      src: url('../static/fonts/PretendardVariable.ttf') format('truetype');
+      font-weight: 45 920;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Pretendard';
+      src: url('../static/fonts/Pretendard-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Pretendard';
+      src: url('../static/fonts/Pretendard-Medium.ttf') format('truetype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Pretendard';
+      src: url('../static/fonts/Pretendard-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Pretendard';
+      src: url('../static/fonts/Pretendard-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * { box-sizing: border-box; }
+    html, body, * {
+      font-family: 'Pretendard', sans-serif;
+    }
+    body {
+      color: #1f2937;
+      margin: 0;
+      padding: 20px;
+      background: #f8fafc;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .header {
+      border-radius: 10px;
+      color: #ffffff;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .header .label {
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0.95;
+      margin-bottom: 4px;
+    }
+    .header .title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .header .date {
+      font-size: 11px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .muted {
+      color: #6b7280;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 4px;
+      margin-bottom: 4px;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+    .up { color: #166534; font-weight: 700; }
+    .down { color: #991b1b; font-weight: 700; }
+    ul { margin: 0; padding-left: 18px; }
+    li { margin-bottom: 4px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 6px;
+      text-align: left;
+      font-size: 11px;
+    }
+    th { color: #6b7280; font-weight: 700; }
+  </style>
+</head>
+<body>
+  {% block content %}{% endblock %}
+</body>
+</html>

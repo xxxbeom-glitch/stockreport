@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header" style="background:#334155;">
+  <div class="label">위클리</div>
+  <div class="title">주간 시장 정리 리포트</div>
+  <div class="date">{{ date }} WEEKLY</div>
+</div>
+
+<div class="card">
+  <div class="section-title">이번 주 요약</div>
+  <div>{{ one_line_summary }}</div>
+</div>
+
+<div class="card">
+  <div class="section-title">주요 테마</div>
+  <ul>
+    {% for theme in top_themes %}
+    <li><strong>{{ theme.name }}</strong> - {{ theme.desc }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <div class="section-title">다음 주 액션 아이템</div>
+  <ul>
+    {% for item in action_items %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

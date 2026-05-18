@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header" style="background:#1d4ed8;">
+  <div class="label">국장 장전</div>
+  <div class="title">오늘 장 열리기 전 핵심 체크</div>
+  <div class="date">{{ date }} 08:00 KST</div>
+</div>
+
+<div class="card">
+  <div class="section-title">오늘 시장 국면</div>
+  <div>{{ market_phase }}</div>
+  <div class="muted">{{ one_line_summary }}</div>
+</div>
+
+<div class="card">
+  <div class="section-title">지수 요약</div>
+  <table>
+    <thead><tr><th>지수</th><th>값</th><th>변화</th></tr></thead>
+    <tbody>
+      {% for name, idx in indices.items() %}
+      <tr>
+        <td>{{ name }}</td>
+        <td>{{ idx.value }}</td>
+        <td class="{{ 'up' if idx.is_up else 'down' }}">{{ idx.change }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="section-title">자금 유입 섹터</div>
+    {% for s in sector_flow.hot %}
+    <span class="badge">{{ s }}</span>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="section-title">자금 유출 섹터</div>
+    {% for s in sector_flow.cold %}
+    <span class="badge" style="background:#fee2e2;color:#991b1b;">{{ s }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title">오늘 액션 아이템</div>
+  <ul>
+    {% for item in action_items %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <div class="section-title">리스크 경고</div>
+  <div>{{ risk_warning }}</div>
+</div>
+{% endblock %}

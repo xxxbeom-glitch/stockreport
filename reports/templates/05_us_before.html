@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="header" style="background:#374151;">
+  <div class="label">미장 장전</div>
+  <div class="title">미국장 개장 전 준비 노트</div>
+  <div class="date">{{ date }} 23:00 KST</div>
+</div>
+
+<div class="card">
+  <div class="section-title">개장 전 핵심 포인트</div>
+  <div>{{ one_line_summary }}</div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="section-title">관심 섹터</div>
+    {% for s in sector_flow.hot %}
+    <span class="badge">{{ s }}</span>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="section-title">주의 섹터</div>
+    {% for s in sector_flow.cold %}
+    <span class="badge" style="background:#fee2e2;color:#991b1b;">{{ s }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title">오늘 액션</div>
+  <ul>
+    {% for item in action_items %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
