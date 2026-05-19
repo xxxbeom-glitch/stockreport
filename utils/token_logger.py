@@ -7,8 +7,10 @@ from typing import Any
 
 KRW_PER_USD = 1500
 PRICING: dict[str, dict[str, float]] = {
+    "gemini-3.1-pro-preview": {"input": 1.25, "output": 10.00},
     "gemini-2.5-pro": {"input": 1.25, "output": 10.00},
     "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
+    "grok-3": {"input": 1.25, "output": 2.50},
     "grok-4.3": {"input": 1.25, "output": 2.50},
 }
 

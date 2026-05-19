@@ -1,98 +1,327 @@
-"""Supply and demand analyst agent (Grok + fallback)."""
+"""Stage 2: Supply/demand analyst (James Park) — Grok + X real-time search."""
 
 from __future__ import annotations
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 import json
 from typing import Any
 
 import config
-from utils.helpers import safe_json_parse
-from utils.retry import retry
+from data.kr_market import get_stock_snapshot
+
+from .common import normalize_phase, safe_float
+from .watchlist_data import KR_THEME_SECTORS, US_THEME_KEYWORDS, build_watchlist_data
 
 
-def _fallback(market_data: dict[str, Any]) -> dict[str, Any]:
-    discovered = market_data.get("discovered_stocks", [])
-    sector_flow = market_data.get("sector_flow", [])
-    top_inflow: list[dict[str, str]] = []
-    volume_alerts: list[dict[str, Any]] = []
-    for stock in discovered[:8]:
-        ratio = stock.get("volume_ratio")
-        if ratio is None:
+def _theme_matches_favorable(theme: str, market: str, favorable: list[str]) -> bool:
+    if not favorable:
+        return True
+    if market == "KR":
+        sectors = KR_THEME_SECTORS.get(theme, [])
+        return any(s in favorable for s in sectors)
+    keys = US_THEME_KEYWORDS.get(theme, [theme])
+    return any(any(k in f or f in k for k in keys) for f in favorable)
+
+
+def _supply_score(stock: dict[str, Any], in_favorable: bool) -> tuple[int, str]:
+    score = 0
+    reasons: list[str] = []
+
+    foreign = stock.get("foreign_net")
+    if foreign is not None:
+        fn = safe_float(foreign, 0.0)
+        if fn > 0:
+            score += 30
+            reasons.append("외국인 순매수")
+        elif fn < -5_000_000_000:
+            reasons.append("외국인 대량 매도")
+
+    strength = stock.get("conclusion_strength")
+    if strength is not None:
+        s = safe_float(strength, 0.0)
+        if s >= 100:
+            score += 20
+            reasons.append(f"체결강도 {s:.0f}%")
+        elif s < 90 and stock.get("market") == "KR":
+            reasons.append(f"체결강도 {s:.0f}% 약세")
+
+    vol = safe_float(stock.get("volume_ratio"), 0.0)
+    if vol >= 2.0:
+        score += 20
+        reasons.append(f"거래량 {vol:.1f}배")
+
+    if in_favorable:
+        score += 30
+        reasons.append("유입 섹터")
+
+    return score, " + ".join(reasons) if reasons else "조건 미충족"
+
+
+def _exclude_reason(stock: dict[str, Any], phase: str, in_favorable: bool) -> str | None:
+    market = stock.get("market", "KR")
+    if phase == "위험회피" and not in_favorable:
+        return "유출 섹터 / 매크로 위험회피"
+
+    foreign = stock.get("foreign_net")
+    if foreign is not None:
+        fn = safe_float(foreign, 0.0)
+        if fn < -10_000_000_000:
+            return "외국인 대량 매도"
+
+    if market == "KR":
+        strength = stock.get("conclusion_strength")
+        if strength is not None and safe_float(strength, 100.0) < 90:
+            return f"체결강도 {safe_float(strength):.0f}% (90% 미만)"
+
+    return None
+
+
+def _enrich_kr_stock(ticker: str, name: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Load KIS/pykrx snapshot for a single KR ticker."""
+    snap = get_stock_snapshot(ticker.zfill(6), market="KOSPI")
+    row: dict[str, Any] = {
+        "ticker": ticker.zfill(6),
+        "name": name,
+        "market": "KR",
+        "theme": (extra or {}).get("theme", ""),
+        "price": snap.get("price"),
+        "change_rate": snap.get("change_rate"),
+        "low_52": snap.get("low_52"),
+        "high_52": snap.get("high_52"),
+        "foreign_net": snap.get("foreign_net_buy"),
+        "volume_ratio": (extra or {}).get("volume_ratio"),
+        "conclusion_strength": (extra or {}).get("conclusion_strength"),
+    }
+    if extra:
+        row.update({k: v for k, v in extra.items() if k not in row or row[k] is None})
+    return row
+
+
+def _explicit_stocks_from_market_data(market_data: dict[str, Any]) -> list[dict[str, Any]] | None:
+    """Build stock rows when caller passes market_data['stocks'] (e.g. code/name only)."""
+    raw = market_data.get("stocks")
+    if not isinstance(raw, list) or not raw:
+        return None
+
+    rows: list[dict[str, Any]] = []
+    for item in raw:
+        if not isinstance(item, dict):
             continue
-        ratio_text = f"{float(ratio):.2f}x"
-        name = str(stock.get("name", stock.get("ticker", "UNKNOWN")))
-        top_inflow.append({"name": name, "reason": "거래량 집중", "volume_x": ratio_text})
-        volume_alerts.append({"name": name, "volume_x": ratio_text, "change": "N/A", "is_up": True})
+        ticker = str(item.get("ticker") or item.get("code") or "").strip()
+        if not ticker:
+            continue
+        name = str(item.get("name") or ticker)
+        market = str(item.get("market") or ("KR" if ticker.isdigit() else "US")).upper()
 
-    inflow = [s.get("sector", "UNKNOWN") for s in sector_flow[:5] if s.get("flow") == "유입"]
-    outflow = [s.get("sector", "UNKNOWN") for s in sector_flow[:5] if s.get("flow") == "유출"]
+        if market == "KR":
+            rows.append(_enrich_kr_stock(ticker, name, item))
+        else:
+            rows.append(
+                {
+                    "ticker": ticker.upper(),
+                    "name": name,
+                    "market": "US",
+                    "theme": item.get("theme", ""),
+                    **{k: v for k, v in item.items() if k not in ("code",)},
+                }
+            )
+    return rows or None
+
+
+def _macro_from_market_data(market_data: dict[str, Any], logger: Any = None) -> dict[str, Any]:
+    if market_data.get("indices") or market_data.get("market_indicators"):
+        from .macro import analyze_macro
+
+        return analyze_macro(
+            indices=market_data.get("indices") or {},
+            indicators=market_data.get("market_indicators") or market_data.get("indicators") or {},
+            sector_flow=market_data.get("sector_flow") or [],
+            logger=logger,
+        )
     return {
-        "top_inflow_stocks": top_inflow,
-        "volume_alerts": volume_alerts,
-        "sector_flow": {"유입": inflow, "유출": outflow},
-        "verdicts": {},
-        "summary": "수급 폴백 분석 결과",
-        "meta": {"mode": "fallback"},
+        "market_phase": "중립",
+        "market_phase_reason": "매크로 데이터 없음",
+        "favorable_sectors": [],
+        "unfavorable_sectors": [],
+        "meta": {"mode": "neutral-default"},
     }
 
 
-@retry(max_attempts=2, delay_sec=1.0)
-def analyze_supply_demand(market_data: dict[str, Any], logger: Any = None) -> dict[str, Any]:
-    """Analyze supply-demand signals with Grok JSON response."""
-    if not config.GROK_API_KEY:
-        if logger:
-            logger.log(config.GROK_MODEL, "supply_demand", input_tokens=0, output_tokens=0)
-        result = _fallback(market_data)
-        result["summary"] = "GROK_API_KEY 미설정으로 폴백 사용"
-        return result
+def _grok_supply_analysis(
+    stocks: list[dict[str, Any]],
+    macro_result: dict[str, Any],
+    market_data: dict[str, Any],
+    logger: Any = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Grok + x_search: X 수급 분위기, 외국인/기관, 거래량, 매수/홀드/매도."""
+    if not config.GROK_API_KEY or not stocks:
+        return None, {"mode": "disabled", "x_search_enabled": False}
 
-    try:
-        from openai import OpenAI  # type: ignore
+    from .grok_client import grok_x_search_json
 
-        client = OpenAI(api_key=config.GROK_API_KEY, base_url=config.GROK_BASE_URL)
-        prompt = f"""
-너는 주식 수급 분석 전문가야.
-아래 데이터를 보고 JSON만 반환해.
+    stock_lines = [
+        f"- {s.get('name')}({s.get('ticker')}): 가격={s.get('price')}, 등락={s.get('change_rate')}%, "
+        f"거래량배수={s.get('volume_ratio')}, 외국인순매수={s.get('foreign_net')}, 체결강도={s.get('conclusion_strength')}"
+        for s in stocks[:8]
+    ]
 
-[시장 데이터]
-{json.dumps(market_data, ensure_ascii=False)[:5000]}
+    prompt = f"""
+너는 주식 수급 분석 전문가야. 반드시 X(트위터) 실시간 검색(x_search) 결과를 사용해 분석해.
+초보 투자자도 이해하는 쉬운 한국어로. 추측·과거 학습만으로 답하지 마.
 
-반드시 아래 스키마:
+[시장 국면] {macro_result.get("market_phase")} — {macro_result.get("market_phase_reason", "")}
+[유입 섹터] {macro_result.get("favorable_sectors", [])[:5]}
+[분석 종목]
+{chr(10).join(stock_lines)}
+
+[추가 시장 데이터]
+{json.dumps(market_data, ensure_ascii=False)[:2000]}
+
+각 종목마다 다음을 분석:
+1. X(트위터) 실시간 언급 분위기 (긍정/부정/중립, 핵심 키워드)
+2. 외국인·기관 수급 방향 (데이터 있으면 반영, 없으면 X·뉴스 근거)
+3. 거래량 급등 이유 추론 (평소 대비 배수 언급)
+4. 수급 관점 매수/홀드/매도 의견 (vote는 반드시 "매수", "홀드", "매도" 중 하나)
+
+JSON만 반환:
 {{
-  "top_inflow_stocks": [{{"name":"종목명","reason":"이유","volume_x":"2.1배"}}],
-  "volume_alerts": [{{"name":"종목명","volume_x":"2.9배","change":"+3.1%","is_up":true}}],
-  "sector_flow": {{"유입":["섹터"],"유출":["섹터"]}},
-  "verdicts": {{"종목명":{{"vote":"매수","reason":["이유1","이유2"]}}}},
-  "summary": "한 줄 요약"
+  "summary": "전체 수급 한줄 요약",
+  "sector_flow": {{"유입": [], "유출": []}},
+  "verdicts": {{
+    "티커": {{
+      "name": "종목명",
+      "vote": "매수",
+      "x_sentiment": "X 분위기 2~3문장",
+      "supply_direction": "외국인/기관 수급 방향",
+      "volume_surge_reason": "거래량 급등 이유",
+      "reasons": ["이유1", "이유2"]
+    }}
+  }}
 }}
 """
-        res = client.chat.completions.create(
-            model=config.GROK_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1800,
-            response_format={"type": "json_object"},
-        )
-        if logger and getattr(res, "usage", None):
-            logger.log(
-                model=config.GROK_MODEL,
-                agent="supply_demand",
-                input_tokens=int(getattr(res.usage, "prompt_tokens", 0) or 0),
-                output_tokens=int(getattr(res.usage, "completion_tokens", 0) or 0),
-            )
-        content = (res.choices[0].message.content or "").strip()
-        parsed = safe_json_parse(content)
-        if parsed:
-            parsed.setdefault("meta", {"mode": "grok"})
-            return parsed
-    except Exception:
-        pass
+    return grok_x_search_json(prompt, agent="supply_demand", logger=logger, model="grok-3")
 
-    if logger:
-        logger.log(config.GROK_MODEL, "supply_demand", input_tokens=0, output_tokens=0)
-    result = _fallback(market_data)
-    result["meta"] = {"mode": "fallback-on-error"}
+
+def _merge_grok_supply(rules: dict[str, Any], grok: dict[str, Any] | None) -> None:
+    if not grok:
+        return
+
+    if grok.get("summary"):
+        rules["summary"] = str(grok["summary"])
+        rules["x_supply_buzz"] = str(grok["summary"])
+    if isinstance(grok.get("sector_flow"), dict):
+        rules["sector_flow_x"] = grok["sector_flow"]
+
+    verdicts = grok.get("verdicts") or {}
+    rules["grok_verdicts"] = verdicts
+
+    by_ticker = {str(s.get("ticker")): s for s in rules.get("filtered_stocks", [])}
+    for key, v in verdicts.items():
+        if not isinstance(v, dict):
+            continue
+        ticker = str(key)
+        stock = by_ticker.get(ticker) or by_ticker.get(ticker.zfill(6))
+        if not stock:
+            continue
+        stock["grok_vote"] = v.get("vote")
+        stock["x_sentiment"] = v.get("x_sentiment")
+        stock["supply_direction"] = v.get("supply_direction")
+        stock["volume_surge_reason"] = v.get("volume_surge_reason")
+        if v.get("reasons"):
+            stock["grok_reasons"] = v["reasons"]
+
+
+def analyze_supply(
+    macro_result: dict[str, Any], watchlist_data: dict[str, Any], logger: Any = None
+) -> dict[str, Any]:
+    """Filter watchlist by macro phase and supply metrics; enrich with Grok."""
+    phase = normalize_phase(str(macro_result.get("market_phase", "중립")))
+    favorable = [str(s) for s in macro_result.get("favorable_sectors", [])]
+    unfavorable = [str(s) for s in macro_result.get("unfavorable_sectors", [])]
+
+    filtered: list[dict[str, Any]] = []
+    excluded: list[dict[str, Any]] = []
+
+    for stock in watchlist_data.get("stocks", []):
+        theme = str(stock.get("theme", ""))
+        market = str(stock.get("market", "KR"))
+        in_fav = _theme_matches_favorable(theme, market, favorable) if phase == "위험회피" else True
+
+        if any(
+            s in unfavorable
+            for s in (KR_THEME_SECTORS.get(theme, []) if market == "KR" else US_THEME_KEYWORDS.get(theme, [theme]))
+        ):
+            in_fav = False
+
+        reason_out = _exclude_reason(stock, phase, in_fav)
+        if reason_out:
+            excluded.append(
+                {"ticker": stock.get("ticker"), "name": stock.get("name"), "reason": reason_out}
+            )
+            continue
+
+        score, reason = _supply_score(stock, in_fav)
+        if score < 40 and phase == "위험회피":
+            excluded.append(
+                {
+                    "ticker": stock.get("ticker"),
+                    "name": stock.get("name"),
+                    "reason": reason or "수급 점수 부족",
+                }
+            )
+            continue
+
+        filtered.append(
+            {
+                "ticker": stock.get("ticker"),
+                "name": stock.get("name"),
+                "market": market,
+                "theme": theme,
+                "reason": reason,
+                "score": score,
+                **{k: stock.get(k) for k in stock if k not in {"ticker", "name", "market", "theme"}},
+            }
+        )
+
+    filtered.sort(key=lambda x: x.get("score", 0), reverse=True)
+
+    result: dict[str, Any] = {
+        "market_phase": phase,
+        "filtered_stocks": filtered,
+        "excluded_stocks": excluded,
+        "x_supply_buzz": "N/A",
+        "grok_verdicts": {},
+        "meta": {"mode": "rules", "x_search_enabled": False},
+    }
+
+    grok_targets = filtered if filtered else list(watchlist_data.get("stocks", []))[:8]
+    grok_parsed, grok_meta = _grok_supply_analysis(
+        grok_targets,
+        macro_result,
+        watchlist_data,
+        logger=logger,
+    )
+    result["meta"] = {**result["meta"], **grok_meta}
+    if grok_meta.get("x_search_enabled"):
+        result["meta"]["mode"] = "rules+grok+x_search"
+    _merge_grok_supply(result, grok_parsed)
+
     return result
+
+
+def analyze_supply_demand(market_data: dict[str, Any], logger: Any = None) -> dict[str, Any]:
+    """Run macro + supply; supports market_data['stocks'] with code/name for direct analysis."""
+    explicit = _explicit_stocks_from_market_data(market_data)
+    macro = _macro_from_market_data(market_data, logger=logger)
+
+    if explicit is not None:
+        watchlist = {
+            "stocks": explicit,
+            "total_scanned": len(explicit),
+            "indices": market_data.get("indices") or {},
+            "indicators": market_data.get("market_indicators") or {},
+            "sector_flow": market_data.get("sector_flow") or [],
+        }
+    else:
+        watchlist = build_watchlist_data(market_data)
+
+    return analyze_supply(macro, watchlist, logger=logger)

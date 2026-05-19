@@ -13,15 +13,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from agents import (
-    AGENT_PROFILES,
-    analyze_fundamental,
-    analyze_macro,
-    analyze_momentum,
-    analyze_risk,
-    analyze_supply_demand,
-    generate_company_report,
-)
+import config
+
+from agents import AGENT_PROFILES, generate_company_report, run_agent_pipeline
 from data.kr_market import get_stock_snapshot, get_top_volume_kr
 from data.us_market import get_top_volume_us
 from utils.formatters import foreign_net_eok
@@ -32,10 +26,10 @@ from utils.token_logger import TokenLogger
 
 DEFAULT_REPORT_TYPE = "us_close_kr_before"
 TARGET_TIMES: dict[str, tuple[int, int]] = {
-    "us_during": (1, 0),
-    "us_close_kr_before": (7, 0),
-    "kr_during": (13, 0),
+    "us_close_kr_before": (6, 0),
+    "kr_during": (9, 0),
     "kr_close_us_before": (17, 0),
+    "us_during": (19, 0),
 }
 
 
@@ -95,18 +89,22 @@ def _position_pct(price: Any, low: Any, high: Any) -> int:
     return max(0, min(100, int((p - lo) / (hi - lo) * 100)))
 
 
-def _resolve_agent_vote(opinion: dict[str, Any], name: str, ticker: str) -> tuple[str, list[str]]:
+def _resolve_agent_vote(
+    opinion: dict[str, Any], name: str, ticker: str, pipeline: dict[str, Any] | None = None
+) -> tuple[str, list[str]]:
+    if pipeline and ticker:
+        risk_entry = (pipeline.get("risk") or {}).get("risk_assessments", {}).get(ticker)
+        if risk_entry:
+            vote = str(risk_entry.get("final_verdict", "홀드"))
+            comment = str(risk_entry.get("verdict_comment", ""))
+            return vote, [comment] if comment else ["의견 없음"]
+
     verdicts = opinion.get("verdicts") or {}
     entry: dict[str, Any] | None = None
     for key in (name, ticker):
         if key in verdicts and isinstance(verdicts[key], dict):
             entry = verdicts[key]
             break
-    if entry is None:
-        for key, val in verdicts.items():
-            if isinstance(val, dict) and (key in name or name in str(key)):
-                entry = val
-                break
     if entry:
         vote = str(entry.get("vote", "홀드"))
         reasons = entry.get("reason") or [opinion.get("summary", "")]
@@ -167,7 +165,9 @@ def _build_volume_leader(d: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, Any]:
+def _build_stock_row(
+    d: dict[str, Any], opinions: dict[str, Any], pipeline: dict[str, Any] | None = None
+) -> dict[str, Any]:
     name = str(d.get("name", d.get("ticker", "UNKNOWN")))
     ticker = str(d.get("ticker", ""))
     market = str(d.get("market", "KOSPI"))
@@ -185,7 +185,7 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
     vote_labels: list[str] = []
     for profile in AGENT_PROFILES:
         key = profile["key"]
-        vote, reasons = _resolve_agent_vote(opinions.get(key, {}), name, ticker)
+        vote, reasons = _resolve_agent_vote(opinions.get(key, {}), name, ticker, pipeline)
         vote_labels.append(vote)
         agent_votes.append(
             {
@@ -294,14 +294,46 @@ def _build_report_data(
     market_data: dict[str, Any],
     opinions: dict[str, Any],
     company_reports: list[dict[str, Any]] | None = None,
+    pipeline: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a normalized report payload for template rendering."""
     now = datetime.now()
-    sector_signals = market_data.get("sector_flow", [])
-    hot = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유입"][:5]
-    cold = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유출"][:5]
+    macro = opinions.get("macro") or {}
+    hot = list(macro.get("favorable_sectors") or [])[:5]
+    cold = list(macro.get("unfavorable_sectors") or [])[:5]
+    if not hot:
+        sector_signals = market_data.get("sector_flow", [])
+        hot = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유입"][:5]
+        cold = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유출"][:5]
 
-    discovered = market_data.get("discovered_stocks", [])
+    recommendations = opinions.get("recommendations") or (pipeline or {}).get("recommendations") or {}
+    buy_rows = recommendations.get("buy_recommendations") or []
+    if buy_rows:
+        discovered = [
+            {
+                "ticker": r.get("ticker"),
+                "name": r.get("name"),
+                "market": r.get("market", "KR"),
+                "volume_ratio": float(str(r.get("volume_ratio", "0")).replace("배", "") or 0),
+                "change_rate": float(str(r.get("change_rate", "0")).replace("%", "").replace("+", "") or 0),
+            }
+            for r in buy_rows
+        ]
+    else:
+        supply = opinions.get("supply") or {}
+        discovered = [
+            {
+                "ticker": s.get("ticker"),
+                "name": s.get("name"),
+                "market": s.get("market", "KR"),
+                "volume_ratio": s.get("volume_ratio") or 0,
+                "change_rate": s.get("change_rate") or 0,
+            }
+            for s in (supply.get("filtered_stocks") or [])[:5]
+        ]
+        if not discovered:
+            discovered = market_data.get("discovered_stocks", [])
+
     volume_leaders = [_build_volume_leader(d) for d in discovered[:5]]
     top_themes = [
         {
@@ -314,15 +346,36 @@ def _build_report_data(
         }
     ]
 
-    stock_analysis = [_build_stock_row(d, opinions) for d in discovered[:5]]
+    stock_analysis = [_build_stock_row(d, opinions, pipeline) for d in discovered[:5]]
+
+    risk = opinions.get("risk") or {}
+    rec_msg = recommendations.get("message", "")
+    wl_stocks = ((pipeline or {}).get("watchlist_data") or {}).get("stocks", [])
+    watchlist_kr = [s for s in wl_stocks if str(s.get("market", "KR")) == "KR"]
+    watchlist_us = [s for s in wl_stocks if str(s.get("market")) == "US"]
+    if not watchlist_kr:
+        watchlist_kr = [
+            {"ticker": t, "name": n, "theme": theme}
+            for theme, stocks in config.KR_WATCHLIST.items()
+            for t, n in stocks.items()
+        ]
+    if not watchlist_us:
+        watchlist_us = [
+            {"ticker": t, "name": n, "theme": theme}
+            for theme, stocks in config.US_WATCHLIST.items()
+            for t, n in stocks.items()
+        ]
 
     return {
         "report_type": report_type,
         "report_type_label": REPORT_TYPE_LABELS.get(report_type, report_type),
         "report_title": f"Stock Report · {REPORT_TYPE_LABELS.get(report_type, report_type)}",
         "date": now.strftime("%Y-%m-%d"),
-        "market_phase": opinions["macro"].get("market_phase", "neutral"),
-        "one_line_summary": opinions["risk"].get("summary", "Risk-first interpretation."),
+        "market_phase": macro.get("market_phase", "중립"),
+        "market_phase_reason": macro.get("market_phase_reason", ""),
+        "macro_comments": macro.get("macro_comments") or {},
+        "watchlist_verdict": macro.get("watchlist_verdict") or {},
+        "one_line_summary": risk.get("one_line_summary") or risk.get("summary", "N/A"),
         "indices": market_data.get("indices")
         or {
             "KOSPI": {"value": "N/A", "change": "N/A", "is_up": False},
@@ -340,7 +393,18 @@ def _build_report_data(
             "변동성 큰 종목은 분할 접근",
             "손절 기준 사전 설정",
         ],
-        "risk_warning": opinions["risk"].get("do_not", "과도한 레버리지는 지양"),
+        "risk_warning": risk.get("risk_warning") or risk.get("do_not", "과도한 레버리지는 지양"),
+        "recommendations": recommendations,
+        "buy_recommendations": buy_rows,
+        "recommendation_message": rec_msg,
+        "pipeline_stats": {
+            "total_scanned": recommendations.get("total_scanned"),
+            "total_passed": recommendations.get("total_passed"),
+        },
+        "pipeline_watchlist": wl_stocks,
+        "watchlist_kr": watchlist_kr,
+        "watchlist_us": watchlist_us,
+        "pdf_url": "",
         "glossary": [
             {"term": "거래량배수", "definition": "오늘 거래량이 평균 대비 몇 배인지"},
             {"term": "손절", "definition": "손실 확대 전 재평가를 위한 기준"},
@@ -376,39 +440,24 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
 
     market_data = run_pipeline_as_dict()
 
-    supply = analyze_supply_demand(market_data, logger=logger)
-    momentum = analyze_momentum(market_data, logger=logger)
-    fundamental = analyze_fundamental(market_data, logger=logger)
-    macro = analyze_macro(
-        indicators=market_data.get("market_indicators") or market_data.get("metadata", {}),
-        sector_temp={
-            item.get("sector", ""): item for item in market_data.get("sector_flow", [])
-        },
-        news="",
-        logger=logger,
-    )
-    risk = analyze_risk(
-        all_opinions={
-            "supply": supply,
-            "momentum": momentum,
-            "fundamental": fundamental,
-            "macro": macro,
-        },
-        market_data=market_data,
-        logger=logger,
-    )
-
+    pipeline = run_agent_pipeline(market_data, logger=logger)
     opinions = {
-        "supply": supply,
-        "momentum": momentum,
-        "fundamental": fundamental,
-        "macro": macro,
-        "risk": risk,
+        "macro": pipeline["macro"],
+        "supply": pipeline["supply"],
+        "momentum": pipeline["momentum"],
+        "fundamental": pipeline["fundamental"],
+        "risk": pipeline["risk"],
+        "recommendations": pipeline["recommendations"],
     }
+    print(
+        f"[INFO] agent pipeline: phase={opinions['macro'].get('market_phase')} "
+        f"filtered={len(opinions['supply'].get('filtered_stocks', []))} "
+        f"buy={len(opinions['recommendations'].get('buy_recommendations', []))}"
+    )
     company_reports = _build_company_reports(report_type, logger)
     if company_reports:
         print(f"[INFO] company_reports: {len(company_reports)}")
-    report_data = _build_report_data(report_type, market_data, opinions, company_reports)
+    report_data = _build_report_data(report_type, market_data, opinions, company_reports, pipeline)
     indices = report_data.get("indices") or {}
     na_indices = [name for name, row in indices.items() if (row or {}).get("value") == "N/A"]
     if na_indices:
@@ -444,14 +493,16 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
             pdf_url = str(firebase_payload.get("url", "") or "")
 
     wait_until_send_time(report_type)
+    report_data["pdf_url"] = pdf_url
     slack_result = _safe_call_with_default(
         "send_report",
         {
             "payload": {
-                "message": f"{report_type} generated: {saved_path}",
-                "summary": report_data.get("one_line_summary", ""),
+                "report_data": report_data,
                 "report_type": report_type,
                 "pdf_url": pdf_url,
+                "summary": report_data.get("one_line_summary", ""),
+                "message": f"{report_type} generated: {saved_path}",
             }
         },
     )
@@ -470,6 +521,12 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError):
+        pass
+
     selected_type = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_REPORT_TYPE
     if selected_type == "weekly":
         try:

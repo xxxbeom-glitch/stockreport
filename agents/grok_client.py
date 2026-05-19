@@ -1,0 +1,102 @@
+"""Grok API client with real-time X (Twitter) search via x.ai Responses API.
+
+- ``chat.completions`` without tools: X 실시간 검색 OFF
+- ``search_parameters`` / ``live_search``: HTTP 410 (deprecated)
+- ``responses.create`` + ``tools=[{"type": "x_search"}]``: X 실시간 검색 ON
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+import config
+from utils.helpers import safe_json_parse
+
+GROK_X_SEARCH_TOOL: list[dict[str, str]] = [{"type": "x_search"}]
+
+
+def _x_search_calls(response: Any) -> int:
+    usage = getattr(response, "usage", None)
+    if not usage:
+        return 0
+    details = getattr(usage, "server_side_tool_usage_details", None)
+    if isinstance(details, dict):
+        return int(details.get("x_search_calls", 0) or 0)
+    return 0
+
+
+def grok_with_x_search(
+    prompt: str,
+    *,
+    agent: str,
+    logger: Any = None,
+    max_output_tokens: int = 1200,
+    model: str | None = None,
+) -> tuple[str | None, dict[str, Any]]:
+    """Call Grok (default grok-3) with x_search for real-time X data."""
+    if not config.GROK_API_KEY:
+        return None, {"mode": "disabled", "x_search_enabled": False, "model": model or config.GROK_MODEL}
+
+    model_name = model or config.GROK_MODEL
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=config.GROK_API_KEY, base_url=config.GROK_BASE_URL)
+        response = client.responses.create(
+            model=model_name,
+            input=[{"role": "user", "content": prompt}],
+            tools=GROK_X_SEARCH_TOOL,
+            max_output_tokens=max_output_tokens,
+        )
+        text = (getattr(response, "output_text", None) or "").strip()
+        meta: dict[str, Any] = {
+            "mode": "grok+x_search",
+            "model": model_name,
+            "x_search_enabled": True,
+            "x_search_calls": _x_search_calls(response),
+        }
+
+        if logger and getattr(response, "usage", None):
+            usage = response.usage
+            logger.log(
+                model_name,
+                agent,
+                input_tokens=int(getattr(usage, "input_tokens", 0) or 0),
+                output_tokens=int(getattr(usage, "output_tokens", 0) or 0),
+            )
+
+        return text or None, meta
+    except Exception as exc:
+        return None, {
+            "mode": "error",
+            "model": model_name,
+            "x_search_enabled": False,
+            "error": str(exc),
+        }
+
+
+def grok_x_search_json(
+    prompt: str,
+    *,
+    agent: str,
+    logger: Any = None,
+    max_output_tokens: int = 2000,
+    model: str | None = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Call Grok with X search and parse JSON from the response."""
+    text, meta = grok_with_x_search(
+        prompt,
+        agent=agent,
+        logger=logger,
+        max_output_tokens=max_output_tokens,
+        model=model,
+    )
+    if not text:
+        return None, meta
+    parsed = safe_json_parse(text)
+    if isinstance(parsed, dict):
+        meta["parsed_ok"] = True
+        return parsed, meta
+    meta["parsed_ok"] = False
+    meta["raw_text"] = text[:500]
+    return None, meta

@@ -1,105 +1,530 @@
-"""Slack sender helper for stock reports.
-
-Supports:
-- payload-style call: send_report(payload={...})
-- direct-style call: send_report(url_or_message, summary, report_type, ...)
-"""
+"""Slack market report sender (4-message thread via Slack Web API only)."""
 
 from __future__ import annotations
 
 import json
 import os
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime
 from typing import Any
 
 import config
 
+SLACK_POST_URL = "https://slack.com/api/chat.postMessage"
 
-def _normalize_payload(
-    payload: dict[str, Any] | None,
-    message: str | None,
-    summary: str | None,
-    report_type: str | None,
-    pdf_url: str | None,
-    send_at: int | None,
-) -> dict[str, Any]:
-    source = payload or {}
-    msg = message or source.get("message") or ""
-    summ = summary or source.get("summary") or ""
-    rtype = report_type or source.get("report_type") or "unknown"
-    url = pdf_url or source.get("pdf_url") or source.get("url") or ""
-    send_ts = send_at if send_at is not None else source.get("send_at")
-    return {
-        "message": str(msg),
-        "summary": str(summ),
-        "report_type": str(rtype),
-        "pdf_url": str(url),
-        "send_at": send_ts,
+KR_REPORT_TYPES = frozenset({"kr_during", "kr_close_us_before", "kr_before", "kr_after"})
+US_REPORT_TYPES = frozenset({"us_during", "us_close_kr_before", "us_before", "us_after"})
+
+KR_SLACK_CHANNEL_TYPES = frozenset({"kr_during", "kr_close_us_before"})
+US_SLACK_CHANNEL_TYPES = frozenset({"us_during", "us_close_kr_before"})
+
+REPORT_TYPE_DESC: dict[str, str] = {
+    "us_during": "미국 장중 브리핑",
+    "us_close_kr_before": "미국 마감 · 국장 장전",
+    "kr_during": "한국 장중 브리핑",
+    "kr_close_us_before": "한국 마감 · 미국 장전",
+    "kr_before": "국장 장전",
+    "kr_after": "국장 장후",
+    "us_before": "미장 장전",
+    "us_after": "미장 장후",
+    "weekly": "주간 종합",
+}
+
+INDICATOR_LABELS: dict[str, str] = {
+    "dollar_index": "달러인덱스",
+    "us10y": "미국10년금리",
+    "vix": "공포지수(VIX)",
+    "wti": "국제유가(WTI)",
+    "copper": "구리",
+}
+
+WEEKDAY_KO = ("월", "화", "수", "목", "금", "토", "일")
+
+
+def resolve_slack_channel(report_type: str) -> str | None:
+    """Pick Slack channel ID from report_type."""
+    if report_type in KR_SLACK_CHANNEL_TYPES:
+        return config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "") or None
+    if report_type in US_SLACK_CHANNEL_TYPES:
+        return config.SLACK_CHANNEL_US or os.getenv("SLACK_CHANNEL_US", "") or None
+    if report_type in KR_REPORT_TYPES or report_type.startswith("kr"):
+        return config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "") or None
+    if report_type in US_REPORT_TYPES or report_type.startswith("us"):
+        return config.SLACK_CHANNEL_US or os.getenv("SLACK_CHANNEL_US", "") or None
+    return config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "") or None
+
+
+def _is_kr_report(report_type: str) -> bool:
+    if report_type in KR_REPORT_TYPES:
+        return True
+    if report_type in US_REPORT_TYPES:
+        return False
+    return report_type.startswith("kr")
+
+
+def _arrow(is_up: Any, change: str = "") -> str:
+    if change in ("", "N/A", None):
+        return " "
+    return "▲" if is_up else "▼"
+
+
+def _safe_str(value: Any, default: str = "N/A") -> str:
+    if value is None:
+        return default
+    text = str(value).strip()
+    return text if text else default
+
+
+def _volume_emoji(ratio: float) -> str:
+    if ratio >= config.VOLUME_FIRE:
+        return "🔥"
+    if ratio >= config.VOLUME_BOLT:
+        return "⚡"
+    return "💵"
+
+
+def _parse_ratio(value: Any) -> float:
+    try:
+        return float(str(value).replace("배", "").replace("x", "").strip())
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _enrich_report_data(report_data: dict[str, Any], report_type: str) -> dict[str, Any]:
+    data = dict(report_data)
+    if not data.get("sector_top_stocks") and _is_kr_report(report_type):
+        try:
+            from data.kr_market import get_sector_top_stocks
+
+            data["sector_top_stocks"] = get_sector_top_stocks(3)
+        except Exception:
+            data.setdefault("sector_top_stocks", {})
+
+    if not data.get("volume_leaders_ranked"):
+        try:
+            if _is_kr_report(report_type):
+                from data.kr_market import get_top_volume_kr
+
+                data["volume_leaders_ranked"] = get_top_volume_kr(5) or []
+            else:
+                from data.us_market import get_top_volume_us
+
+                data["volume_leaders_ranked"] = get_top_volume_us(5) or []
+        except Exception:
+            data.setdefault("volume_leaders_ranked", [])
+
+    if not data.get("watchlist_stocks"):
+        stocks: list[dict[str, Any]] = []
+        for theme, tickers in config.KR_WATCHLIST.items():
+            if not _is_kr_report(report_type):
+                break
+            for ticker, name in tickers.items():
+                stocks.append({"ticker": ticker, "name": name, "market": "KR", "theme": theme})
+        if not _is_kr_report(report_type):
+            for theme, tickers in config.US_WATCHLIST.items():
+                for ticker, name in tickers.items():
+                    stocks.append({"ticker": ticker, "name": name, "market": "US", "theme": theme})
+        data["watchlist_stocks"] = stocks
+
+    return data
+
+
+def _header_line(report_type: str) -> tuple[str, str]:
+    now = datetime.now()
+    weekday = WEEKDAY_KO[now.weekday()]
+    time_str = now.strftime("%H:%M")
+    date_str = now.strftime("%Y-%m-%d")
+    desc = REPORT_TYPE_DESC.get(report_type, report_type)
+    if _is_kr_report(report_type):
+        market_line = f"한국시장 | {desc}"
+    else:
+        market_line = f"미국시장 | {desc}"
+    title = f"📅 마켓 브리핑 | {date_str} {weekday}요일 {time_str}"
+    return title, market_line
+
+
+def _index_line(label: str, row: dict[str, Any] | None) -> str:
+    row = row or {}
+    value = _safe_str(row.get("value"))
+    change = _safe_str(row.get("change"))
+    mark = _arrow(row.get("is_up"), change)
+    return f"{label:<8}  {value:>12}    {mark} {change}"
+
+
+def _indicator_line(
+    key: str,
+    indicators: dict[str, Any],
+    macro_comments: dict[str, str],
+) -> str:
+    label = INDICATOR_LABELS.get(key, key)
+    row = indicators.get(key) or {}
+    value = _safe_str(row.get("value"))
+    change = _safe_str(row.get("change"))
+    mark = _arrow(row.get("is_up"), change)
+    comment = _safe_str(macro_comments.get(key, ""), "")
+    pad_label = label.ljust(12)
+    if comment and comment != "N/A":
+        return f"{pad_label}  {value:>8}   {mark} {change:>8}   {comment}"
+    return f"{pad_label}  {value:>8}   {mark} {change:>8}"
+
+
+def build_msg1(report_data: dict[str, Any], report_type: str) -> str:
+    title, market_line = _header_line(report_type)
+    phase = _safe_str(report_data.get("market_phase"), "중립")
+    summary = _safe_str(report_data.get("one_line_summary"))
+    indices = report_data.get("indices") or {}
+    indicators = report_data.get("indicators") or report_data.get("market_indicators") or {}
+    macro_comments = report_data.get("macro_comments") or {}
+
+    lines = [
+        title,
+        market_line,
+        "",
+        "오늘 시장은?",
+        f"{phase} — {summary}",
+        "",
+        "──────────────────",
+        _index_line("KOSPI", indices.get("KOSPI")),
+        _index_line("KOSDAQ", indices.get("KOSDAQ")),
+        _index_line("S&P500", indices.get("S&P500") or indices.get("S&P 500")),
+        _index_line("NASDAQ", indices.get("NASDAQ")),
+        "",
+        _indicator_line("dollar_index", indicators, macro_comments),
+        _indicator_line("us10y", indicators, macro_comments),
+        _indicator_line("vix", indicators, macro_comments),
+        _indicator_line("wti", indicators, macro_comments),
+        _indicator_line("copper", indicators, macro_comments),
+        "──────────────────",
+    ]
+    pdf = report_data.get("pdf_url")
+    if pdf:
+        lines.extend(["", f"📎 리포트: {pdf}"])
+    return "\n".join(lines)
+
+
+def _format_stock_chip(stock: dict[str, Any]) -> str:
+    name = _safe_str(stock.get("name"))
+    change = _safe_str(stock.get("change") or stock.get("change_rate"))
+    if isinstance(stock.get("change_rate"), (int, float)):
+        pct = float(stock["change_rate"])
+        change = f"{pct:+.2f}%"
+    is_up = stock.get("is_up")
+    if is_up is None and change not in ("N/A", ""):
+        is_up = not str(change).strip().startswith("-")
+    mark = _arrow(is_up, change)
+    return f"{name} {mark}{change}"
+
+
+def _sector_block(sector_name: str, stocks: list[dict[str, Any]]) -> list[str]:
+    if not stocks:
+        return []
+    chips = " · ".join(_format_stock_chip(s) for s in stocks[:3])
+    return [f"  {sector_name}  {chips}"]
+
+
+def build_msg2(report_data: dict[str, Any], report_type: str) -> str:
+    sector_flow = report_data.get("sector_flow") or {}
+    hot = sector_flow.get("hot") or []
+    cold = sector_flow.get("cold") or []
+    sector_top = report_data.get("sector_top_stocks") or {}
+
+    lines = [
+        "──────────────────",
+        "오늘의 섹터 동향",
+        "──────────────────",
+    ]
+
+    if hot:
+        lines.append(f"▲ 상승   {', '.join(hot[:8])}")
+        lines.append("")
+        for name in hot[:5]:
+            lines.extend(_sector_block(name, sector_top.get(name, [])))
+    else:
+        lines.append("▲ 상승   N/A")
+
+    lines.append("")
+    if cold:
+        lines.append(f"▼ 하락   {', '.join(cold[:8])}")
+        lines.append("")
+        for name in cold[:5]:
+            lines.extend(_sector_block(name, sector_top.get(name, [])))
+    else:
+        lines.append("▼ 하락   N/A")
+
+    leaders = report_data.get("volume_leaders_ranked") or []
+    if not leaders:
+        themes = report_data.get("top_themes") or []
+        if themes:
+            leaders = themes[0].get("volume_leaders") or []
+
+    lines.extend(
+        [
+            "",
+            "──────────────────",
+            "거래대금 상위 종목",
+            "──────────────────",
+            "종목           현재가        등락률    평균대비",
+        ]
+    )
+
+    for idx, row in enumerate(leaders[:5], start=1):
+        name = _safe_str(row.get("name"))
+        if _is_kr_report(report_type):
+            price = row.get("price")
+            if isinstance(price, (int, float)):
+                price_txt = f"{int(price):,}원"
+            else:
+                price_txt = _safe_str(price)
+        else:
+            price_txt = _safe_str(row.get("price_fmt") or row.get("price_krw"))
+            if isinstance(row.get("price_krw"), (int, float)):
+                price_txt = f"{int(row['price_krw']):,}원"
+
+        change = _safe_str(row.get("change"))
+        if not change or change == "N/A":
+            cr = row.get("change_rate")
+            if isinstance(cr, (int, float)):
+                change = f"{cr:+.2f}%"
+
+        ratio = _parse_ratio(row.get("volume_ratio") or row.get("ratio"))
+        ratio_txt = f"{ratio:.1f}배" if ratio else "N/A"
+        emoji = _volume_emoji(ratio) if ratio else ""
+        lines.append(f"{idx}. {name:<10}  {price_txt:>12}  {change:>8}  {ratio_txt} {emoji}".rstrip())
+
+    lines.append("──────────────────")
+    return "\n".join(lines)
+
+
+def build_msg3(report_data: dict[str, Any], report_type: str) -> str:
+    lines = [
+        "──────────────────",
+        "관심 섹터 현황",
+        "──────────────────",
+    ]
+
+    pipeline_stocks = {
+        str(s.get("ticker", "")).zfill(6): s for s in (report_data.get("pipeline_watchlist") or [])
     }
+    pipeline_stocks.update(
+        {str(s.get("ticker", "")).upper(): s for s in (report_data.get("pipeline_watchlist") or [])}
+    )
+
+    if _is_kr_report(report_type):
+        watchlist = config.KR_WATCHLIST
+    else:
+        watchlist = config.US_WATCHLIST
+
+    for theme, tickers in watchlist.items():
+        lines.append(theme)
+        for ticker, name in tickers.items():
+            key = ticker.zfill(6) if _is_kr_report(report_type) else ticker.upper()
+            snap = pipeline_stocks.get(key) or pipeline_stocks.get(ticker) or {}
+            change_rate = snap.get("change_rate")
+            if isinstance(change_rate, (int, float)):
+                change = f"{float(change_rate):+.2f}%"
+                is_up = change_rate >= 0
+            else:
+                change = "N/A"
+                is_up = None
+            mark = _arrow(is_up, change)
+
+            if _is_kr_report(report_type):
+                price = snap.get("price")
+                price_txt = f"{int(price):,}원" if isinstance(price, (int, float)) else "N/A"
+            else:
+                pk = snap.get("price_krw")
+                price_txt = f"{int(pk):,}원" if isinstance(pk, (int, float)) else "N/A"
+
+            ratio = _parse_ratio(snap.get("volume_ratio"))
+            ratio_txt = f"{ratio:.1f}배" if ratio else "N/A"
+            emoji = _volume_emoji(ratio) if ratio else ""
+            display_name = _safe_str(snap.get("name"), name)
+            lines.append(
+                f"{display_name}  {price_txt}  {mark}{change}  |  거래량 {ratio_txt} {emoji}".rstrip()
+            )
+        lines.append("")
+
+    lines.append("──────────────────")
+    return "\n".join(lines)
 
 
-def _build_text(data: dict[str, Any]) -> str:
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    parts = [
-        f"[{data['report_type']}] 리포트 생성 완료",
-        data["summary"] or data["message"],
+def build_msg4(report_data: dict[str, Any], report_type: str) -> str:
+    del report_type
+    buys = report_data.get("buy_recommendations") or []
+    risk_warning = _safe_str(report_data.get("risk_warning"), "N/A")
+
+    lines = [
+        "──────────────────",
+        "오늘의 매수 추천",
+        "에이전트 5명 종합 매수 의견 종목",
+        "──────────────────",
     ]
-    if data["pdf_url"]:
-        parts.append(f"링크: {data['pdf_url']}")
-    parts.append(f"생성시각: {now}")
-    return "\n".join(p for p in parts if p)
+
+    if not buys:
+        msg = report_data.get("recommendation_message") or "오늘은 관망이 답입니다."
+        lines.extend(["", msg, "시장 전반이 불리한 환경이에요.", ""])
+    else:
+        numerals = "①②③④⑤"
+        for idx, row in enumerate(buys[:5]):
+            num = numerals[idx] if idx < len(numerals) else f"{idx + 1}."
+            name = _safe_str(row.get("name"))
+            price = _safe_str(row.get("price"))
+            change = _safe_str(row.get("change_rate") or row.get("change"))
+            emoji = _safe_str(row.get("volume_emoji"), "")
+            strength = _safe_str(row.get("conclusion_strength"), "N/A")
+            vol = _safe_str(row.get("volume_ratio"), "N/A")
+            pos = _safe_str(row.get("position_52w"), "N/A")
+            per = _safe_str(row.get("per"), "N/A")
+            pbr = _safe_str(row.get("pbr"), "N/A")
+            fo = _safe_str(row.get("foreign_ownership"), "N/A")
+            reason = _safe_str(row.get("buy_reason"), "")
+            verdict = _safe_str(row.get("verdict_comment"), "")
+
+            lines.extend(
+                [
+                    "",
+                    f"{num} {name} {price} {change} {emoji}".rstrip(),
+                    f"체결강도 {strength}  |  거래량 {vol}",
+                    f"52주 고점 대비 {pos}",
+                    f"PER {per}  |  PBR {pbr}  |  외국인보유 {fo}",
+                    "",
+                    reason,
+                ]
+            )
+            if verdict and verdict != "N/A":
+                lines.append(verdict)
+
+    lines.extend(
+        [
+            "",
+            "──────────────────",
+            "⚠️ 오늘 조심할 것",
+            risk_warning,
+            "",
+            "※ 투자 참고용이며 손실 책임은",
+            "  본인에게 있습니다.",
+            "",
+            "─",
+            "PER: 주가가 비싼지 싼지. 낮을수록 저평가",
+            "PBR: 1 이하면 회사 자산보다 싸게 거래중",
+            "외국인보유: 높을수록 글로벌 큰손이 믿는 주식",
+            "체결강도: 100% 이상이면 사는 사람이 더 많음",
+            "🔥 거래량 30배 이상   ⚡ 거래량 15배 이상   💵 거래대금 상위",
+            "──────────────────",
+        ]
+    )
+    return "\n".join(lines)
 
 
-def _build_blocks(data: dict[str, Any]) -> list[dict[str, Any]]:
-    """Build Slack Block Kit payload with optional report link button."""
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    header_text = f"[{data['report_type']}] 리포트 생성 완료"
-    summary_text = data["summary"] or data["message"] or "-"
-    blocks: list[dict[str, Any]] = [
-        {
-            "type": "header",
-            "text": {"type": "plain_text", "text": header_text, "emoji": True},
-        },
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": summary_text},
-        },
-    ]
-    if data["pdf_url"]:
-        blocks.append(
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "리포트 보기", "emoji": True},
-                        "url": data["pdf_url"],
-                        "style": "primary",
-                    }
-                ],
-            }
-        )
-    blocks.append(
-        {
-            "type": "context",
-            "elements": [{"type": "mrkdwn", "text": f"생성시각: {now}"}],
+def post_message(
+    text: str,
+    channel: str,
+    thread_ts: str | None = None,
+    *,
+    retries: int = 1,
+) -> dict[str, Any]:
+    """Post one message via Slack chat.postMessage."""
+    token = config.SLACK_BOT_TOKEN or os.getenv("SLACK_BOT_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "SLACK_BOT_TOKEN missing", "skipped": True}
+    if not channel:
+        return {"ok": False, "error": "Slack channel missing", "skipped": True}
+
+    body: dict[str, Any] = {"channel": channel, "text": text}
+    if thread_ts:
+        body["thread_ts"] = thread_ts
+
+    last_error = ""
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(
+                SLACK_POST_URL,
+                data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+                headers={
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Authorization": f"Bearer {token}",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:  # nosec B310
+                payload = json.loads(resp.read().decode("utf-8"))
+            if payload.get("ok"):
+                return {"ok": True, "ts": payload.get("ts"), "response": payload}
+            last_error = str(payload.get("error", "unknown_error"))
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            last_error = str(exc)
+        if attempt < retries:
+            time.sleep(1.0)
+
+    return {"ok": False, "error": last_error}
+
+
+def send_market_report(
+    report_data: dict[str, Any],
+    report_type: str,
+    pdf_url: str = "",
+) -> dict[str, Any]:
+    """Send 4 Slack messages: msg1 to channel, msg2–4 in thread."""
+    token = config.SLACK_BOT_TOKEN or os.getenv("SLACK_BOT_TOKEN", "")
+    channel = resolve_slack_channel(report_type) or ""
+    if not token:
+        return {
+            "ok": False,
+            "skipped": True,
+            "sent_count": 0,
+            "thread_ts": None,
+            "channel": None,
+            "errors": ["SLACK_BOT_TOKEN missing"],
         }
-    )
-    return blocks
+    if not channel:
+        return {
+            "ok": False,
+            "skipped": True,
+            "sent_count": 0,
+            "thread_ts": None,
+            "channel": None,
+            "errors": [f"No Slack channel for report_type={report_type}"],
+        }
 
+    data = _enrich_report_data(report_data, report_type)
+    if pdf_url:
+        data["pdf_url"] = pdf_url
 
-def _post_webhook(webhook_url: str, body: dict[str, Any]) -> dict[str, Any]:
-    req = urllib.request.Request(
-        webhook_url,
-        data=json.dumps(body).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310
-        response_body = resp.read().decode("utf-8", errors="ignore")
-        return {"status": resp.status, "body": response_body}
+    builders = [
+        lambda: build_msg1(data, report_type),
+        lambda: build_msg2(data, report_type),
+        lambda: build_msg3(data, report_type),
+        lambda: build_msg4(data, report_type),
+    ]
+
+    errors: list[str] = []
+    sent_count = 0
+    thread_ts: str | None = None
+
+    for idx, build_fn in enumerate(builders, start=1):
+        text = build_fn()
+        result = post_message(
+            text,
+            channel,
+            thread_ts=None if idx == 1 else thread_ts,
+            retries=1,
+        )
+        if result.get("ok"):
+            sent_count += 1
+            if idx == 1:
+                thread_ts = str(result.get("ts") or "")
+        else:
+            errors.append(f"msg{idx}: {result.get('error', 'unknown')}")
+
+    return {
+        "ok": sent_count > 0,
+        "sent_count": sent_count,
+        "thread_ts": thread_ts,
+        "channel": channel,
+        "errors": errors,
+    }
 
 
 def send_report(
@@ -110,22 +535,31 @@ def send_report(
     pdf_url: str | None = None,
     send_at: int | None = None,
 ) -> dict[str, Any]:
-    """Send report notification to Slack webhook."""
-    data = _normalize_payload(payload, message, summary, report_type, pdf_url, send_at)
-    webhook_url = config.SLACK_WEBHOOK_URL or os.getenv("SLACK_WEBHOOK_URL", "")
-    if not webhook_url:
-        return {"ok": False, "skipped": True, "reason": "SLACK_WEBHOOK_URL missing"}
+    """Send threaded market report via Slack Web API."""
+    source = payload or {}
+    rtype = report_type or source.get("report_type") or "unknown"
+    url = pdf_url or source.get("pdf_url") or source.get("url") or ""
 
-    delay = 0
-    if isinstance(data["send_at"], (int, float)):
-        delay = int(data["send_at"] - time.time())
-    if 0 < delay <= 600:
-        time.sleep(delay)
+    if isinstance(send_at, (int, float)) or isinstance(source.get("send_at"), (int, float)):
+        delay_ts = send_at if send_at is not None else source.get("send_at")
+        delay = int(delay_ts - time.time())  # type: ignore[operator]
+        if 0 < delay <= 600:
+            time.sleep(delay)
 
-    text = _build_text(data)
-    blocks = _build_blocks(data)
-    try:
-        response = _post_webhook(webhook_url, {"text": text, "blocks": blocks})
-        return {"ok": True, "response": response, "text": text, "blocks": blocks}
-    except Exception as exc:
-        return {"ok": False, "error": str(exc), "text": text}
+    report = source.get("report_data")
+    if isinstance(report, dict):
+        data = dict(report)
+    else:
+        data = {
+            "market_phase": "중립",
+            "one_line_summary": summary or message or "N/A",
+            "indices": {},
+            "indicators": {},
+            "macro_comments": {},
+            "sector_flow": {"hot": [], "cold": []},
+            "buy_recommendations": [],
+            "risk_warning": "N/A",
+        }
+    if summary and not data.get("one_line_summary"):
+        data["one_line_summary"] = summary
+    return send_market_report(data, rtype, url)

@@ -14,10 +14,12 @@ load_dotenv()
 from config import DISCOVERY_TOP_N
 from .kis_client import (
     get_52w_high_low as get_kis_52w,
+    get_conclusion_strength,
     get_foreign_net as get_kis_foreign_net,
     get_kospi_index as get_kis_kospi,
     get_kosdaq_index as get_kis_kosdaq,
     get_price as get_kis_price,
+    get_sector_trading_value as get_kis_sector_trading_value,
     get_top_volume as get_kis_top_volume,
 )
 from .stock_discovery import discover_dynamic_stocks
@@ -386,6 +388,166 @@ def get_dynamic_targets() -> list[dict[str, Any]]:
         }
         for item in discovered
     ]
+
+
+def _should_skip_kis_sector(name: str) -> bool:
+    """Skip KIS index/composite rows that are not pykrx industry names."""
+    skip_tokens = ("코스피", "지수", "기후변화", "제외")
+    return any(token in name for token in skip_tokens)
+
+
+def _load_sector_stock_universe(date: str) -> dict[str, list[dict[str, Any]]] | None:
+    """Build {업종명: [{ticker, name, change_rate, trading_value}, ...]} from pykrx."""
+    if pykrx_stock is None:
+        return None
+
+    by_sector: dict[str, list[dict[str, Any]]] = {}
+    for market in ("KOSPI", "KOSDAQ"):
+        try:
+            with _suppress_pykrx_output():
+                classified = pykrx_stock.get_market_sector_classifications(date, market=market)
+                ohlcv = pykrx_stock.get_market_ohlcv(date, market=market)
+        except Exception:
+            continue
+        if classified is None or ohlcv is None or len(classified) == 0 or len(ohlcv) == 0:
+            continue
+
+        for ticker in classified.index.tolist():
+            ticker = str(ticker).zfill(6)
+            if ticker not in ohlcv.index:
+                continue
+            sector_name = str(classified.loc[ticker, "업종명"]).strip()
+            if not sector_name:
+                continue
+            change_rate = safe_float(classified.loc[ticker, "등락률"], 0.0)
+            trading_value = safe_float(ohlcv.loc[ticker, "거래대금"], 0.0)
+            stock_name = str(classified.loc[ticker, "종목명"]).strip()
+            price = safe_float(classified.loc[ticker, "종가"], 0.0)
+            by_sector.setdefault(sector_name, []).append(
+                {
+                    "ticker": ticker,
+                    "name": stock_name,
+                    "price": price,
+                    "change_rate": change_rate,
+                    "trading_value": trading_value,
+                }
+            )
+    return by_sector or None
+
+
+def get_sector_top_stocks(n: int = 3) -> dict[str, list[dict[str, Any]]]:
+    """Return top-n stocks by trading value for each KIS sector."""
+    if n <= 0:
+        return {}
+
+    sectors = get_kis_sector_trading_value()
+    if not sectors:
+        return {}
+
+    universe = _load_sector_stock_universe(get_trading_date())
+    if not universe:
+        return {}
+
+    output: dict[str, list[dict[str, Any]]] = {}
+    for sector in sectors:
+        sector_name = str(sector.get("name", "")).strip()
+        if not sector_name or _should_skip_kis_sector(sector_name):
+            continue
+
+        candidates = universe.get(sector_name)
+        if not candidates:
+            continue
+
+        ranked = sorted(candidates, key=lambda x: safe_float(x.get("trading_value"), 0.0), reverse=True)
+        rows: list[dict[str, Any]] = []
+        for item in ranked[:n]:
+            ticker = str(item.get("ticker", ""))
+            change_rate = safe_float(item.get("change_rate"), 0.0)
+
+            quote = get_kis_price(ticker) if ticker else None
+            if quote and quote.get("change_rate") is not None:
+                change_rate = safe_float(quote.get("change_rate"), change_rate)
+
+            rows.append(
+                {
+                    "name": str(item.get("name", ticker)),
+                    "change": _fmt_pct(change_rate),
+                    "is_up": change_rate >= 0,
+                }
+            )
+
+        if rows:
+            output[sector_name] = rows
+
+    return output
+
+
+def _kr_volume_ratio(ticker: str) -> float | None:
+    """20-day average volume vs today."""
+    if pykrx_stock is None:
+        return None
+    date = get_trading_date()
+    try:
+        dt = datetime.strptime(date, "%Y%m%d")
+        start = (dt - timedelta(days=60)).strftime("%Y%m%d")
+        hist = pykrx_stock.get_market_ohlcv_by_date(start, date, ticker)
+        if hist is None or len(hist) < 22:
+            return None
+        vol = hist["거래량"]
+        today = safe_float(vol.iloc[-1], 0.0)
+        avg20 = safe_float(vol.iloc[-21:-1].mean(), 0.0)
+        if today <= 0 or avg20 <= 0:
+            return None
+        return round(today / avg20, 2)
+    except Exception:
+        return None
+
+
+def _kr_per_pbr(ticker: str) -> tuple[Any, Any, Any]:
+    per, pbr, foreign_ownership = None, None, None
+    if pykrx_stock is None:
+        return per, pbr, foreign_ownership
+    date = get_trading_date()
+    try:
+        frame = pykrx_stock.get_market_fundamental_by_ticker(date, market="ALL")
+        if frame is not None and ticker in frame.index:
+            row = frame.loc[ticker]
+            per = safe_float(row.get("PER"), 0.0) or None
+            pbr = safe_float(row.get("PBR"), 0.0) or None
+    except Exception:
+        pass
+    quote = get_kis_price(ticker)
+    if quote:
+        raw = quote.get("raw") or {}
+        rate = raw.get("frgn_hldn_rate")
+        if rate is not None:
+            foreign_ownership = safe_float(rate, 0.0) or None
+    return per, pbr, foreign_ownership
+
+
+def get_watchlist_snapshots() -> dict[str, dict[str, Any]]:
+    """KR_WATCHLIST 전 종목 KIS/pykrx 스냅샷 (ticker → metrics)."""
+    import config
+
+    snapshots: dict[str, dict[str, Any]] = {}
+    for _theme, stocks in config.KR_WATCHLIST.items():
+        for ticker, name in stocks.items():
+            code = str(ticker).zfill(6)
+            snap = get_stock_snapshot(code, market="KOSPI")
+            per, pbr, foreign_ownership = _kr_per_pbr(code)
+            strength = get_conclusion_strength(code)
+            snapshots[code] = {
+                "name": name,
+                "price": snap.get("price"),
+                "change_rate": snap.get("change_rate"),
+                "volume_ratio": _kr_volume_ratio(code),
+                "foreign_net": snap.get("foreign_net_buy"),
+                "conclusion_strength": (strength or {}).get("strength") if strength else None,
+                "per": per,
+                "pbr": pbr,
+                "foreign_ownership": foreign_ownership,
+            }
+    return snapshots
 
 
 def get_sector_flow_kr() -> dict[str, list[str]]:

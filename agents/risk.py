@@ -1,104 +1,123 @@
-"""Risk manager agent (Gemini + fallback)."""
+"""Stage 4: Risk manager (강민서)."""
 
 from __future__ import annotations
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import json
-import traceback
 from typing import Any
 
 import config
-from utils.helpers import safe_json_parse
-from utils.retry import retry
+
+from .common import distance_from_high_pct, fmt_krw, normalize_phase, safe_float
 
 
-def _fallback(market_data: dict[str, Any]) -> dict[str, Any]:
-    discovered = market_data.get("discovered_stocks", [])
-    overbought_warnings: list[dict[str, str]] = []
-    stop_loss: dict[str, str] = {}
-    for stock in discovered[:10]:
-        name = str(stock.get("name", stock.get("ticker", "UNKNOWN")))
-        ratio = float(stock.get("volume_ratio") or 0.0)
-        if ratio >= 3.0:
-            overbought_warnings.append(
-                {"name": name, "position_52w": "N/A", "warning": "단기 급등으로 변동성 경고"}
-            )
-        stop_loss[name] = "-8% 하락 시 재검토"
-    risk_level = "보통" if overbought_warnings else "낮음"
-    return {
-        "overbought_warnings": overbought_warnings,
-        "hidden_risks": ["데이터 공백 리스크", "유동성 급변 리스크"],
-        "stop_loss": stop_loss,
-        "portfolio_risk": risk_level,
-        "do_not": "과도한 추격매수 금지",
-        "verdicts": {},
-        "summary": f"포트폴리오 위험도는 {risk_level} 수준입니다.",
-        "meta": {"mode": "fallback"},
+def _risk_level(base: str, phase: str) -> str:
+    order = ["낮음", "보통", "높음"]
+    idx = order.index(base) if base in order else 1
+    if phase == "위험회피":
+        idx = min(2, idx + 1)
+    return order[idx]
+
+
+def analyze_risk(
+    macro_result: dict[str, Any],
+    supply_result: dict[str, Any],
+    momentum_result: dict[str, Any],
+    fundamental_result: dict[str, Any],
+    watchlist_data: dict[str, Any],
+    logger: Any = None,
+) -> dict[str, Any]:
+    """Assess risk and verdict per filtered stock."""
+    del watchlist_data
+    phase = normalize_phase(str(macro_result.get("market_phase", "중립")))
+    momentum_scores = momentum_result.get("momentum_scores") or {}
+    fundamental_scores = fundamental_result.get("fundamental_scores") or {}
+
+    assessments_map: dict[str, dict[str, Any]] = {}
+
+    for stock in supply_result.get("filtered_stocks", []):
+        ticker = str(stock.get("ticker", ""))
+        m = momentum_scores.get(ticker, {})
+        f = fundamental_scores.get(ticker, {})
+        price = stock.get("price")
+        high = stock.get("high_52")
+        dist_hi = distance_from_high_pct(price, high)
+
+        base_risk = "보통"
+        if dist_hi is not None and dist_hi > -5:
+            base_risk = "높음"
+        elif dist_hi is not None and dist_hi < -15:
+            base_risk = "낮음"
+
+        risk_level = _risk_level(base_risk, phase)
+        stop_loss = "N/A"
+        if stock.get("market") == "KR" and price:
+            stop = safe_float(price, 0.0) * 0.92
+            stop_loss = fmt_krw(stop)
+
+        mom = safe_float(m.get("momentum_score"), 50.0)
+        fund = safe_float(f.get("fundamental_score"), 50.0)
+        supply_score = safe_float(stock.get("score"), 0.0)
+
+        if risk_level == "높음" or mom < 45:
+            verdict = "매도"
+            verdict_comment = "조금 더 기다리세요"
+        elif supply_score >= 70 and mom >= 55 and fund >= 50:
+            verdict = "매수"
+            verdict_comment = "지금 들어가기 좋은 구간"
+        else:
+            verdict = "홀드"
+            verdict_comment = "지금 가진 거 들고 기다리세요"
+
+        risk_comment = "N/A"
+        if dist_hi is not None:
+            risk_comment = f"고점 대비 {dist_hi:+.1f}%, 손절선 {stop_loss} 설정 권장"
+
+        entry = {
+            "risk_level": risk_level,
+            "stop_loss": stop_loss,
+            "risk_comment": risk_comment,
+            "final_verdict": verdict,
+            "verdict_comment": verdict_comment,
+        }
+        assessments_map[ticker] = entry
+
+    risk_warning = str(macro_result.get("market_phase_reason", "N/A"))
+    if phase == "위험회피":
+        risk_warning = "변동성 확대 구간 — 신규 매수는 소량·분할만 권장"
+
+    one_line = f"시장 국면 {phase}"
+    fav = macro_result.get("favorable_sectors") or []
+    if fav:
+        one_line += f", 유입 섹터: {', '.join(fav[:3])}"
+
+    result: dict[str, Any] = {
+        "risk_assessments": assessments_map,
+        "risk_warning": risk_warning,
+        "one_line_summary": one_line,
+        "meta": {"mode": "rules"},
     }
 
+    if config.GEMINI_API_KEY and assessments_map:
+        from .gemini_client import generate_gemini_json
 
-@retry(max_attempts=2, delay_sec=1.0)
-def analyze_risk(
-    all_opinions: dict[str, Any], market_data: dict[str, Any], logger: Any = None
-) -> dict[str, Any]:
-    """Aggregate risks with Gemini JSON response."""
-    if not config.GEMINI_API_KEY:
-        if logger:
-            logger.log(config.GEMINI_PRO_MODEL, "risk", input_tokens=0, output_tokens=0)
-        result = _fallback(market_data)
-        result["summary"] = "GEMINI_API_KEY 미설정으로 폴백 사용"
-        return result
-
-    try:
-        import google.generativeai as genai  # type: ignore
-
-        genai.configure(api_key=config.GEMINI_API_KEY)
-        model = genai.GenerativeModel(config.GEMINI_PRO_MODEL)
         prompt = f"""
-너는 리스크 매니저야.
-아래 4명 의견과 시장 데이터를 검토하고 한국어 JSON만 반환해.
+리스크 매니저로 아래 종목 리스크 평가를 검토해 JSON으로 보완하세요. 초보자도 이해하는 쉬운 말.
+[매크로]{json.dumps({"phase": phase, "warning": risk_warning}, ensure_ascii=False)}
+[평가]{json.dumps(assessments_map, ensure_ascii=False)[:3000]}
 
-[4명 의견]
-{json.dumps(all_opinions, ensure_ascii=False)[:3500]}
-
-[시장 데이터]
-{json.dumps(market_data, ensure_ascii=False)[:2000]}
-
-스키마:
-{{
-  "overbought_warnings":[{{"name":"종목명","position_52w":"91%","warning":"주의"}}],
-  "hidden_risks":["리스크1","리스크2"],
-  "stop_loss":{{"종목명":"-8% 이탈 시 재검토"}},
-  "portfolio_risk":"낮음/보통/높음",
-  "do_not":"지금 절대 하면 안 되는 것",
-  "verdicts":{{"종목명":{{"vote":"홀드","reason":["이유1","이유2"]}}}},
-  "summary":"한 줄 요약"
-}}
+스키마: {{"risk_assessments": {{"티커": {{"risk_comment":"한줄","verdict_comment":"한줄","final_verdict":"매수/홀드/매도"}}}}, "one_line_summary":"한줄"}}
 """
-        response = model.generate_content(prompt)
-        if logger and hasattr(response, "usage_metadata") and response.usage_metadata:
-            logger.log(
-                model=config.GEMINI_PRO_MODEL,
-                agent="risk",
-                input_tokens=int(getattr(response.usage_metadata, "prompt_token_count", 0) or 0),
-                output_tokens=int(getattr(response.usage_metadata, "candidates_token_count", 0) or 0),
-            )
-        text = getattr(response, "text", "") or ""
-        parsed = safe_json_parse(text)
+        parsed = generate_gemini_json(prompt, agent="risk", logger=logger)
         if parsed:
-            parsed.setdefault("meta", {"mode": "gemini"})
-            return parsed
-        print("[WARN] risk: Gemini responded but JSON parse failed")
-        print(f"[WARN] risk raw head: {text[:500]!r}")
-    except Exception:
-        print("[ERROR] risk Gemini call failed:")
-        print(traceback.format_exc())
+            if isinstance(parsed.get("risk_assessments"), dict):
+                for ticker, row in parsed["risk_assessments"].items():
+                    if ticker not in assessments_map or not isinstance(row, dict):
+                        continue
+                    for key in ("risk_comment", "verdict_comment", "final_verdict"):
+                        if row.get(key):
+                            assessments_map[ticker][key] = str(row[key])
+            if parsed.get("one_line_summary"):
+                result["one_line_summary"] = str(parsed["one_line_summary"])
+            result["meta"]["mode"] = "rules+gemini"
 
-    if logger:
-        logger.log(config.GEMINI_PRO_MODEL, "risk", input_tokens=0, output_tokens=0)
-    result = _fallback(market_data)
-    result["meta"] = {"mode": "fallback-on-error"}
     return result

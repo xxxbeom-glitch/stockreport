@@ -107,7 +107,7 @@ def optional_gemini_prompt(prompt: str) -> str:
 
 def optional_slack_notify(text: str) -> bool:
     """Placeholder for Slack notification with no-key fallback."""
-    if not config.SLACK_WEBHOOK_URL:
+    if not config.SLACK_BOT_TOKEN:
         return False
     _ = text
     return False

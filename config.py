@@ -16,7 +16,9 @@ PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent
 # ---- API keys / endpoints ----
 GEMINI_API_KEY: Final[str] = os.getenv("GEMINI_API_KEY", "")
 GROK_API_KEY: Final[str] = os.getenv("GROK_API_KEY", "")
-SLACK_WEBHOOK_URL: Final[str] = os.getenv("SLACK_WEBHOOK_URL", "")
+SLACK_BOT_TOKEN: Final[str] = os.getenv("SLACK_BOT_TOKEN", "")
+SLACK_CHANNEL_KR: Final[str] = os.getenv("SLACK_CHANNEL_KR", "")
+SLACK_CHANNEL_US: Final[str] = os.getenv("SLACK_CHANNEL_US", "")
 FIREBASE_STORAGE_BUCKET: Final[str] = os.getenv("FIREBASE_STORAGE_BUCKET", "")
 FIREBASE_KEY_PATH: Final[str] = os.getenv(
     "FIREBASE_KEY_PATH",
@@ -33,8 +35,8 @@ KRX_ID: Final[str] = os.getenv("KRX_ID", "")
 KRX_PW: Final[str] = os.getenv("KRX_PW", "")
 
 GROK_BASE_URL: Final[str] = os.getenv("GROK_BASE_URL", "https://api.x.ai/v1")
-GROK_MODEL: Final[str] = os.getenv("GROK_MODEL", "grok-4.3")
-GEMINI_PRO_MODEL: Final[str] = os.getenv("GEMINI_PRO_MODEL", "gemini-2.5-pro")
+GROK_MODEL: Final[str] = os.getenv("GROK_MODEL", "grok-3")
+GEMINI_PRO_MODEL: Final[str] = os.getenv("GEMINI_PRO_MODEL", "gemini-3.1-pro-preview")
 GEMINI_FLASH_MODEL: Final[str] = os.getenv("GEMINI_FLASH_MODEL", "gemini-2.5-flash")
 
 # ---- Data source switches ----
@@ -44,9 +46,9 @@ DATA_SOURCES: Final[dict[str, dict[str, str | bool]]] = {
     "grok": {"enabled": bool(GROK_API_KEY), "required_env": "GROK_API_KEY", "description": "Realtime buzz"},
     "gemini": {"enabled": bool(GEMINI_API_KEY), "required_env": "GEMINI_API_KEY", "description": "AI synthesis"},
     "slack": {
-        "enabled": bool(SLACK_WEBHOOK_URL),
-        "required_env": "SLACK_WEBHOOK_URL",
-        "description": "Report delivery",
+        "enabled": bool(SLACK_BOT_TOKEN and SLACK_CHANNEL_KR and SLACK_CHANNEL_US),
+        "required_env": "SLACK_BOT_TOKEN+SLACK_CHANNEL_KR+SLACK_CHANNEL_US",
+        "description": "Report delivery (Web API)",
     },
     "firebase": {
         "enabled": bool(FIREBASE_STORAGE_BUCKET),
@@ -76,6 +78,103 @@ US_SECTOR_ETFS: Final[dict[str, str]] = {
     "클라우드": "SKYY",
     "AI인프라": "BOTZ",
 }
+
+# ---- KR watchlist (ticker -> name per theme) ----
+KR_WATCHLIST: Final[dict[str, dict[str, str]]] = {
+    "반도체 대형": {
+        "005930": "삼성전자",
+        "000660": "SK하이닉스",
+    },
+    "반도체 소부장": {
+        "042700": "한미반도체",
+        "403870": "HPSP",
+        "058470": "리노공업",
+        "039030": "이오테크닉스",
+        "240810": "원익IPS",
+        "319660": "피에스케이",
+    },
+    "AI 전력 인프라": {
+        "010120": "LS일렉트릭",
+        "267260": "HD현대일렉트릭",
+        "103590": "일진전기",
+        "033100": "제룡전기",
+    },
+}
+
+# ---- US watchlist (ticker -> name per theme) ----
+US_WATCHLIST: Final[dict[str, dict[str, str]]] = {
+    "빅테크 M7": {
+        "NVDA": "NVIDIA",
+        "AAPL": "Apple",
+        "MSFT": "Microsoft",
+        "GOOGL": "Google",
+        "AMZN": "Amazon",
+        "META": "Meta",
+        "TSLA": "Tesla",
+    },
+    "반도체": {
+        "AVGO": "Broadcom",
+        "AMD": "AMD",
+        "INTC": "Intel",
+        "MU": "Micron",
+        "SNDK": "Sandisk",
+        "QCOM": "Qualcomm",
+        "TXN": "Texas Instruments",
+        "AMAT": "Applied Materials",
+        "KLAC": "KLA",
+        "LRCX": "Lam Research",
+        "ARM": "ARM",
+        "MRVL": "Marvell",
+        "ADI": "Analog Devices",
+        "MCHP": "Microchip",
+        "ON": "ON Semiconductor",
+        "MPWR": "Monolithic Power",
+    },
+    "소프트웨어": {
+        "CRM": "Salesforce",
+        "NOW": "ServiceNow",
+        "SNOW": "Snowflake",
+        "PLTR": "Palantir",
+        "TEAM": "Atlassian",
+        "ADBE": "Adobe",
+        "ORCL": "Oracle",
+        "SAP": "SAP",
+        "INTU": "Intuit",
+        "PANW": "Palo Alto",
+    },
+    "데이터센터": {
+        "EQIX": "Equinix",
+        "DLR": "Digital Realty",
+        "IRM": "Iron Mountain",
+        "SMCI": "Supermicro",
+        "DELL": "Dell",
+        "HPE": "HP Enterprise",
+    },
+    "AI 전력 인프라": {
+        "VST": "Vistra",
+        "CEG": "Constellation",
+        "GEV": "GE Vernova",
+        "ETN": "Eaton",
+        "VRT": "Vertiv",
+        "ENPH": "Enphase",
+        "NEE": "NextEra",
+        "AES": "AES Corp",
+    },
+    "하드웨어": {
+        "ANET": "Arista Networks",
+        "CSCO": "Cisco",
+        "HPQ": "HP",
+        "ZBRA": "Zebra Tech",
+    },
+}
+
+# ---- Volume spike emoji thresholds (vs 20-day average) ----
+VOLUME_FIRE: Final[float] = 30.0  # 30x+
+VOLUME_BOLT: Final[float] = 15.0  # 15x+
+
+# ---- Buy candidate price filters (KRW) ----
+KR_MAX_PRICE: Final[int | None] = None
+US_MAX_PRICE_KRW: Final[int] = 300_000
 
 # ---- Sector temperature rules ----
 HOT_RETURN_THRESHOLD: Final[float] = 2.0

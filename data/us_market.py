@@ -8,9 +8,12 @@ try:
     import yfinance as yf  # type: ignore
 except Exception:
     yf = None
-from config import US_SECTOR_ETFS
+from config import US_MAX_PRICE_KRW, US_SECTOR_ETFS, US_WATCHLIST
 from .sector_flow import scan_us_sector_flow
+from .sources import fetch_yfinance_history
 from .utils import safe_float
+
+DEFAULT_USD_KRW: float = 1500.0
 
 
 US_INDEX_TICKERS: dict[str, str] = {
@@ -123,69 +126,144 @@ def get_sector_etf_universe() -> dict[str, str]:
     return dict(US_SECTOR_ETFS)
 
 
-# Liquid US equities universe (exclude sector ETFs)
-_US_LIQUID_UNIVERSE: list[str] = [
-    "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "TSLA", "AMD", "AVGO",
-    "NFLX", "CRM", "ORCL", "ADBE", "INTC", "QCOM", "TXN", "MU", "AMAT", "LRCX",
-    "JPM", "BAC", "WFC", "GS", "MS", "V", "MA", "PYPL", "SQ", "COIN",
-    "XOM", "CVX", "LLY", "UNH", "JNJ", "PFE", "MRK", "ABBV", "BMY", "NKE",
-    "DIS", "UBER", "ABNB", "PLTR", "SNOW", "SHOP", "BABA", "PDD", "NIO",
-]
+def _watchlist_ticker_names() -> dict[str, str]:
+    """Flatten US_WATCHLIST to {TICKER: display name}."""
+    names: dict[str, str] = {}
+    for stocks in US_WATCHLIST.values():
+        for ticker, name in stocks.items():
+            code = str(ticker).upper().strip()
+            if code:
+                names[code] = str(name).strip() or code
+    return names
 
 
-def _is_etf_symbol(symbol: str) -> bool:
-    sym = symbol.upper()
-    if sym in set(US_SECTOR_ETFS.values()):
-        return True
-    if len(sym) <= 4 and sym.endswith(("X", "Y")) and sym.startswith(("X", "S", "V", "I")):
-        return True
-    return False
+def _watchlist_tickers() -> list[str]:
+    return list(_watchlist_ticker_names().keys())
+
+
+def _fetch_usd_krw() -> float:
+    """Return latest USD/KRW; fallback to DEFAULT_USD_KRW."""
+    hist = fetch_yfinance_history("USDKRW=X", period="5d")
+    if hist is None or len(hist) == 0:
+        return DEFAULT_USD_KRW
+    rate = safe_float(hist["Close"].iloc[-1], DEFAULT_USD_KRW)
+    return rate if rate > 0 else DEFAULT_USD_KRW
+
+
+def _optional_float(value: Any) -> float | None:
+    num = safe_float(value, 0.0)
+    if value is None or str(value).strip() in {"", "None", "null", "N/A"}:
+        return None
+    return num if num != 0.0 or str(value).strip() == "0" else None
+
+
+def _usd_to_eok(usd_value: Any, usd_krw: float | None = None) -> float | None:
+    """Convert USD amount to 억원 (KRW hundred-millions)."""
+    amount = _optional_float(usd_value)
+    if amount is None:
+        return None
+    rate = usd_krw if usd_krw and usd_krw > 0 else _fetch_usd_krw()
+    return round(amount * rate / 100_000_000, 2)
+
+
+def get_us_financials(ticker: str) -> dict[str, Any] | None:
+    """Return US fundamentals from yfinance info (amounts in 억원 where noted)."""
+    if yf is None:
+        return None
+    code = str(ticker).upper().strip()
+    if not code:
+        return None
+    try:
+        info = yf.Ticker(code).info or {}
+    except Exception:
+        return None
+    if not info:
+        return None
+
+    usd_krw = _fetch_usd_krw()
+    per = _optional_float(info.get("trailingPE"))
+    pbr = _optional_float(info.get("priceToBook"))
+    eps = _optional_float(info.get("trailingEps"))
+    debt_ratio = _optional_float(info.get("debtToEquity"))
+    revenue = _usd_to_eok(info.get("totalRevenue"), usd_krw)
+    ebitda = _usd_to_eok(info.get("ebitda"), usd_krw)
+    net_income = _usd_to_eok(info.get("netIncomeToCommon"), usd_krw)
+
+    if all(v is None for v in (per, pbr, eps, debt_ratio, revenue, ebitda, net_income)):
+        return None
+
+    return {
+        "ticker": code,
+        "per": per,
+        "pbr": pbr,
+        "revenue": revenue,
+        "ebitda": ebitda,
+        "net_income": net_income,
+        "eps": eps,
+        "debt_ratio": debt_ratio,
+    }
+
+
+def _ticker_short_name(ticker: str) -> str:
+    if yf is None:
+        return ticker
+    try:
+        fast = yf.Ticker(ticker).fast_info
+        name = getattr(fast, "short_name", None) or fast.get("shortName")  # type: ignore[attr-defined]
+        if name:
+            return str(name)
+    except Exception:
+        pass
+    try:
+        return str(yf.Ticker(ticker).info.get("shortName") or ticker)
+    except Exception:
+        return ticker
 
 
 def get_top_volume_us(n: int = 5) -> list[dict[str, Any]]:
-    """Return top US stocks by latest volume (individual equities only)."""
-    if yf is None:
+    """Return top US watchlist names by today volume / 20-day average volume."""
+    if yf is None or n <= 0:
         return []
+
+    usd_krw = _fetch_usd_krw()
+    watchlist_names = _watchlist_ticker_names()
     rows: list[dict[str, Any]] = []
-    for ticker in _US_LIQUID_UNIVERSE:
-        if _is_etf_symbol(ticker):
+
+    for ticker in _watchlist_tickers():
+        hist = fetch_yfinance_history(ticker, period="3mo")
+        if hist is None or len(hist) < 22:
             continue
-        try:
-            hist = yf.Ticker(ticker).history(period="5d")
-        except Exception:
-            continue
-        if hist is None or len(hist) < 2:
-            continue
+
         vol = hist["Volume"]
         close = hist["Close"]
-        avg_vol = safe_float(vol.mean(), 0.0)
-        last_vol = safe_float(vol.iloc[-1], 0.0)
-        if avg_vol <= 0 or last_vol <= 0:
+        today_vol = safe_float(vol.iloc[-1], 0.0)
+        avg_20d = safe_float(vol.iloc[-21:-1].mean(), 0.0)
+        if today_vol <= 0 or avg_20d <= 0:
             continue
-        prev = safe_float(close.iloc[-2], 0.0)
+
         last = safe_float(close.iloc[-1], 0.0)
-        pct = ((last - prev) / prev) * 100 if prev else 0.0
-        ratio = last_vol / avg_vol
-        try:
-            info_name = yf.Ticker(ticker).info.get("shortName") or ticker
-        except Exception:
-            info_name = ticker
+        prev = safe_float(close.iloc[-2], 0.0)
+        change_rate = ((last - prev) / prev) * 100 if prev else 0.0
+        volume_ratio = today_vol / avg_20d
+        price_krw = int(round(last * usd_krw))
+        if price_krw > US_MAX_PRICE_KRW:
+            continue
+
         rows.append(
             {
                 "ticker": ticker,
-                "name": str(info_name),
+                "name": watchlist_names.get(ticker) or _ticker_short_name(ticker),
+                "price_krw": price_krw,
+                "change_rate": round(change_rate, 2),
+                "volume_ratio": round(volume_ratio, 2),
+                # main.py / report helpers
                 "market": "US",
                 "price": last,
-                "volume": last_vol,
-                "volume_ratio": round(ratio, 2),
-                "change_rate": pct,
-                "change": _fmt_pct(pct),
-                "is_up": pct >= 0,
+                "price_fmt": f"{price_krw:,}원",
+                "change": _fmt_pct(change_rate),
+                "is_up": change_rate >= 0,
             }
         )
-    rows.sort(key=lambda x: (x.get("volume") or 0), reverse=True)
-    top = rows[:n]
-    for row in top:
-        p = row.get("price")
-        row["price_fmt"] = f"${p:,.2f}" if p else "N/A"
-    return top
+
+    rows.sort(key=lambda x: x["volume_ratio"], reverse=True)
+    return rows[:n]

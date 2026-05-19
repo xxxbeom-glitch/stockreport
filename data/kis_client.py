@@ -35,6 +35,14 @@ MARKET_CLS = {
     "KOSDAQ": "2",
 }
 
+# 업종 구분별 전체시세 (누적 거래대금·등락률)
+SECTOR_CATEGORY_TR_ID = "FHPUP02140000"
+SECTOR_CATEGORY_PATH = "/uapi/domestic-stock/v1/quotations/inquire-index-category-price"
+SECTOR_CATEGORY_PARAMS = {
+    "KOSPI": ("0001", "K", "3"),
+    "KOSDAQ": ("1001", "Q", "3"),
+}
+
 
 def _now() -> datetime:
     return datetime.now(UTC)
@@ -56,6 +64,42 @@ def _fmt_pct(value: float) -> str:
 
 def _fmt_price(value: float) -> str:
     return f"{value:,.2f}"
+
+
+def _ccnl_tick_buy_sell(rows: list[dict[str, Any]]) -> tuple[int, int]:
+    """Classify inquire-ccnl ticks into buy/sell volume by price direction."""
+    ordered = sorted(rows, key=lambda r: str(r.get("stck_cntg_hour", "")))
+    buy = 0
+    sell = 0
+    prev_price: float | None = None
+    for row in ordered:
+        vol = _num(row.get("cntg_vol"))
+        price = _num(row.get("stck_prpr"))
+        if vol is None or vol <= 0 or price is None:
+            continue
+        vol_i = int(vol)
+        sign = str(row.get("prdy_vrss_sign", "3"))
+        if prev_price is None:
+            if sign in ("1", "2"):
+                buy += vol_i
+            elif sign in ("4", "5"):
+                sell += vol_i
+            else:
+                buy += vol_i // 2
+                sell += vol_i - vol_i // 2
+        elif price > prev_price:
+            buy += vol_i
+        elif price < prev_price:
+            sell += vol_i
+        elif sign in ("1", "2"):
+            buy += vol_i
+        elif sign in ("4", "5"):
+            sell += vol_i
+        else:
+            buy += vol_i // 2
+            sell += vol_i - vol_i // 2
+        prev_price = price
+    return buy, sell
 
 
 def _index_snapshot(name: str, price: float | None, change_rate: float | None) -> dict[str, Any] | None:
@@ -294,6 +338,100 @@ class KISClient:
             )
         return leaders or None
 
+    def get_sector_trading_value(self, market: str = "KOSPI") -> list[dict[str, Any]] | None:
+        """업종별 거래대금·등락률 (KIS 국내업종 구분별전체시세).
+
+        TR_ID FHPUP02140000 — 업종별 누적 거래대금(acml_tr_pbmn, 백만원) 일괄 조회.
+        (FHKUP03500100 은 단일 업종 기간별 시세용이라 본 기능과 맞지 않음)
+        """
+        key = market.upper()
+        sector_params = SECTOR_CATEGORY_PARAMS.get(key)
+        if not sector_params:
+            return None
+        fid_input_iscd, fid_mrkt_cls_code, fid_blng_cls_code = sector_params
+        data = self._get(
+            SECTOR_CATEGORY_PATH,
+            SECTOR_CATEGORY_TR_ID,
+            {
+                "FID_COND_MRKT_DIV_CODE": "U",
+                "FID_INPUT_ISCD": fid_input_iscd,
+                "FID_COND_SCR_DIV_CODE": "20214",
+                "FID_MRKT_CLS_CODE": fid_mrkt_cls_code,
+                "FID_BLNG_CLS_CODE": fid_blng_cls_code,
+            },
+        )
+        if not data:
+            return None
+        rows = data.get("output2") or []
+        if isinstance(rows, dict):
+            rows = [rows]
+        if not isinstance(rows, list) or not rows:
+            return None
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            name = str(row.get("hts_kor_isnm") or "").strip()
+            if not name:
+                continue
+            pbmn_million = _num(row.get("acml_tr_pbmn"))
+            if pbmn_million is None:
+                continue
+            trading_value_eok = round(pbmn_million / 100.0, 2)
+            change_rate = _num(row.get("bstp_nmix_prdy_ctrt"))
+            if change_rate is None:
+                change_rate = 0.0
+            result.append(
+                {
+                    "name": name,
+                    "trading_value_eok": trading_value_eok,
+                    "change_rate": change_rate,
+                    "change": _fmt_pct(change_rate),
+                }
+            )
+        if not result:
+            return None
+        result.sort(key=lambda x: x["trading_value_eok"], reverse=True)
+        return result
+
+    def get_conclusion_strength(self, ticker: str) -> dict[str, Any] | None:
+        """종목 체결강도 (주식현재가 체결, FHKST01010300).
+
+        최근 체결 건별 cntg_vol을 매수/매도로 분류한 뒤
+        strength = buy_vol / sell_vol * 100 을 계산합니다.
+        단일 가격만 이어질 때는 응답의 당일 체결강도(tday_rltv)로 비율을 보정합니다.
+        """
+        code = ticker.zfill(6)
+        data = self._get(
+            "/uapi/domestic-stock/v1/quotations/inquire-ccnl",
+            "FHKST01010300",
+            {"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": code},
+        )
+        if not data:
+            return None
+        rows = data.get("output") or []
+        if isinstance(rows, dict):
+            rows = [rows]
+        if not isinstance(rows, list) or not rows:
+            return None
+
+        buy_vol, sell_vol = _ccnl_tick_buy_sell(rows)
+        total = buy_vol + sell_vol
+        if total <= 0:
+            return None
+
+        if buy_vol == 0 or sell_vol == 0:
+            day_strength = _num(rows[0].get("tday_rltv"))
+            if day_strength is None or day_strength <= 0:
+                return None
+            sell_vol = int(round(total * 100 / (100 + day_strength)))
+            buy_vol = total - sell_vol
+            if sell_vol <= 0 or buy_vol <= 0:
+                return None
+
+        strength = round(buy_vol / sell_vol * 100, 1)
+        return {"strength": strength, "buy_vol": buy_vol, "sell_vol": sell_vol}
+
 
 _default_client: KISClient | None = None
 
@@ -333,6 +471,14 @@ def get_top_volume(market: str = "KOSPI", n: int = 5) -> list[dict[str, Any]] | 
     return _client().get_top_volume(market=market, n=n)
 
 
+def get_sector_trading_value(market: str = "KOSPI") -> list[dict[str, Any]] | None:
+    return _client().get_sector_trading_value(market=market)
+
+
+def get_conclusion_strength(ticker: str) -> dict[str, Any] | None:
+    return _client().get_conclusion_strength(ticker)
+
+
 # Backward compatibility
 get_access_token = _get_token
 get_investor_flow = lambda t: {"foreign_net": get_foreign_net(t)}
@@ -348,3 +494,5 @@ if __name__ == "__main__":
     print("kosdaq", c.get_kosdaq_index())
     print("price", c.get_price("005930"))
     print("top", c.get_top_volume("KOSPI", 3))
+    print("sector_tv", c.get_sector_trading_value())
+    print("strength", c.get_conclusion_strength("005930"))
