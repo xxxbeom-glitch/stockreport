@@ -57,13 +57,25 @@ INDICATOR_LABELS: dict[str, str] = {
     "copper": "구리",
 }
 
-AGENT_ROLES: list[tuple[str, str]] = [
-    ("수급", "supply"),
-    ("모멘텀", "momentum"),
-    ("펀더멘털", "fundamental"),
-    ("매크로", "macro"),
-    ("리스크", "risk"),
+AGENT_PROFILES: list[dict[str, str]] = [
+    {"key": "supply", "name": "James Park", "title": "수급 분석가", "emoji": "📊"},
+    {"key": "momentum", "name": "Chris Yoon", "title": "모멘텀 트레이더", "emoji": "🚀"},
+    {"key": "fundamental", "name": "이준혁", "title": "기업가치 분석가", "emoji": "📈"},
+    {"key": "macro", "name": "Michael Chen", "title": "매크로 전략가", "emoji": "🌐"},
+    {"key": "risk", "name": "강민서", "title": "리스크 매니저", "emoji": "🛡️"},
 ]
+
+REPORT_TYPE_LABELS: dict[str, str] = {
+    "us_during": "미장 장중",
+    "us_close_kr_before": "국장 장전",
+    "kr_during": "국장 장중",
+    "kr_close_us_before": "국장 장후",
+    "us_after": "미장 장후",
+    "kr_before": "국장 장전",
+    "kr_after": "국장 장후",
+    "us_before": "미장 장전",
+    "weekly": "위클리 리포트",
+}
 
 
 def _foreign_net_eok(value: Any) -> str:
@@ -147,11 +159,15 @@ def _build_volume_leader(d: dict[str, Any]) -> dict[str, Any]:
     low_52 = snapshot.get("low_52")
     high_52 = snapshot.get("high_52")
     change_pct = float(snapshot.get("change_rate") or 0.0)
+    low_fmt = f"{low_52:,.0f}원" if low_52 else "N/A"
+    high_fmt = f"{high_52:,.0f}원" if high_52 else "N/A"
+    range_52w = f"{low_fmt} ~ {high_fmt}" if low_52 and high_52 else "N/A"
     return {
         "name": name,
         "ratio": f"{ratio:.2f}x" if ratio else "N/A",
         "price": f"{price:,.0f}원" if price else "N/A",
         "position_52w": _position_52w(price, low_52, high_52),
+        "range_52w": range_52w,
         "change": f"{change_pct:+.2f}%",
         "is_up": change_pct >= 0,
     }
@@ -173,10 +189,19 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
 
     agent_votes: list[dict[str, Any]] = []
     vote_labels: list[str] = []
-    for role, key in AGENT_ROLES:
+    for profile in AGENT_PROFILES:
+        key = profile["key"]
         vote, reasons = _resolve_agent_vote(opinions.get(key, {}), name, ticker)
         vote_labels.append(vote)
-        agent_votes.append({"role": role, "vote": vote, "reason": reasons})
+        agent_votes.append(
+            {
+                "name": profile["name"],
+                "title": profile["title"],
+                "emoji": profile["emoji"],
+                "vote": vote,
+                "reason": reasons,
+            }
+        )
 
     verdict = _majority_verdict(vote_labels)
     buy_n = sum(1 for v in vote_labels if v == "매수")
@@ -192,6 +217,7 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
         "position_52w": _position_52w(price, low_52, high_52),
         "verdict": verdict,
         "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
+        "foreign_net_eok": _foreign_net_eok(foreign_net_buy),
         "agent_votes": agent_votes,
         "metrics": [
             {"label": "거래량배수", "value": f"{ratio:.2f}x" if ratio else "N/A", "sub": "평균 대비"},
@@ -228,6 +254,8 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
 
     return {
         "report_type": report_type,
+        "report_type_label": REPORT_TYPE_LABELS.get(report_type, report_type),
+        "report_title": f"Stock Report · {REPORT_TYPE_LABELS.get(report_type, report_type)}",
         "date": now.strftime("%Y-%m-%d"),
         "market_phase": opinions["macro"].get("market_phase", "neutral"),
         "one_line_summary": opinions["risk"].get("summary", "Risk-first interpretation."),
