@@ -1,0 +1,24 @@
+# 환경변수
+.env
+.env.*
+
+# Firebase 서비스 계정 키
+*.json
+!package.json
+!package-lock.json
+
+# 출력물
+outputs/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# 가상환경
+venv/
+.venv/
+
+# IDE
+.cursor/
+.vscode/
+.idea/
