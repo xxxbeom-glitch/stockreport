@@ -62,7 +62,18 @@ def fetch_pykrx_trading_value(date_yyyymmdd: str, market: str = "KOSPI") -> Any 
     if pykrx_stock is None:
         return None
     try:
-        return pykrx_stock.get_market_trading_value_by_ticker(date_yyyymmdd, market=market)
+        if hasattr(pykrx_stock, "get_market_trading_value_by_ticker"):
+            return pykrx_stock.get_market_trading_value_by_ticker(date_yyyymmdd, market=market)
+        from .kr_market import _fetch_foreign_net_purchases_frame
+
+        frame = _fetch_foreign_net_purchases_frame(market, date_yyyymmdd)
+        if frame is None:
+            return None
+        if "순매수거래대금" in frame.columns:
+            frame = frame.rename(columns={"순매수거래대금": "외국인"})
+        elif "순매수거래량" in frame.columns:
+            frame = frame.rename(columns={"순매수거래량": "외국인"})
+        return frame
     except Exception:
         return None
 

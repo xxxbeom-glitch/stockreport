@@ -1,0 +1,31 @@
+{% if stock_analysis %}
+<div class="card">
+  <div class="section-title">종목 스냅샷</div>
+  <table>
+    <thead>
+      <tr>
+        <th>종목</th>
+        <th>코드</th>
+        <th>현재가</th>
+        <th>52주 저–고</th>
+        <th>외국인순매수</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in stock_analysis %}
+      <tr>
+        <td>{{ stock.name }}</td>
+        <td>{{ stock.code }}</td>
+        <td>{{ stock.price }}</td>
+        <td>{{ stock.low_52 }} – {{ stock.high_52 }}</td>
+        <td>
+          {% for m in stock.metrics if m.label == '외국인순매수' %}
+          {{ m.value }}
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}

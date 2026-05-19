@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import json
-import re
+import traceback
 from typing import Any
 
 import config
@@ -27,7 +27,7 @@ def _fallback(market_data: dict[str, Any]) -> dict[str, Any]:
                 {"name": name, "position_52w": "N/A", "warning": "단기 급등으로 변동성 경고"}
             )
         stop_loss[name] = "-8% 하락 시 재검토"
-    risk_level = "medium" if overbought_warnings else "low"
+    risk_level = "보통" if overbought_warnings else "낮음"
     return {
         "overbought_warnings": overbought_warnings,
         "hidden_risks": ["데이터 공백 리스크", "유동성 급변 리스크"],
@@ -35,7 +35,7 @@ def _fallback(market_data: dict[str, Any]) -> dict[str, Any]:
         "portfolio_risk": risk_level,
         "do_not": "과도한 추격매수 금지",
         "verdicts": {},
-        "summary": f"Portfolio risk assessed as {risk_level}.",
+        "summary": f"포트폴리오 위험도는 {risk_level} 수준입니다.",
         "meta": {"mode": "fallback"},
     }
 
@@ -59,7 +59,7 @@ def analyze_risk(
         model = genai.GenerativeModel(config.GEMINI_PRO_MODEL)
         prompt = f"""
 너는 리스크 매니저야.
-아래 4명 의견과 시장 데이터를 검토하고 JSON만 반환해.
+아래 4명 의견과 시장 데이터를 검토하고 한국어 JSON만 반환해.
 
 [4명 의견]
 {json.dumps(all_opinions, ensure_ascii=False)[:3500]}
@@ -87,13 +87,15 @@ def analyze_risk(
                 output_tokens=int(getattr(response.usage_metadata, "candidates_token_count", 0) or 0),
             )
         text = getattr(response, "text", "") or ""
-        text = re.sub(r"```json|```", "", text, flags=re.IGNORECASE).strip()
         parsed = safe_json_parse(text)
         if parsed:
             parsed.setdefault("meta", {"mode": "gemini"})
             return parsed
+        print("[WARN] risk: Gemini responded but JSON parse failed")
+        print(f"[WARN] risk raw head: {text[:500]!r}")
     except Exception:
-        pass
+        print("[ERROR] risk Gemini call failed:")
+        print(traceback.format_exc())
 
     if logger:
         logger.log(config.GEMINI_PRO_MODEL, "risk", input_tokens=0, output_tokens=0)

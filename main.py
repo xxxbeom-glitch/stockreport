@@ -20,6 +20,7 @@ from agents import (
     analyze_risk,
     analyze_supply_demand,
 )
+from data.kr_market import get_stock_snapshot
 from data.pipeline import run_pipeline_as_dict
 from reports import generate_pdf
 from utils.helpers import is_market_holiday
@@ -52,8 +53,8 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
     """Build a normalized report payload for template rendering."""
     now = datetime.now()
     sector_signals = market_data.get("sector_flow", [])
-    hot = [s.get("sector", "UNKNOWN") for s in sector_signals[:5] if s.get("flow") == "유입"]
-    cold = [s.get("sector", "UNKNOWN") for s in sector_signals[:5] if s.get("flow") == "유출"]
+    hot = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유입"][:5]
+    cold = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유출"][:5]
 
     discovered = market_data.get("discovered_stocks", [])
     top_themes = [
@@ -78,13 +79,22 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
     stock_analysis = []
     for d in discovered[:5]:
         name = str(d.get("name", d.get("ticker", "UNKNOWN")))
+        ticker = str(d.get("ticker", ""))
+        market = str(d.get("market", "KOSPI"))
+        snapshot = get_stock_snapshot(ticker, market=market) if ticker else {}
+        price = snapshot.get("price")
+        high_52 = snapshot.get("high_52")
+        low_52 = snapshot.get("low_52")
+        foreign_net_buy = snapshot.get("foreign_net_buy")
+        if foreign_net_buy is None:
+            foreign_net_buy = d.get("foreign_net_buy")
         stock_analysis.append(
             {
                 "name": name,
-                "code": str(d.get("ticker", "")),
-                "price": "N/A",
-                "high_52": "N/A",
-                "low_52": "N/A",
+                "code": ticker,
+                "price": f"{price:,.0f}원" if price else "N/A",
+                "high_52": f"{high_52:,.0f}원" if high_52 else "N/A",
+                "low_52": f"{low_52:,.0f}원" if low_52 else "N/A",
                 "verdict": "홀드",
                 "vote_count": "5명 중 5명 보수적",
                 "agent_votes": [
@@ -96,8 +106,12 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
                 ],
                 "metrics": [
                     {"label": "거래량배수", "value": f"{(d.get('volume_ratio') or 0):.2f}x", "sub": "파이프라인 기준"},
-                    {"label": "외국인순매수", "value": str(d.get("foreign_net_buy", "N/A")), "sub": "pykrx"},
-                    {"label": "시장", "value": str(d.get("market", "N/A")), "sub": "분류"},
+                    {
+                        "label": "외국인순매수",
+                        "value": f"{foreign_net_buy:,.0f}" if foreign_net_buy is not None else "N/A",
+                        "sub": "pykrx/KIS",
+                    },
+                    {"label": "시장", "value": market, "sub": "분류"},
                     {"label": "태그", "value": ", ".join(d.get("source_tags", [])[:2]) or "N/A", "sub": "탐색 출처"},
                 ],
                 "momentum_tags": [{"text": "관망 우선", "heat": "neu"}],
@@ -110,13 +124,14 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
         "date": now.strftime("%Y-%m-%d"),
         "market_phase": opinions["macro"].get("market_phase", "neutral"),
         "one_line_summary": opinions["risk"].get("summary", "Risk-first interpretation."),
-        "indices": {
+        "indices": market_data.get("indices")
+        or {
             "KOSPI": {"value": "N/A", "change": "N/A", "is_up": False},
             "KOSDAQ": {"value": "N/A", "change": "N/A", "is_up": False},
             "NASDAQ": {"value": "N/A", "change": "N/A", "is_up": False},
             "S&P500": {"value": "N/A", "change": "N/A", "is_up": False},
         },
-        "indicators": market_data.get("metadata", {}),
+        "indicators": market_data.get("market_indicators") or market_data.get("metadata", {}),
         "sector_flow": {"hot": hot, "cold": cold},
         "top_themes": top_themes,
         "stock_analysis": stock_analysis,
@@ -162,7 +177,7 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
     momentum = analyze_momentum(market_data, logger=logger)
     fundamental = analyze_fundamental(market_data, logger=logger)
     macro = analyze_macro(
-        indicators=market_data.get("metadata", {}),
+        indicators=market_data.get("market_indicators") or market_data.get("metadata", {}),
         sector_temp={
             item.get("sector", ""): item for item in market_data.get("sector_flow", [])
         },
@@ -188,6 +203,15 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
         "risk": risk,
     }
     report_data = _build_report_data(report_type, market_data, opinions)
+    indices = report_data.get("indices") or {}
+    na_indices = [name for name, row in indices.items() if (row or {}).get("value") == "N/A"]
+    if na_indices:
+        print(f"[WARN] indices contain N/A: {na_indices}")
+    else:
+        print(f"[INFO] indices populated: {', '.join(indices.keys())}")
+    stocks = report_data.get("stock_analysis") or []
+    priced = sum(1 for s in stocks if s.get("price") not in (None, "", "N/A"))
+    print(f"[INFO] stock snapshots priced: {priced}/{len(stocks)}")
 
     output_dir = Path("outputs")
     output_dir.mkdir(parents=True, exist_ok=True)

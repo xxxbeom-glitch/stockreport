@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 from datetime import datetime, timedelta
 from typing import Any
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from config import DISCOVERY_TOP_N
+from .kis_client import get_foreign_net as get_kis_foreign_net
 from .kis_client import get_price
 from .stock_discovery import discover_dynamic_stocks
 from .utils import prior_business_day, safe_float
@@ -35,6 +37,54 @@ if pykrx_stock is not None:
 
 def _fmt_pct(value: float) -> str:
     return f"{value:+.2f}%"
+
+
+@contextlib.contextmanager
+def _suppress_pykrx_output() -> Any:
+    """Suppress noisy pykrx stdout/stderr when API returns empty frames."""
+    with open(os.devnull, "w", encoding="utf-8") as devnull:
+        with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
+            yield
+
+
+def _fetch_foreign_net_purchases_frame(
+    market: str,
+    date: str | None = None,
+    *,
+    max_lookback_days: int = 5,
+) -> Any | None:
+    """
+    Return pykrx foreign net-purchase dataframe, or None if unavailable.
+
+    pykrx may raise ValueError (length mismatch) or return an empty frame
+    when the market is not open yet or data is not published for the date.
+    """
+    if pykrx_stock is None:
+        return None
+
+    base = datetime.strptime(date or get_trading_date(), "%Y%m%d")
+    for offset in range(max_lookback_days + 1):
+        dt = base - timedelta(days=offset)
+        if dt.weekday() >= 5:
+            continue
+        candidate = dt.strftime("%Y%m%d")
+        frame: Any | None = None
+        try:
+            with _suppress_pykrx_output():
+                frame = pykrx_stock.get_market_net_purchases_of_equities_by_ticker(
+                    candidate, candidate, market=market, investor="외국인"
+                )
+        except (ValueError, Exception):
+            continue
+        if frame is None:
+            continue
+        try:
+            if len(frame) == 0 or len(frame.columns) == 0:
+                continue
+        except Exception:
+            continue
+        return frame
+    return None
 
 
 def get_trading_date(base: datetime | None = None, max_lookback_days: int = 14) -> str:
@@ -100,16 +150,8 @@ def get_kr_indices() -> dict[str, dict[str, Any]]:
 
 def get_foreign_flow(market: str = "KOSPI") -> list[dict[str, Any]]:
     """Return top foreign net-buy tickers."""
-    if pykrx_stock is None:
-        return []
-    date = get_trading_date()
-    try:
-        frame = pykrx_stock.get_market_net_purchases_of_equities_by_ticker(
-            date, date, market=market, investor="외국인"
-        )
-    except Exception:
-        return []
-    if frame is None or len(frame) == 0:
+    frame = _fetch_foreign_net_purchases_frame(market)
+    if frame is None:
         return []
     value_col = "순매수거래량" if "순매수거래량" in frame.columns else None
     if value_col is None:
@@ -132,6 +174,73 @@ def get_foreign_flow(market: str = "KOSPI") -> list[dict[str, Any]]:
             }
         )
     return out
+
+
+def get_foreign_net_by_ticker(ticker: str, market: str = "KOSPI") -> float | None:
+    """Return foreign net-buy for one ticker using pykrx first, then KIS."""
+    if pykrx_stock is not None:
+        date = get_trading_date()
+        try:
+            if hasattr(pykrx_stock, "get_market_trading_value_by_ticker"):
+                frame = pykrx_stock.get_market_trading_value_by_ticker(date, market=market)
+                if frame is not None and ticker in frame.index and "외국인" in frame.columns:
+                    return safe_float(frame.loc[ticker, "외국인"], 0.0)
+        except Exception:
+            pass
+        frame = _fetch_foreign_net_purchases_frame(market, date)
+        if frame is not None and ticker in frame.index:
+            value_col = "순매수거래대금" if "순매수거래대금" in frame.columns else "순매수거래량"
+            if value_col in frame.columns:
+                return safe_float(frame.loc[ticker, value_col], 0.0)
+
+    return get_kis_foreign_net(ticker)
+
+
+def get_stock_snapshot(ticker: str, market: str = "KOSPI") -> dict[str, Any]:
+    """Return current price, 52-week range, and foreign net-buy for a ticker."""
+    snapshot: dict[str, Any] = {
+        "ticker": ticker,
+        "price": None,
+        "high_52": None,
+        "low_52": None,
+        "foreign_net_buy": None,
+        "price_source": "none",
+    }
+
+    realtime = get_price(ticker)
+    raw = realtime.get("raw", {}) if realtime else {}
+    if realtime:
+        snapshot.update(
+            {
+                "price": safe_float(realtime.get("price"), 0.0),
+                "high_52": safe_float(raw.get("w52_hgpr"), 0.0) or None,
+                "low_52": safe_float(raw.get("w52_lwpr"), 0.0) or None,
+                "price_source": "kis",
+            }
+        )
+
+    if pykrx_stock is not None and not snapshot.get("price"):
+        date = get_trading_date()
+        try:
+            frame = pykrx_stock.get_market_ohlcv(date, market=market)
+            if frame is not None and ticker in frame.index:
+                snapshot["price"] = safe_float(frame.loc[ticker, "종가"], 0.0) or None
+                snapshot["price_source"] = "pykrx"
+        except Exception:
+            pass
+        try:
+            start = (datetime.strptime(date, "%Y%m%d") - timedelta(days=370)).strftime("%Y%m%d")
+            hist = pykrx_stock.get_market_ohlcv_by_date(start, date, ticker)
+            if hist is not None and len(hist) > 0:
+                snapshot["high_52"] = safe_float(hist["고가"].max(), 0.0) or snapshot.get("high_52")
+                snapshot["low_52"] = safe_float(hist["저가"].min(), 0.0) or snapshot.get("low_52")
+        except Exception:
+            pass
+
+    snapshot["foreign_net_buy"] = get_foreign_net_by_ticker(ticker, market=market)
+    if snapshot["foreign_net_buy"] is None:
+        snapshot["foreign_net_buy"] = 0.0
+    return snapshot
 
 
 def get_volume_leaders(market: str = "KOSPI", top: int = 5) -> list[dict[str, Any]]:

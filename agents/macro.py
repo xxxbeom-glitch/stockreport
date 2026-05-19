@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import json
-import re
+import traceback
 from typing import Any
 
 import config
@@ -18,12 +18,12 @@ from utils.retry import retry
 def _fallback(indicators: dict[str, Any], sector_temp: dict[str, Any]) -> dict[str, Any]:
     favorable = [k for k, v in sector_temp.items() if v.get("flow") == "유입"][:3]
     unfavorable = [k for k, v in sector_temp.items() if v.get("flow") == "유출"][:3]
-    phase = "neutral"
-    reason = "Mixed inflow/outflow."
+    phase = "중립"
+    reason = "섹터 유입과 유출이 혼재되어 방향성이 뚜렷하지 않습니다."
     if favorable and not unfavorable:
-        phase, reason = "risk_on", "Sector inflow dominates outflow."
+        phase, reason = "위험선호", "자금 유입 섹터가 우세해 위험자산 선호가 유지되고 있습니다."
     elif unfavorable and not favorable:
-        phase, reason = "risk_off", "Sector outflow dominates inflow."
+        phase, reason = "위험회피", "자금 유출 섹터가 우세해 보수적 대응이 필요합니다."
     return {
         "market_phase": phase,
         "market_phase_reason": reason,
@@ -33,7 +33,7 @@ def _fallback(indicators: dict[str, Any], sector_temp: dict[str, Any]) -> dict[s
         "favorable_sectors": favorable,
         "unfavorable_sectors": unfavorable,
         "verdicts": {},
-        "summary": f"Macro phase: {phase}.",
+        "summary": f"현재 시장 국면은 {phase}입니다.",
         "meta": {"mode": "fallback"},
     }
 
@@ -57,7 +57,7 @@ def analyze_macro(
         model = genai.GenerativeModel(config.GEMINI_PRO_MODEL)
         prompt = f"""
 너는 거시경제/매크로 전략가야.
-아래 데이터를 분석해서 JSON만 반환해.
+아래 데이터를 분석해서 한국어 JSON만 반환해.
 
 [선행지표]
 {json.dumps(indicators, ensure_ascii=False)}
@@ -90,13 +90,15 @@ def analyze_macro(
                 output_tokens=int(getattr(response.usage_metadata, "candidates_token_count", 0) or 0),
             )
         text = getattr(response, "text", "") or ""
-        text = re.sub(r"```json|```", "", text, flags=re.IGNORECASE).strip()
         parsed = safe_json_parse(text)
         if parsed:
             parsed.setdefault("meta", {"mode": "gemini"})
             return parsed
+        print("[WARN] macro: Gemini responded but JSON parse failed")
+        print(f"[WARN] macro raw head: {text[:500]!r}")
     except Exception:
-        pass
+        print("[ERROR] macro Gemini call failed:")
+        print(traceback.format_exc())
 
     if logger:
         logger.log(config.GEMINI_PRO_MODEL, "macro", input_tokens=0, output_tokens=0)

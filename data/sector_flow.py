@@ -39,7 +39,21 @@ def scan_us_sector_flow() -> list[SectorSignal]:
                 ret_5d=round(ret_5d, 2),
                 vol_ratio=round(vol_ratio, 2),
                 temperature=temperature,
-                flow="유입" if ret_5d > 0 else "유출",
+                flow="중립",
             )
         )
-    return sorted(signals, key=lambda x: x.ret_5d, reverse=True)
+    ranked = sorted(signals, key=lambda x: x.ret_5d, reverse=True)
+    if not ranked:
+        return []
+
+    hot_count = min(5, len(ranked))
+    cold_count = min(5, max(len(ranked) - hot_count, 0))
+    cold_start = len(ranked) - cold_count
+    for idx, signal in enumerate(ranked):
+        if idx < hot_count:
+            signal.flow = "유입"
+        elif idx >= cold_start:
+            signal.flow = "유출"
+        else:
+            signal.flow = "중립"
+    return ranked

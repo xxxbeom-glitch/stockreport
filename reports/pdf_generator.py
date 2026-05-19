@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 TEMPLATE_MAP: dict[str, str] = {
     "us_during": "05_us_before.html",
@@ -23,24 +26,24 @@ def render_html(report_data: dict[str, Any]) -> str:
     template_dir = Path(__file__).resolve().parent / "templates"
     try:
         from jinja2 import Environment, FileSystemLoader  # type: ignore
-
-        env = Environment(loader=FileSystemLoader(str(template_dir)))
-        template_name = TEMPLATE_MAP.get(
-            report_data.get("report_type", "kr_before"), "02_kr_before.html"
+    except ImportError as exc:
+        msg = (
+            "jinja2 is required for report HTML rendering. "
+            "Install dependencies: pip install -r requirements.txt"
         )
+        logger.error(msg)
+        raise ImportError(msg) from exc
+
+    template_name = TEMPLATE_MAP.get(
+        report_data.get("report_type", "kr_before"), "02_kr_before.html"
+    )
+    env = Environment(loader=FileSystemLoader(str(template_dir)))
+    try:
         template = env.get_template(template_name)
         return template.render(**report_data)
-    except Exception:
-        # Fallback plain HTML when jinja2 is unavailable.
-        return (
-            "<html><head><meta charset='utf-8'>"
-            "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-            "</head><body>"
-            f"<h1>{report_data.get('report_type', 'report')}</h1>"
-            f"<p>{report_data.get('date', '')}</p>"
-            f"<p>{report_data.get('one_line_summary', '')}</p>"
-            "</body></html>"
-        )
+    except Exception as exc:
+        logger.exception("Template render failed (%s): %s", template_name, exc)
+        raise
 
 
 def generate_html(report_data: dict[str, Any], output_path: str) -> str:

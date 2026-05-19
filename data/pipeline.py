@@ -42,10 +42,39 @@ def run_pipeline() -> PipelineResult:
 def run_pipeline_as_dict() -> dict[str, Any]:
     """Execute pipeline and serialize dataclasses into a dict."""
     result = run_pipeline()
+    kr_indices: dict[str, Any] = {}
+    us_indices: dict[str, Any] = {}
+    indicators: dict[str, Any] = {}
+
+    try:
+        from .kr_market import get_kr_indices
+
+        kr_indices = get_kr_indices()
+    except Exception as exc:
+        result.warnings.append(f"KR index collection failed: {exc}")
+
+    try:
+        from .us_market import get_us_indices
+
+        us_indices = get_us_indices()
+    except Exception as exc:
+        result.warnings.append(f"US index collection failed: {exc}")
+
+    try:
+        from .us_market import get_indicators
+
+        indicators = get_indicators()
+    except Exception as exc:
+        result.warnings.append(f"Market indicator collection failed: {exc}")
+
     return {
         "source_status": [asdict(item) for item in result.source_status],
         "sector_flow": [asdict(item) for item in result.sector_flow],
         "discovered_stocks": [asdict(item) for item in result.discovered_stocks],
+        "indices": {**kr_indices, **us_indices},
+        "kr_indices": kr_indices,
+        "us_indices": us_indices,
+        "market_indicators": indicators,
         "warnings": list(result.warnings),
         "metadata": dict(result.metadata),
     }
