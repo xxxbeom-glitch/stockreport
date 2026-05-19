@@ -26,6 +26,7 @@ FIREBASE_KEY_PATH: Final[str] = os.getenv(
 # Reserved for future integrations
 KIS_APP_KEY: Final[str] = os.getenv("KIS_APP_KEY", "")
 KIS_APP_SECRET: Final[str] = os.getenv("KIS_APP_SECRET", "")
+KIS_ACCOUNT_NO: Final[str] = os.getenv("KIS_ACCOUNT_NO", "")
 EBEST_APP_KEY: Final[str] = os.getenv("EBEST_APP_KEY", "")
 EBEST_APP_SECRET: Final[str] = os.getenv("EBEST_APP_SECRET", "")
 KRX_ID: Final[str] = os.getenv("KRX_ID", "")
@@ -52,7 +53,7 @@ DATA_SOURCES: Final[dict[str, dict[str, str | bool]]] = {
         "required_env": "FIREBASE_STORAGE_BUCKET",
         "description": "Data retention",
     },
-    "kis": {"enabled": bool(KIS_APP_KEY and KIS_APP_SECRET), "required_env": "KIS_APP_KEY/KIS_APP_SECRET", "description": "Future realtime KR"},
+    "kis": {"enabled": bool(KIS_APP_KEY and KIS_APP_SECRET), "required_env": "KIS_APP_KEY/KIS_APP_SECRET", "description": "Realtime KR"},
     "ebest": {"enabled": bool(EBEST_APP_KEY and EBEST_APP_SECRET), "required_env": "EBEST_APP_KEY/EBEST_APP_SECRET", "description": "Future fundamentals"},
 }
 

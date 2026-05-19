@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from config import DISCOVERY_TOP_N
+from .kis_client import get_price
 from .stock_discovery import discover_dynamic_stocks
 from .utils import prior_business_day, safe_float
 
@@ -149,6 +150,7 @@ def get_volume_leaders(market: str = "KOSPI", top: int = 5) -> list[dict[str, An
         return []
     rows: list[dict[str, Any]] = []
     for ticker in frame.index.tolist():
+        ticker = str(ticker)
         volume = safe_float(frame.loc[ticker, "거래량"], 0.0)
         ratio = volume / avg if avg else 0.0
         close = safe_float(frame.loc[ticker, "종가"], 0.0)
@@ -156,15 +158,35 @@ def get_volume_leaders(market: str = "KOSPI", top: int = 5) -> list[dict[str, An
         pct = ((close - open_price) / open_price) * 100 if open_price else 0.0
         rows.append(
             {
-                "ticker": str(ticker),
-                "name": pykrx_stock.get_market_ticker_name(str(ticker)),
+                "ticker": ticker,
+                "name": pykrx_stock.get_market_ticker_name(ticker),
                 "ratio": round(ratio, 2),
                 "change": _fmt_pct(pct),
                 "is_up": pct >= 0,
+                "price": close,
+                "volume": volume,
+                "price_source": "pykrx",
             }
         )
     rows.sort(key=lambda x: x["ratio"], reverse=True)
-    return rows[:top]
+    leaders = rows[:top]
+    for row in leaders:
+        realtime = get_price(str(row["ticker"]))
+        if not realtime:
+            continue
+        price = safe_float(realtime.get("price"), safe_float(row.get("price"), 0.0))
+        change_rate = safe_float(realtime.get("change_rate"), 0.0)
+        volume = safe_float(realtime.get("volume"), safe_float(row.get("volume"), 0.0))
+        row.update(
+            {
+                "price": price,
+                "volume": volume,
+                "change": _fmt_pct(change_rate),
+                "is_up": change_rate >= 0,
+                "price_source": "kis",
+            }
+        )
+    return leaders
 
 
 def get_dynamic_targets() -> list[dict[str, Any]]:
