@@ -240,9 +240,100 @@
 
     ul { margin: 0; padding-left: 18px; }
     li { margin-bottom: 6px; color: #e5e7eb; }
+
+    .report-tabs-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      margin: 0 -16px 14px;
+      padding: 8px 16px 10px;
+      background: linear-gradient(180deg, var(--bg) 70%, rgba(15, 15, 15, 0.92) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .report-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .report-tabs::-webkit-scrollbar { display: none; }
+    .tab-link {
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-decoration: none;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .tab-link:hover {
+      color: var(--text);
+      border-color: #404040;
+    }
+    .tab-link.active {
+      color: #fff;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border-color: var(--accent);
+      box-shadow: 0 2px 12px rgba(59, 130, 246, 0.35);
+    }
+    .report-section {
+      scroll-margin-top: 76px;
+      padding-bottom: 8px;
+    }
+    .report-section .section-bar:first-child {
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
   {% block content %}{% endblock %}
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll(".tab-link");
+      var sectionIds = ["section-market", "section-themes", "section-stocks", "section-risk"];
+      if (!tabs.length) return;
+
+      function setActive(id) {
+        tabs.forEach(function (tab) {
+          var on = tab.getAttribute("data-section") === id;
+          tab.classList.toggle("active", on);
+          if (on) tab.setAttribute("aria-selected", "true");
+          else tab.removeAttribute("aria-selected");
+        });
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function (e) {
+          e.preventDefault();
+          var id = tab.getAttribute("data-section");
+          var el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+            setActive(id);
+          }
+        });
+      });
+
+      function updateActiveOnScroll() {
+        var offset = 88;
+        var current = sectionIds[0];
+        sectionIds.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el && el.getBoundingClientRect().top <= offset) current = id;
+        });
+        setActive(current);
+      }
+
+      window.addEventListener("scroll", updateActiveOnScroll, { passive: true });
+      updateActiveOnScroll();
+    })();
+  </script>
 </body>
 </html>
