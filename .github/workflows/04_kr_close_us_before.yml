@@ -1,8 +1,8 @@
 name: 한국 장종 + 미국 장전 리포트
 
 on:
-  schedule:
-    - cron: "50 7 * * 2-6"
+  # schedule:
+  #   - cron: "50 7 * * 2-6"
   workflow_dispatch:
 
 jobs:

@@ -1,8 +1,8 @@
 name: 미국 장중 리포트
 
 on:
-  schedule:
-    - cron: "50 15 * * 2-6"
+  # schedule:
+  #   - cron: "50 15 * * 2-6"
   workflow_dispatch:
 
 jobs:
