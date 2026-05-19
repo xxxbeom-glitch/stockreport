@@ -1,0 +1,7 @@
+python-dotenv
+openai
+google-generativeai
+yfinance
+pykrx
+firebase-admin
+jinja2
