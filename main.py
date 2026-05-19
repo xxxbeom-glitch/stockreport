@@ -191,12 +191,17 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
     sell_n = sum(1 for v in vote_labels if v == "매도")
     hold_n = len(vote_labels) - buy_n - sell_n
 
+    low_fmt = f"{low_52:,.0f}원" if low_52 else "N/A"
+    high_fmt = f"{high_52:,.0f}원" if high_52 else "N/A"
     return {
         "name": name,
         "code": ticker,
         "price": f"{price:,.0f}원" if price else "N/A",
-        "high_52": f"{high_52:,.0f}원" if high_52 else "N/A",
-        "low_52": f"{low_52:,.0f}원" if low_52 else "N/A",
+        "change": f"{change_pct:+.2f}%",
+        "is_up": change_pct >= 0,
+        "high_52": high_fmt,
+        "low_52": low_fmt,
+        "range_52w": f"{low_fmt} ~ {high_fmt}" if low_52 and high_52 else "N/A",
         "position_52w": _position_52w(price, low_52, high_52),
         "verdict": verdict,
         "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
