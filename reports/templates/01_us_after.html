@@ -1,54 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="header" style="background:#0f766e;">
-  <div class="label">미장 장후</div>
-  <div class="title">미국장 마감 요약 리포트</div>
-  <div class="date">{{ date }} 06:00 KST</div>
-</div>
-
-<div class="card">
-  <div class="section-title">오늘 시장 국면</div>
-  <div>{{ market_phase }}</div>
-  <div class="muted">{{ one_line_summary }}</div>
-</div>
-
-<div class="card">
-  <div class="section-title">미국 지수 중심 요약</div>
-  <table>
-    <thead><tr><th>지수</th><th>값</th><th>변화</th></tr></thead>
-    <tbody>
-      {% for name, idx in indices.items() %}
-      <tr>
-        <td>{{ name }}</td>
-        <td>{{ idx.value }}</td>
-        <td class="{{ 'up' if idx.is_up else 'down' }}">{{ idx.change }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<div class="grid-2">
-  <div class="card">
-    <div class="section-title">유입 섹터</div>
-    {% for s in sector_flow.hot %}
-    <span class="badge">{{ s }}</span>
-    {% endfor %}
-  </div>
-  <div class="card">
-    <div class="section-title">유출 섹터</div>
-    {% for s in sector_flow.cold %}
-    <span class="badge" style="background:#fee2e2;color:#991b1b;">{{ s }}</span>
-    {% endfor %}
-  </div>
-</div>
-
-<div class="card">
-  <div class="section-title">내일 체크포인트</div>
-  <ul>
-    {% for item in action_items %}
-    <li>{{ item }}</li>
-    {% endfor %}
-  </ul>
-</div>
+{% set header_label = "미장 장후" %}
+{% set header_title = "미국장 마감 요약 리포트" %}
+{% set header_date = date ~ " 06:00 KST" %}
+{% set header_from = "#0f766e" %}
+{% set header_to = "#14b8a6" %}
+{% include "_report_core.html" %}
 {% endblock %}

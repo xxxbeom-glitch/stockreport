@@ -49,6 +49,161 @@ def _safe_call_with_default(fn_name: str, payload: dict[str, Any]) -> dict[str, 
         return {"ok": False, "error": f"{module_name}.{fn_name} failed: {exc}"}
 
 
+INDICATOR_LABELS: dict[str, str] = {
+    "dollar_index": "달러인덱스",
+    "us10y": "미국10년금리",
+    "vix": "VIX",
+    "wti": "WTI",
+    "copper": "구리",
+}
+
+AGENT_ROLES: list[tuple[str, str]] = [
+    ("수급", "supply"),
+    ("모멘텀", "momentum"),
+    ("펀더멘털", "fundamental"),
+    ("매크로", "macro"),
+    ("리스크", "risk"),
+]
+
+
+def _foreign_net_eok(value: Any) -> str:
+    if value is None:
+        return "N/A"
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        return "N/A"
+    eok = amount / 100_000_000
+    if abs(eok) >= 100:
+        return f"{eok:,.0f}억원"
+    return f"{eok:.1f}억원"
+
+
+def _position_52w(price: Any, low: Any, high: Any) -> str:
+    try:
+        p, lo, hi = float(price), float(low), float(high)
+    except (TypeError, ValueError):
+        return "N/A"
+    if hi <= lo or p <= 0:
+        return "N/A"
+    pct = (p - lo) / (hi - lo) * 100
+    return f"{pct:.0f}%"
+
+
+def _resolve_agent_vote(opinion: dict[str, Any], name: str, ticker: str) -> tuple[str, list[str]]:
+    verdicts = opinion.get("verdicts") or {}
+    entry: dict[str, Any] | None = None
+    for key in (name, ticker):
+        if key in verdicts and isinstance(verdicts[key], dict):
+            entry = verdicts[key]
+            break
+    if entry is None:
+        for key, val in verdicts.items():
+            if isinstance(val, dict) and (key in name or name in str(key)):
+                entry = val
+                break
+    if entry:
+        vote = str(entry.get("vote", "홀드"))
+        reasons = entry.get("reason") or [opinion.get("summary", "")]
+        if isinstance(reasons, str):
+            reasons = [reasons]
+        return vote, [str(r) for r in reasons if r][:3]
+    summary = str(opinion.get("summary", "")).strip()
+    return "홀드", [summary[:200]] if summary else ["의견 없음"]
+
+
+def _majority_verdict(votes: list[str]) -> str:
+    counts: dict[str, int] = {}
+    for vote in votes:
+        counts[vote] = counts.get(vote, 0) + 1
+    for candidate in ("매수", "홀드", "매도"):
+        if counts.get(candidate, 0) == max(counts.values(), default=0):
+            return candidate
+    return "홀드"
+
+
+def _momentum_tags(volume_ratio: float, change_pct: float) -> list[dict[str, str]]:
+    tags: list[dict[str, str]] = []
+    if volume_ratio >= 5:
+        tags.append({"text": "거래량 폭발", "heat": "hot"})
+    elif volume_ratio >= 2:
+        tags.append({"text": "거래량 증가", "heat": "warm"})
+    if change_pct >= 3:
+        tags.append({"text": "강한 상승", "heat": "hot"})
+    elif change_pct <= -3:
+        tags.append({"text": "약세 압력", "heat": "cold"})
+    if not tags:
+        tags.append({"text": "관망", "heat": "neu"})
+    return tags
+
+
+def _build_volume_leader(d: dict[str, Any]) -> dict[str, Any]:
+    name = str(d.get("name", d.get("ticker", "UNKNOWN")))
+    ticker = str(d.get("ticker", ""))
+    market = str(d.get("market", "KOSPI"))
+    ratio = float(d.get("volume_ratio") or 0.0)
+    snapshot = get_stock_snapshot(ticker, market=market) if ticker else {}
+    price = snapshot.get("price")
+    low_52 = snapshot.get("low_52")
+    high_52 = snapshot.get("high_52")
+    change_pct = float(snapshot.get("change_rate") or 0.0)
+    return {
+        "name": name,
+        "ratio": f"{ratio:.2f}x" if ratio else "N/A",
+        "price": f"{price:,.0f}원" if price else "N/A",
+        "position_52w": _position_52w(price, low_52, high_52),
+        "change": f"{change_pct:+.2f}%",
+        "is_up": change_pct >= 0,
+    }
+
+
+def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, Any]:
+    name = str(d.get("name", d.get("ticker", "UNKNOWN")))
+    ticker = str(d.get("ticker", ""))
+    market = str(d.get("market", "KOSPI"))
+    ratio = float(d.get("volume_ratio") or 0.0)
+    snapshot = get_stock_snapshot(ticker, market=market) if ticker else {}
+    price = snapshot.get("price")
+    high_52 = snapshot.get("high_52")
+    low_52 = snapshot.get("low_52")
+    change_pct = float(snapshot.get("change_rate") or 0.0)
+    foreign_net_buy = snapshot.get("foreign_net_buy")
+    if foreign_net_buy is None:
+        foreign_net_buy = d.get("foreign_net_buy")
+
+    agent_votes: list[dict[str, Any]] = []
+    vote_labels: list[str] = []
+    for role, key in AGENT_ROLES:
+        vote, reasons = _resolve_agent_vote(opinions.get(key, {}), name, ticker)
+        vote_labels.append(vote)
+        agent_votes.append({"role": role, "vote": vote, "reason": reasons})
+
+    verdict = _majority_verdict(vote_labels)
+    buy_n = sum(1 for v in vote_labels if v == "매수")
+    sell_n = sum(1 for v in vote_labels if v == "매도")
+    hold_n = len(vote_labels) - buy_n - sell_n
+
+    return {
+        "name": name,
+        "code": ticker,
+        "price": f"{price:,.0f}원" if price else "N/A",
+        "high_52": f"{high_52:,.0f}원" if high_52 else "N/A",
+        "low_52": f"{low_52:,.0f}원" if low_52 else "N/A",
+        "position_52w": _position_52w(price, low_52, high_52),
+        "verdict": verdict,
+        "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
+        "agent_votes": agent_votes,
+        "metrics": [
+            {"label": "거래량배수", "value": f"{ratio:.2f}x" if ratio else "N/A", "sub": "평균 대비"},
+            {"label": "외국인순매수", "value": _foreign_net_eok(foreign_net_buy), "sub": "당일 추정"},
+            {"label": "시장", "value": market, "sub": "분류"},
+            {"label": "등락률", "value": f"{change_pct:+.2f}%", "sub": "전일 대비"},
+        ],
+        "momentum_tags": _momentum_tags(ratio, change_pct),
+        "guidance": opinions["risk"].get("do_not", "과도한 추격매수는 지양"),
+    }
+
+
 def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: dict[str, Any]) -> dict[str, Any]:
     """Build a normalized report payload for template rendering."""
     now = datetime.now()
@@ -57,6 +212,7 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
     cold = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유출"][:5]
 
     discovered = market_data.get("discovered_stocks", [])
+    volume_leaders = [_build_volume_leader(d) for d in discovered[:5]]
     top_themes = [
         {
             "name": "거래량 주도",
@@ -64,60 +220,11 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
             "desc": "거래대금이 빠르게 몰린 종목군",
             "etf": "N/A",
             "stocks": [d.get("name", d.get("ticker", "UNKNOWN")) for d in discovered[:5]],
-            "volume_leaders": [
-                {
-                    "name": d.get("name", d.get("ticker", "UNKNOWN")),
-                    "ratio": f"{(d.get('volume_ratio') or 0):.2f}x" if d.get("volume_ratio") else "N/A",
-                    "change": "N/A",
-                    "is_up": True,
-                }
-                for d in discovered[:5]
-            ],
+            "volume_leaders": volume_leaders,
         }
     ]
 
-    stock_analysis = []
-    for d in discovered[:5]:
-        name = str(d.get("name", d.get("ticker", "UNKNOWN")))
-        ticker = str(d.get("ticker", ""))
-        market = str(d.get("market", "KOSPI"))
-        snapshot = get_stock_snapshot(ticker, market=market) if ticker else {}
-        price = snapshot.get("price")
-        high_52 = snapshot.get("high_52")
-        low_52 = snapshot.get("low_52")
-        foreign_net_buy = snapshot.get("foreign_net_buy")
-        if foreign_net_buy is None:
-            foreign_net_buy = d.get("foreign_net_buy")
-        stock_analysis.append(
-            {
-                "name": name,
-                "code": ticker,
-                "price": f"{price:,.0f}원" if price else "N/A",
-                "high_52": f"{high_52:,.0f}원" if high_52 else "N/A",
-                "low_52": f"{low_52:,.0f}원" if low_52 else "N/A",
-                "verdict": "홀드",
-                "vote_count": "5명 중 5명 보수적",
-                "agent_votes": [
-                    {"role": "수급", "vote": "홀드", "reason": [opinions["supply"].get("summary", "")]},
-                    {"role": "모멘텀", "vote": "홀드", "reason": [opinions["momentum"].get("summary", "")]},
-                    {"role": "펀더멘털", "vote": "홀드", "reason": [opinions["fundamental"].get("summary", "")]},
-                    {"role": "매크로", "vote": "홀드", "reason": [opinions["macro"].get("summary", "")]},
-                    {"role": "리스크", "vote": "홀드", "reason": [opinions["risk"].get("summary", "")]},
-                ],
-                "metrics": [
-                    {"label": "거래량배수", "value": f"{(d.get('volume_ratio') or 0):.2f}x", "sub": "파이프라인 기준"},
-                    {
-                        "label": "외국인순매수",
-                        "value": f"{foreign_net_buy:,.0f}" if foreign_net_buy is not None else "N/A",
-                        "sub": "pykrx/KIS",
-                    },
-                    {"label": "시장", "value": market, "sub": "분류"},
-                    {"label": "태그", "value": ", ".join(d.get("source_tags", [])[:2]) or "N/A", "sub": "탐색 출처"},
-                ],
-                "momentum_tags": [{"text": "관망 우선", "heat": "neu"}],
-                "guidance": "추가 재무데이터 확보 전 보수적 접근 권장.",
-            }
-        )
+    stock_analysis = [_build_stock_row(d, opinions) for d in discovered[:5]]
 
     return {
         "report_type": report_type,
@@ -131,7 +238,8 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
             "NASDAQ": {"value": "N/A", "change": "N/A", "is_up": False},
             "S&P500": {"value": "N/A", "change": "N/A", "is_up": False},
         },
-        "indicators": market_data.get("market_indicators") or market_data.get("metadata", {}),
+        "indicators": market_data.get("market_indicators") or {},
+        "indicator_labels": INDICATOR_LABELS,
         "sector_flow": {"hot": hot, "cold": cold},
         "top_themes": top_themes,
         "stock_analysis": stock_analysis,

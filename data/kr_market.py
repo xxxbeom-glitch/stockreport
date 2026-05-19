@@ -204,6 +204,7 @@ def get_stock_snapshot(ticker: str, market: str = "KOSPI") -> dict[str, Any]:
         "high_52": None,
         "low_52": None,
         "foreign_net_buy": None,
+        "change_rate": None,
         "price_source": "none",
     }
 
@@ -213,6 +214,7 @@ def get_stock_snapshot(ticker: str, market: str = "KOSPI") -> dict[str, Any]:
         snapshot.update(
             {
                 "price": safe_float(realtime.get("price"), 0.0),
+                "change_rate": safe_float(realtime.get("change_rate"), 0.0),
                 "high_52": safe_float(raw.get("w52_hgpr"), 0.0) or None,
                 "low_52": safe_float(raw.get("w52_lwpr"), 0.0) or None,
                 "price_source": "kis",

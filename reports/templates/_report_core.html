@@ -1,0 +1,162 @@
+{# Shared report sections #}
+
+<div class="page-header" style="--header-from: {{ header_from | default('#1e3a8a') }}; --header-to: {{ header_to | default('#2563eb') }};">
+  <div class="label">{{ header_label }}</div>
+  <div class="title">{{ header_title }}</div>
+  <div class="date">{{ header_date }}</div>
+</div>
+
+<div class="card highlight">
+  <div class="muted">오늘 시장 국면</div>
+  <div class="mid-num" style="margin-top:4px;">{{ market_phase }}</div>
+  <div class="muted" style="margin-top:8px;">{{ one_line_summary }}</div>
+</div>
+
+<div class="section-bar">지수 요약</div>
+<div class="grid-4">
+  {% for name, idx in indices.items() %}
+  <div class="index-card">
+    <div class="index-label">{{ name }}</div>
+    <div class="index-value {{ 'up' if idx.is_up else 'down' }}">{{ idx.value }}</div>
+    <div class="index-change {{ 'up' if idx.is_up else 'down' }}">{{ idx.change }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="section-bar">매크로 선행지표</div>
+<div class="grid-3">
+  {% for key, label in indicator_labels.items() %}
+  {% set ind = indicators.get(key, {}) %}
+  <div class="indicator-card">
+    <div class="indicator-label">{{ label }}</div>
+    <div class="indicator-value {{ 'up' if ind.is_up else 'down' }}">{{ ind.value | default('N/A') }}</div>
+    <div class="indicator-change {{ 'up' if ind.is_up else 'down' }}">{{ ind.change | default('N/A') }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="section-bar">섹터 자금 흐름</div>
+<div class="grid-2">
+  <div class="card">
+    <div class="muted" style="margin-bottom:8px;">유입</div>
+    {% for s in sector_flow.hot %}
+    <span class="badge badge-hot">{{ s }}</span>
+    {% else %}
+    <span class="muted">데이터 없음</span>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="muted" style="margin-bottom:8px;">유출</div>
+    {% for s in sector_flow.cold %}
+    <span class="badge badge-cold">{{ s }}</span>
+    {% else %}
+    <span class="muted">데이터 없음</span>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="section-bar">테마별 핫 종목 — 거래량 급등</div>
+{% for theme in top_themes %}
+<div class="card theme-card">
+  <div class="theme-head">
+    <span class="theme-name">{{ theme.name }}</span>
+    <span class="badge badge-{{ 'hot' if theme.phase == '초입' else ('warm' if theme.phase == '진행중' else 'cold') }}">{{ theme.phase }}</span>
+  </div>
+  <div class="muted">{{ theme.desc }}</div>
+  {% if theme.volume_leaders %}
+  <table>
+    <thead>
+      <tr>
+        <th>종목</th>
+        <th>거래량배수</th>
+        <th>현재가</th>
+        <th>52주 위치</th>
+        <th>등락</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in theme.volume_leaders %}
+      <tr>
+        <td style="font-weight:700;">{{ s.name }}</td>
+        <td class="up">{{ s.ratio }}</td>
+        <td>{{ s.price | default('N/A') }}</td>
+        <td>{{ s.position_52w | default('N/A') }}</td>
+        <td class="{{ 'up' if s.is_up else 'down' }}">{{ s.change | default('N/A') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% else %}
+<div class="card"><span class="muted">테마 데이터 없음</span></div>
+{% endfor %}
+
+<div class="section-bar">종목 심층 분석 — 에이전트 5인</div>
+{% for stock in stock_analysis %}
+<div class="card stock-card">
+  <div class="stock-head">
+    <div>
+      <span class="stock-name">{{ stock.name }}</span>
+      <span class="stock-code">{{ stock.code }}</span>
+      <div class="muted" style="margin-top:6px;">
+        현재가 <strong>{{ stock.price }}</strong>
+        · 52주 {{ stock.low_52 }} – {{ stock.high_52 }}
+        · 위치 <strong>{{ stock.position_52w | default('N/A') }}</strong>
+      </div>
+    </div>
+    <span class="verdict-pill {{ 'buy' if stock.verdict == '매수' else ('sell' if stock.verdict == '매도' else 'hold') }}">{{ stock.verdict }}</span>
+  </div>
+  <div class="muted">{{ stock.vote_count }}</div>
+
+  <div class="agent-votes">
+    {% for ag in stock.agent_votes %}
+    <div class="vote-chip {{ 'buy' if ag.vote == '매수' else ('sell' if ag.vote == '매도' else '') }}">
+      <span class="vote-role">{{ ag.role }}</span>
+      <span class="vote-label {{ 'up' if ag.vote == '매수' else ('down' if ag.vote == '매도' else '') }}">{{ ag.vote }}</span>
+      {% for r in ag.reason %}
+      {% if r %}<span class="vote-reason">{{ r }}</span>{% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="metric-grid">
+    {% for m in stock.metrics %}
+    <div class="metric-box">
+      <div class="metric-label">{{ m.label }}</div>
+      <div class="metric-value">{{ m.value }}</div>
+      <div class="metric-sub">{{ m.sub }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if stock.momentum_tags %}
+  <div class="momentum-tags">
+    {% for t in stock.momentum_tags %}
+    <span class="badge tag-heat-{{ t.heat | default('neu') }}">{{ t.text }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if stock.guidance %}
+  <div class="muted" style="margin-top:10px;">{{ stock.guidance }}</div>
+  {% endif %}
+</div>
+{% else %}
+<div class="card"><span class="muted">종목 분석 데이터 없음</span></div>
+{% endfor %}
+
+<div class="section-bar">액션 & 리스크</div>
+<div class="card">
+  <div class="muted" style="margin-bottom:8px;">오늘 체크리스트</div>
+  <ul>
+    {% for item in action_items %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+<div class="card">
+  <div class="muted" style="margin-bottom:6px;">리스크 경고</div>
+  <div>{{ risk_warning }}</div>
+</div>

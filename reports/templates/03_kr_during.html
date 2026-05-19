@@ -1,32 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="header" style="background:#7c3aed;">
-  <div class="label">국장 장중</div>
-  <div class="title">점심 시점 시장 온도 점검</div>
-  <div class="date">{{ date }} 12:00 KST</div>
-</div>
-
-<div class="card">
-  <div class="section-title">장중 핵심 한 줄</div>
-  <div>{{ one_line_summary }}</div>
-</div>
-
-<div class="card">
-  <div class="section-title">지수 변동</div>
-  <table>
-    <thead><tr><th>지수</th><th>값</th><th>변화</th></tr></thead>
-    <tbody>
-      {% for name, idx in indices.items() %}
-      <tr><td>{{ name }}</td><td>{{ idx.value }}</td><td class="{{ 'up' if idx.is_up else 'down' }}">{{ idx.change }}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-{% include "_stock_snapshot.html" %}
-
-<div class="card">
-  <div class="section-title">장중 리스크</div>
-  <div>{{ risk_warning }}</div>
-</div>
+{% set header_label = "국장 장중" %}
+{% set header_title = "점심 시점 시장 온도 점검" %}
+{% set header_date = date ~ " 12:00 KST" %}
+{% set header_from = "#6d28d9" %}
+{% set header_to = "#7c3aed" %}
+{% include "_report_core.html" %}
 {% endblock %}
