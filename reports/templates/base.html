@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light">
   <title>{{ report_title | default('Stock Report') }}</title>
   <style>
     @font-face {
@@ -38,17 +38,16 @@
     }
 
     :root {
-      --bg: #111111;
-      --line: #2a2a2a;
-      --line-strong: #3d3d3d;
-      --text: #f4f4f5;
-      --text-secondary: #d4d4d8;
-      --ref: #71717a;
-      --accent: #3b82f6;
-      --up: #60a5fa;
-      --down: #f87171;
-      --warn: #fbbf24;
-      --tab-h: 48px;
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --line: #e5e5e5;
+      --up: #0052cc;
+      --down: #cc0000;
+      --accent: #0052cc;
+      --badge-bg: #f5f5f5;
+      --section-gap: 40px;
+      --pad-x: 40px;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -58,488 +57,391 @@
       margin: 0;
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 14px;
-      line-height: 1.55;
+      line-height: 1.6;
       color: var(--text);
       background: var(--bg);
-      padding-bottom: 56px;
     }
 
     .report-shell {
-      max-width: 640px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 8px 18px 0;
+      padding: 32px var(--pad-x) 64px;
     }
 
-    /* ── Tabs (minimal pills) ── */
+    /* ── Report header ── */
+    .report-header {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1.4fr;
+      gap: 24px;
+      align-items: end;
+      padding-bottom: 24px;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .report-name {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .report-date {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .report-phase {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      text-align: center;
+      color: var(--text);
+    }
+    .report-phase.phase_risk_off,
+    .report-phase.phase_bearish,
+    .report-phase.phase_weak { color: var(--down); }
+    .report-phase.phase_bullish,
+    .report-phase.phase_risk_on,
+    .report-phase.phase_strong { color: var(--up); }
+    .report-summary {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.5;
+      text-align: right;
+      color: var(--text);
+    }
+
+    /* ── Sticky tabs (text only) ── */
     .report-tabs-wrap {
       position: sticky;
       top: 0;
-      z-index: 200;
-      margin: 0 -18px 20px;
-      padding: 10px 18px 12px;
-      background: rgba(17, 17, 17, 0.94);
-      backdrop-filter: blur(10px);
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--line);
+      margin: 0 calc(-1 * var(--pad-x));
+      padding: 0 var(--pad-x);
     }
     .report-tabs {
       display: flex;
-      gap: 6px;
+      gap: 28px;
       overflow-x: auto;
-      scrollbar-width: none;
+      scrollbar-width: thin;
     }
-    .report-tabs::-webkit-scrollbar { display: none; }
     .tab-link {
       flex: 0 0 auto;
-      padding: 7px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ref);
+      padding: 16px 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
       text-decoration: none;
-      border: 1px solid transparent;
+      border-bottom: 2px solid transparent;
       white-space: nowrap;
     }
+    .tab-link:hover { color: var(--text); }
     .tab-link.active {
-      color: var(--text);
-      border-color: var(--line-strong);
-      background: rgba(255, 255, 255, 0.04);
+      color: var(--accent);
+      font-weight: 600;
+      border-bottom-color: var(--accent);
     }
 
     .report-section {
-      scroll-margin-top: calc(var(--tab-h) + 20px);
-      margin-bottom: 40px;
-    }
-
-    .block { margin-bottom: 28px; }
-    .block-label {
-      margin: 0 0 12px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--ref);
-    }
-    .block-label-sm {
-      margin: 0 0 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ref);
-    }
-
-    .ref { color: var(--ref); font-size: 12px; }
-    .up { color: var(--up); }
-    .down { color: var(--down); }
-    .empty-state { color: var(--ref); font-size: 13px; padding: 16px 0; }
-
-    /* ── Tab1: Market hero ── */
-    .market-hero {
-      padding: 8px 0 28px;
-      margin-bottom: 8px;
+      scroll-margin-top: 56px;
+      padding: var(--section-gap) 0;
       border-bottom: 1px solid var(--line);
     }
-    .hero-meta {
-      margin: 0 0 12px;
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--ref);
-      letter-spacing: 0.02em;
-    }
-    .hero-phase {
-      margin: 0;
-      font-size: clamp(2.25rem, 10vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.05;
-    }
-    .hero-phase.phase_risk_off,
-    .hero-phase.phase_bearish,
-    .hero-phase.phase_weak { color: var(--down); }
-    .hero-phase.phase_neutral,
-    .hero-phase.phase_sideways { color: var(--text-secondary); }
-    .hero-phase.phase_bullish,
-    .hero-phase.phase_risk_on,
-    .hero-phase.phase_strong { color: var(--up); }
-    .hero-summary {
-      margin: 14px 0 0;
-      font-size: 17px;
-      font-weight: 500;
-      line-height: 1.45;
-      color: var(--text-secondary);
+    .report-section:last-child { border-bottom: none; }
+
+    .section-heading {
+      margin: 0 0 24px;
+      font-size: 20px;
+      font-weight: 700;
       letter-spacing: -0.02em;
     }
+    .subsection-heading {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
 
-    /* KR indices — large, no boxes */
-    .idx-kr {
+    .up { color: var(--up); }
+    .down { color: var(--down); }
+    .muted { color: var(--muted); }
+
+    /* ── Indices ── */
+    .idx-kr-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px 24px;
+      gap: 32px 48px;
+      margin-bottom: 32px;
     }
-    .idx-kr-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid var(--line);
-    }
-    .idx-kr-name {
-      font-size: 12px;
+    .idx-kr-block { padding-bottom: 8px; }
+    .idx-kr-label {
+      display: block;
+      font-size: 14px;
       font-weight: 600;
-      color: var(--ref);
+      color: var(--muted);
+      margin-bottom: 8px;
     }
-    .idx-kr-val {
-      font-size: clamp(1.5rem, 6vw, 1.85rem);
-      font-weight: 800;
+    .idx-kr-value {
+      display: block;
+      font-size: 32px;
+      font-weight: 700;
       letter-spacing: -0.03em;
       line-height: 1.1;
+      font-variant-numeric: tabular-nums;
     }
-    .idx-kr-chg {
+    .idx-kr-change {
+      display: block;
+      margin-top: 6px;
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
     }
 
-    /* Lightweight tables */
+    /* ── Tables ── */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 8px;
+    }
     .data-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 14px;
     }
     .data-table th,
     .data-table td {
-      padding: 8px 6px;
+      padding: 10px 12px;
       border-bottom: 1px solid var(--line);
       text-align: left;
-      vertical-align: middle;
+      vertical-align: top;
     }
     .data-table th {
+      font-size: 12px;
       font-weight: 600;
-      color: var(--ref);
-      width: 38%;
+      color: var(--muted);
+      background: var(--bg);
+    }
+    .data-table.compact th,
+    .data-table.compact td {
+      padding: 8px 10px;
+      font-size: 13px;
     }
     .data-table .num {
-      font-weight: 700;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
     .data-table .chg {
-      font-size: 12px;
       font-weight: 600;
-      text-align: right;
       white-space: nowrap;
     }
-    .data-table-macro thead th {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--ref);
-      text-align: center;
-      padding: 6px 4px;
-      border-bottom: 1px solid var(--line-strong);
-    }
-    .data-table-macro tbody td {
-      text-align: center;
-      padding: 10px 4px;
-      border-bottom: none;
-    }
-    .macro-val {
-      display: block;
-      font-weight: 700;
-      font-size: 13px;
-    }
-    .macro-chg {
-      display: block;
-      font-size: 10px;
-      margin-top: 2px;
-    }
-    .theme-table .rank { color: var(--ref); width: 28px; }
-    .theme-table .name { font-weight: 600; }
-    .theme-table .ratio { color: var(--warn); font-weight: 700; }
+    .data-table tr.row-top td,
+    .data-table tr.row-top th { font-weight: 700; }
 
-    /* Sector inline */
-    .sector-inline {
+    /* ── Sector tags ── */
+    .sector-block { margin-top: 8px; }
+    .sector-row {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 6px 8px;
-      font-size: 13px;
-      line-height: 1.6;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
     }
-    .sector-label { font-size: 11px; font-weight: 600; color: var(--ref); }
-    .sector-sep { color: var(--line-strong); margin: 0 4px; }
-    .tag {
-      font-size: 12px;
+    .sector-label {
+      font-size: 13px;
       font-weight: 600;
-      padding: 2px 0;
+      color: var(--muted);
+      min-width: 36px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--badge-bg);
+      color: var(--text);
+      border-radius: 2px;
     }
     .tag-in { color: var(--up); }
     .tag-out { color: var(--down); }
 
-    /* ── Tab2: Theme hero + table ── */
-    .theme-hero {
-      padding: 20px 0 22px;
-      margin-bottom: 4px;
-      border-bottom: 2px solid var(--line-strong);
-    }
-    .theme-hero-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-    .theme-rank {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--warn);
-      line-height: 1;
-      letter-spacing: -0.04em;
-    }
-    .theme-hero-name {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-    .theme-hero-ratio {
-      margin: 6px 0 0;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--warn);
-    }
-    .theme-hero-meta {
-      margin: 14px 0 0 44px;
-      font-size: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-    }
-
-    /* ── Tab3: Stock analysis ── */
+    /* ── Stock block ── */
     .stock-block {
-      padding: 24px 0;
+      padding: 32px 0;
       border-bottom: 1px solid var(--line);
     }
-    .stock-block:last-child { border-bottom: none; }
+    .stock-block:last-child { border-bottom: none; padding-bottom: 0; }
 
-    .stock-head {
+    .stock-headline {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 12px 20px;
+      margin-bottom: 20px;
     }
     .stock-title {
       margin: 0;
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-    .stock-code {
-      margin-left: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ref);
-    }
-    .stock-price-line {
-      margin: 8px 0 0;
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
     }
     .stock-price {
-      font-size: 1.25rem;
-      font-weight: 800;
+      font-size: 20px;
+      font-weight: 700;
       font-variant-numeric: tabular-nums;
     }
     .stock-change {
-      font-size: 15px;
-      font-weight: 700;
-    }
-    .stock-meta {
-      margin: 10px 0 16px;
-      line-height: 1.5;
-    }
-
-    .verdict-badge {
-      flex-shrink: 0;
-      padding: 10px 16px;
-      border-radius: 10px;
       font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      border: 1px solid transparent;
-    }
-    .verdict-badge.buy {
-      color: #dbeafe;
-      background: rgba(37, 99, 235, 0.25);
-      border-color: #2563eb;
-    }
-    .verdict-badge.hold {
-      color: #e5e7eb;
-      background: rgba(55, 65, 81, 0.4);
-      border-color: #4b5563;
-    }
-    .verdict-badge.sell {
-      color: #fecaca;
-      background: rgba(153, 27, 27, 0.35);
-      border-color: #b91c1c;
-    }
-
-    /* Agent row + accordion */
-    .agent-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    @media (max-width: 520px) {
-      .agent-row { flex-direction: column; }
-    }
-    .agent-acc {
-      flex: 1 1 calc(20% - 8px);
-      min-width: 88px;
-    }
-    @media (max-width: 520px) {
-      .agent-acc { flex: 1 1 100%; min-width: 0; }
-    }
-    .agent-acc > summary {
-      list-style: none;
-      cursor: pointer;
-    }
-    .agent-acc > summary::-webkit-details-marker { display: none; }
-    .agent-chip {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 4px;
-      border: none;
-      background: transparent;
-      text-align: center;
-    }
-    .agent-acc[open] .agent-name { color: var(--text); }
-    .agent-emoji { font-size: 20px; line-height: 1; }
-    .agent-name {
-      font-size: 10px;
       font-weight: 600;
-      color: var(--text-secondary);
-      line-height: 1.2;
     }
-    .vote-pill {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 6px;
-    }
-    .vote-pill.buy { background: #1d4ed8; color: #eff6ff; }
-    .vote-pill.hold { background: #374151; color: #f3f4f6; }
-    .vote-pill.sell { background: #991b1b; color: #fecaca; }
-    .acc-panel {
-      margin-top: 8px;
-      padding: 10px 12px;
-      border-left: 2px solid var(--line-strong);
-    }
-    .agent-title { margin: 0 0 6px; }
-    .acc-text {
-      margin: 0 0 6px;
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.45;
-    }
-    .acc-text:last-child { margin-bottom: 0; }
 
-    /* ── Tab4: Company ── */
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--badge-bg);
+      color: var(--text);
+      border-radius: 2px;
+    }
+    .badge.buy { color: var(--up); }
+    .badge.sell { color: var(--down); }
+    .badge.hold { color: var(--muted); }
+
+    .range-section { margin: 16px 0 12px; }
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .range-bar {
+      position: relative;
+      height: 6px;
+      background: var(--line);
+      border-radius: 3px;
+    }
+    .range-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      opacity: 0.35;
+    }
+    .range-marker {
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      margin-left: -6px;
+      margin-top: -6px;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .range-caption {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .stock-meta-line {
+      margin: 0 0 20px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .stock-meta-line strong { font-weight: 600; }
+
+    .vote-buy { color: var(--up); font-weight: 600; }
+    .vote-sell { color: var(--down); font-weight: 600; }
+    .vote-hold { color: var(--muted); font-weight: 600; }
+
+    /* ── Company block ── */
     .company-block {
-      padding: 24px 0;
+      padding: 32px 0;
       border-bottom: 1px solid var(--line);
     }
     .company-block:last-child { border-bottom: none; }
-    .company-top {
+    .company-head {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
-    .company-name {
+    .company-title {
       margin: 0;
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-size: 20px;
+      font-weight: 700;
     }
-    .company-oneliner {
-      margin: 8px 0 0;
-      font-size: 16px;
+    .company-market {
+      margin-left: 10px;
+      font-size: 13px;
       font-weight: 500;
-      color: var(--text-secondary);
-      line-height: 1.4;
+      color: var(--muted);
     }
-    .company-meta { margin: 6px 0 0; }
-    .why-hot-text {
-      margin: 0 0 14px;
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.5;
-      color: #93c5fd;
-    }
-    .body-text {
+    .company-field {
       margin: 0 0 12px;
       font-size: 14px;
-      line-height: 1.6;
-      color: var(--text-secondary);
+      line-height: 1.65;
     }
-    .inline-fact {
-      margin: 0 0 8px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .inline-fact.risk-fact { color: #fca5a5; }
-
-    /* ── Tab5: Risk ── */
-    .risk-line {
-      margin: 0 0 28px;
-      font-size: clamp(1.1rem, 4.5vw, 1.35rem);
-      font-weight: 700;
-      line-height: 1.45;
-      color: var(--down);
-      letter-spacing: -0.02em;
-    }
-    .action-ol {
-      margin: 0;
-      padding-left: 1.25rem;
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-    .action-ol li {
-      margin-bottom: 10px;
-      padding-left: 4px;
-    }
-    .action-ol li::marker {
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .glossary-acc {
-      margin-top: 24px;
-      border-top: 1px solid var(--line);
-      padding-top: 16px;
-    }
-    .glossary-acc > summary {
-      cursor: pointer;
-      font-size: 12px;
+    .company-field strong {
       font-weight: 600;
-      color: var(--ref);
-      list-style: none;
+      color: var(--text);
     }
-    .glossary-acc > summary::-webkit-details-marker { display: none; }
-    .glossary-body { margin-top: 12px; }
-    .glossary-row {
-      padding: 10px 0;
-      border-bottom: 1px solid var(--line);
-    }
-    .glossary-row:last-child { border-bottom: none; }
-    .glossary-row dt {
-      font-size: 13px;
+    .company-hot {
       font-weight: 700;
       color: var(--text);
     }
-    .glossary-row dd {
-      margin: 4px 0 0;
-      font-size: 12px;
-      color: var(--ref);
+
+    /* ── Risk ── */
+    .risk-warning {
+      margin: 0 0 28px;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.45;
+      color: var(--down);
+    }
+    .action-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .action-list li { margin-bottom: 10px; }
+    .glossary-table td:first-child {
+      font-weight: 600;
+      width: 28%;
+      white-space: nowrap;
+    }
+
+    .empty-note {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      :root { --pad-x: 20px; --section-gap: 28px; }
+      .report-shell { padding-top: 20px; }
+      .report-header {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .report-phase { text-align: left; font-size: 28px; }
+      .report-summary { text-align: left; font-size: 15px; }
+      .idx-kr-grid { grid-template-columns: 1fr; gap: 24px; }
+      .idx-kr-value { font-size: 28px; }
+      .report-tabs { gap: 20px; }
     }
   </style>
 </head>
@@ -577,7 +479,7 @@
       });
 
       function onScroll() {
-        var offset = 64;
+        var offset = 56;
         var current = sectionIds[0];
         sectionIds.forEach(function (id) {
           var el = document.getElementById(id);

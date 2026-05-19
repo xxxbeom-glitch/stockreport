@@ -85,6 +85,16 @@ def _position_52w(price: Any, low: Any, high: Any) -> str:
     return f"{pct:.0f}%"
 
 
+def _position_pct(price: Any, low: Any, high: Any) -> int:
+    try:
+        p, lo, hi = float(price), float(low), float(high)
+    except (TypeError, ValueError):
+        return 50
+    if hi <= lo or p <= 0:
+        return 50
+    return max(0, min(100, int((p - lo) / (hi - lo) * 100)))
+
+
 def _resolve_agent_vote(opinion: dict[str, Any], name: str, ticker: str) -> tuple[str, list[str]]:
     verdicts = opinion.get("verdicts") or {}
     entry: dict[str, Any] | None = None
@@ -150,6 +160,7 @@ def _build_volume_leader(d: dict[str, Any]) -> dict[str, Any]:
         "ratio": f"{ratio:.2f}x" if ratio else "N/A",
         "price": f"{price:,.0f}원" if price else "N/A",
         "position_52w": _position_52w(price, low_52, high_52),
+        "position_pct": _position_pct(price, low_52, high_52),
         "range_52w": range_52w,
         "change": f"{change_pct:+.2f}%",
         "is_up": change_pct >= 0,
@@ -203,6 +214,7 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
         "low_52": low_fmt,
         "range_52w": f"{low_fmt} ~ {high_fmt}" if low_52 and high_52 else "N/A",
         "position_52w": _position_52w(price, low_52, high_52),
+        "position_pct": _position_pct(price, low_52, high_52),
         "verdict": verdict,
         "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
         "foreign_net_eok": foreign_net_eok(foreign_net_buy),

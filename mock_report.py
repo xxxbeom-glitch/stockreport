@@ -82,6 +82,7 @@ def _mock_volume_leader(
         "is_up": is_up,
         "range_52w": range_52w,
         "position_52w": "62%",
+        "position_pct": 62,
     }
 
 
@@ -110,6 +111,8 @@ def _mock_stock(
         "low_52": low_52,
         "high_52": high_52,
         "range_52w": f"{low_52} ~ {high_52}",
+        "position_52w": "62%",
+        "position_pct": 62,
         "foreign_net_eok": foreign_net_eok,
         "verdict": verdict,
         "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
@@ -127,6 +130,7 @@ def _mock_company(
     return {
         "ticker": ticker,
         "name": name,
+        "market": "KOSPI",
         "one_liner": one_liner,
         "why_hot": why_hot,
         "business": "핵심 사업은 반도체·전장 부품이며, 대형 고객사와 장기 공급 계약을 보유하고 있습니다.",
