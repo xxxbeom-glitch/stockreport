@@ -121,3 +121,71 @@ def get_top_volume_stocks(tickers: list[str], top: int = 5) -> list[dict[str, An
 def get_sector_etf_universe() -> dict[str, str]:
     """Expose configured US sector ETF universe."""
     return dict(US_SECTOR_ETFS)
+
+
+# Liquid US equities universe (exclude sector ETFs)
+_US_LIQUID_UNIVERSE: list[str] = [
+    "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "TSLA", "AMD", "AVGO",
+    "NFLX", "CRM", "ORCL", "ADBE", "INTC", "QCOM", "TXN", "MU", "AMAT", "LRCX",
+    "JPM", "BAC", "WFC", "GS", "MS", "V", "MA", "PYPL", "SQ", "COIN",
+    "XOM", "CVX", "LLY", "UNH", "JNJ", "PFE", "MRK", "ABBV", "BMY", "NKE",
+    "DIS", "UBER", "ABNB", "PLTR", "SNOW", "SHOP", "BABA", "PDD", "NIO",
+]
+
+
+def _is_etf_symbol(symbol: str) -> bool:
+    sym = symbol.upper()
+    if sym in set(US_SECTOR_ETFS.values()):
+        return True
+    if len(sym) <= 4 and sym.endswith(("X", "Y")) and sym.startswith(("X", "S", "V", "I")):
+        return True
+    return False
+
+
+def get_top_volume_us(n: int = 5) -> list[dict[str, Any]]:
+    """Return top US stocks by latest volume (individual equities only)."""
+    if yf is None:
+        return []
+    rows: list[dict[str, Any]] = []
+    for ticker in _US_LIQUID_UNIVERSE:
+        if _is_etf_symbol(ticker):
+            continue
+        try:
+            hist = yf.Ticker(ticker).history(period="5d")
+        except Exception:
+            continue
+        if hist is None or len(hist) < 2:
+            continue
+        vol = hist["Volume"]
+        close = hist["Close"]
+        avg_vol = safe_float(vol.mean(), 0.0)
+        last_vol = safe_float(vol.iloc[-1], 0.0)
+        if avg_vol <= 0 or last_vol <= 0:
+            continue
+        prev = safe_float(close.iloc[-2], 0.0)
+        last = safe_float(close.iloc[-1], 0.0)
+        pct = ((last - prev) / prev) * 100 if prev else 0.0
+        ratio = last_vol / avg_vol
+        try:
+            info_name = yf.Ticker(ticker).info.get("shortName") or ticker
+        except Exception:
+            info_name = ticker
+        rows.append(
+            {
+                "ticker": ticker,
+                "name": str(info_name),
+                "market": "US",
+                "price": last,
+                "volume": last_vol,
+                "volume_ratio": round(ratio, 2),
+                "change_rate": pct,
+                "change": _fmt_pct(pct),
+                "is_up": pct >= 0,
+            }
+        )
+    rows.sort(key=lambda x: (x.get("volume") or 0), reverse=True)
+    top = rows[:n]
+    for row in top:
+        p = row.get("price")
+        row["price_fmt"] = f"${p:,.2f}" if p else "N/A"
+    return top

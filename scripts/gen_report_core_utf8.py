@@ -1,4 +1,9 @@
-{# Tab navigation + sections (company tab when has_company_reports) #}
+# -*- coding: utf-8 -*-
+from pathlib import Path
+
+CORE = Path(__file__).resolve().parents[1] / "reports" / "templates" / "_report_core.html"
+
+CONTENT = r'''{# Tab navigation + sections (company tab when has_company_reports) #}
 
 <nav class="report-tabs-wrap" id="report-tabs" aria-label="리포트 섹션">
   <div class="report-tabs" role="tablist">
@@ -9,7 +14,7 @@
     <a href="#section-company" class="tab-link" role="tab" data-section="section-company">🏢 기업 리포트</a>
     {% endif %}
     <a href="#section-risk" class="tab-link" role="tab" data-section="section-risk">⚠️ 리스크</a>
-  </div>
+  </motion>
 </nav>
 
 <section id="section-market" class="report-section" aria-label="시장 요약">
@@ -29,7 +34,7 @@
     {% set idx = indices[name] %}
     <div class="stat-card">
       <div class="stat-label">{{ name }}</div>
-      <div class="stat-value {{ 'up' if idx.is_up else 'down' }}">{{ idx.value }}</div>
+      <motion class="stat-value {{ 'up' if idx.is_up else 'down' }}">{{ idx.value }}</div>
       <div class="stat-change {{ 'up' if idx.is_up else 'down' }}">{{ idx.change }}</div>
     </div>
     {% endif %}
@@ -43,7 +48,7 @@
     <div class="stat-card">
       <div class="stat-label">{{ label }}</div>
       <div class="stat-value {{ 'up' if ind.is_up else 'down' }}">{{ ind.value | default('N/A') }}</div>
-      <div class="stat-change {{ 'up' if ind.is_up else 'down' }}">{{ ind.change | default('N/A') }}</div>
+      <div class="stat-change {{ 'up' if ind.is_up else 'down' }}">{{ ind.change | default('N/A') }}</motion>
     </div>
     {% endfor %}
   </div>
@@ -90,7 +95,7 @@
         <span class="leader-ratio">{{ s.ratio }}</span>
       </div>
       <dl class="leader-meta">
-        <div><dt>현재가</dt><dd>{{ s.price | default('N/A') }}</dd></div>
+        <motion><dt>현재가</dt><dd>{{ s.price | default('N/A') }}</dd></div>
         <div><dt>52주 고저</dt><dd>{{ s.range_52w | default(s.position_52w | default('N/A')) }}</dd></div>
         <div><dt>등락</dt><dd class="{{ 'up' if s.is_up else 'down' }}">{{ s.change | default('N/A') }}</dd></div>
       </dl>
@@ -126,7 +131,7 @@
         <div class="value">{{ stock.low_52 }}</div>
       </div>
       <div class="stock-stat">
-        <div class="label">52주 최고</div>
+        <motion class="label">52주 최고</div>
         <div class="value">{{ stock.high_52 }}</div>
       </div>
       <div class="stock-stat">
@@ -218,3 +223,9 @@
   </div>
   {% endif %}
 </section>
+'''
+
+if __name__ == "__main__":
+    text = CONTENT.replace("<motion", "<div").replace("</motion>", "</div>")
+    CORE.write_text(text, encoding="utf-8")
+    print("wrote", CORE)

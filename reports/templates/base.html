@@ -448,6 +448,35 @@
       color: var(--muted);
       font-size: 13px;
     }
+
+    .company-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .company-meta { margin: 6px 0 0; font-size: 12px; }
+    .company-oneliner { font-size: 13px; margin: 10px 0; opacity: 0.92; }
+    .why-hot-box {
+      background: linear-gradient(180deg, #172554 0%, #1a1a1a 100%);
+      border: 1px solid #2563eb;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin: 12px 0;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .company-verdict {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .company-verdict.buy { background: #1d4ed8; color: #fff; }
+    .company-verdict.hold { background: #374151; color: #e5e7eb; }
+    .company-verdict.sell { background: #991b1b; color: #fecaca; }
   </style>
 </head>
 <body>
@@ -457,7 +486,11 @@
   <script>
     (function () {
       var tabs = document.querySelectorAll(".tab-link");
-      var sectionIds = ["section-market", "section-themes", "section-stocks", "section-risk"];
+      var sectionIds = ["section-market", "section-themes", "section-stocks"];
+      if (document.getElementById("section-company")) {
+        sectionIds.push("section-company");
+      }
+      sectionIds.push("section-risk");
       if (!tabs.length) return;
 
       function setActive(id) {

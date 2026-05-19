@@ -12,8 +12,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from config import DISCOVERY_TOP_N
-from .kis_client import get_foreign_net as get_kis_foreign_net
-from .kis_client import get_price
+from .kis_client import (
+    get_52w_high_low as get_kis_52w,
+    get_foreign_net as get_kis_foreign_net,
+    get_kospi_index as get_kis_kospi,
+    get_kosdaq_index as get_kis_kosdaq,
+    get_price as get_kis_price,
+    get_top_volume as get_kis_top_volume,
+)
 from .stock_discovery import discover_dynamic_stocks
 from .utils import prior_business_day, safe_float
 
@@ -140,12 +146,75 @@ def _index_level(ticker: str, name: str) -> dict[str, Any]:
 
 
 def get_kr_indices() -> dict[str, dict[str, Any]]:
-    """Return KOSPI/KOSDAQ index snapshots from pykrx."""
-    # KRX index ticker: 1001(KOSPI), 2001(KOSDAQ)
+    """Return KOSPI/KOSDAQ snapshots (KIS first, pykrx fallback)."""
+    kospi = get_kis_kospi()
+    kosdaq = get_kis_kosdaq()
     return {
-        "KOSPI": _index_level("1001", "KOSPI"),
-        "KOSDAQ": _index_level("2001", "KOSDAQ"),
+        "KOSPI": kospi or _index_level("1001", "KOSPI"),
+        "KOSDAQ": kosdaq or _index_level("2001", "KOSDAQ"),
     }
+
+
+def get_price(ticker: str, market: str = "KOSPI") -> dict[str, Any] | None:
+    """Return price snapshot for ticker (KIS first, pykrx fallback)."""
+    quote = get_kis_price(ticker)
+    if quote:
+        w52 = get_kis_52w(ticker) or {}
+        quote["high_52"] = w52.get("high_52")
+        quote["low_52"] = w52.get("low_52")
+        quote["source"] = "kis"
+        return quote
+    if pykrx_stock is None:
+        return None
+    date = get_trading_date()
+    try:
+        frame = pykrx_stock.get_market_ohlcv(date, market=market)
+        if frame is not None and ticker in frame.index:
+            close = safe_float(frame.loc[ticker, "종가"], 0.0)
+            open_p = safe_float(frame.loc[ticker, "시가"], 0.0)
+            pct = ((close - open_p) / open_p) * 100 if open_p else 0.0
+            return {
+                "ticker": ticker,
+                "price": close,
+                "change_rate": pct,
+                "volume": safe_float(frame.loc[ticker, "거래량"], 0.0),
+                "source": "pykrx",
+            }
+    except Exception:
+        return None
+    return None
+
+
+def get_top_volume_kr(n: int = 5, market: str = "KOSPI") -> list[dict[str, Any]]:
+    """Return top volume leaders (KIS first, pykrx fallback)."""
+    kis_rows = get_kis_top_volume(market=market, n=n)
+    if kis_rows:
+        enriched: list[dict[str, Any]] = []
+        for row in kis_rows:
+            ticker = str(row.get("ticker", ""))
+            price = row.get("price")
+            w52 = get_kis_52w(ticker) if ticker else None
+            low_52 = (w52 or {}).get("low_52")
+            high_52 = (w52 or {}).get("high_52")
+            change_rate = float(row.get("change_rate") or 0.0)
+            ratio = float(row.get("volume_ratio") or 0.0)
+            enriched.append(
+                {
+                    "ticker": ticker,
+                    "name": row.get("name", ticker),
+                    "market": market.upper(),
+                    "price": price,
+                    "volume_ratio": ratio,
+                    "change_rate": change_rate,
+                    "change": _fmt_pct(change_rate),
+                    "is_up": change_rate >= 0,
+                    "low_52": low_52,
+                    "high_52": high_52,
+                    "price_source": "kis",
+                }
+            )
+        return enriched
+    return get_volume_leaders(market=market, top=n)
 
 
 def get_foreign_flow(market: str = "KOSPI") -> list[dict[str, Any]]:
@@ -177,7 +246,10 @@ def get_foreign_flow(market: str = "KOSPI") -> list[dict[str, Any]]:
 
 
 def get_foreign_net_by_ticker(ticker: str, market: str = "KOSPI") -> float | None:
-    """Return foreign net-buy for one ticker using pykrx first, then KIS."""
+    """Return foreign net-buy for one ticker (KIS first, pykrx fallback)."""
+    kis_value = get_kis_foreign_net(ticker)
+    if kis_value is not None:
+        return kis_value
     if pykrx_stock is not None:
         date = get_trading_date()
         try:
@@ -208,7 +280,7 @@ def get_stock_snapshot(ticker: str, market: str = "KOSPI") -> dict[str, Any]:
         "price_source": "none",
     }
 
-    realtime = get_price(ticker)
+    realtime = get_kis_price(ticker)
     raw = realtime.get("raw", {}) if realtime else {}
     if realtime:
         snapshot.update(
@@ -282,7 +354,7 @@ def get_volume_leaders(market: str = "KOSPI", top: int = 5) -> list[dict[str, An
     rows.sort(key=lambda x: x["ratio"], reverse=True)
     leaders = rows[:top]
     for row in leaders:
-        realtime = get_price(str(row["ticker"]))
+        realtime = get_kis_price(str(row["ticker"]))
         if not realtime:
             continue
         price = safe_float(realtime.get("price"), safe_float(row.get("price"), 0.0))

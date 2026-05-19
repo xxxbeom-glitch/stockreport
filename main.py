@@ -14,13 +14,17 @@ from pathlib import Path
 from typing import Any
 
 from agents import (
+    AGENT_PROFILES,
     analyze_fundamental,
     analyze_macro,
     analyze_momentum,
     analyze_risk,
     analyze_supply_demand,
+    generate_company_report,
 )
-from data.kr_market import get_stock_snapshot
+from data.kr_market import get_stock_snapshot, get_top_volume_kr
+from data.us_market import get_top_volume_us
+from utils.formatters import foreign_net_eok
 from data.pipeline import run_pipeline_as_dict
 from reports import generate_pdf
 from utils.helpers import is_market_holiday
@@ -57,14 +61,6 @@ INDICATOR_LABELS: dict[str, str] = {
     "copper": "구리",
 }
 
-AGENT_PROFILES: list[dict[str, str]] = [
-    {"key": "supply", "name": "James Park", "title": "수급 분석가", "emoji": "📊"},
-    {"key": "momentum", "name": "Chris Yoon", "title": "모멘텀 트레이더", "emoji": "🚀"},
-    {"key": "fundamental", "name": "이준혁", "title": "기업가치 분석가", "emoji": "📈"},
-    {"key": "macro", "name": "Michael Chen", "title": "매크로 전략가", "emoji": "🌐"},
-    {"key": "risk", "name": "강민서", "title": "리스크 매니저", "emoji": "🛡️"},
-]
-
 REPORT_TYPE_LABELS: dict[str, str] = {
     "us_during": "미장 장중",
     "us_close_kr_before": "국장 장전",
@@ -76,19 +72,6 @@ REPORT_TYPE_LABELS: dict[str, str] = {
     "us_before": "미장 장전",
     "weekly": "위클리 리포트",
 }
-
-
-def _foreign_net_eok(value: Any) -> str:
-    if value is None:
-        return "N/A"
-    try:
-        amount = float(value)
-    except (TypeError, ValueError):
-        return "N/A"
-    eok = amount / 100_000_000
-    if abs(eok) >= 100:
-        return f"{eok:,.0f}억원"
-    return f"{eok:.1f}억원"
 
 
 def _position_52w(price: Any, low: Any, high: Any) -> str:
@@ -217,11 +200,11 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
         "position_52w": _position_52w(price, low_52, high_52),
         "verdict": verdict,
         "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
-        "foreign_net_eok": _foreign_net_eok(foreign_net_buy),
+        "foreign_net_eok": foreign_net_eok(foreign_net_buy),
         "agent_votes": agent_votes,
         "metrics": [
             {"label": "거래량배수", "value": f"{ratio:.2f}x" if ratio else "N/A", "sub": "평균 대비"},
-            {"label": "외국인순매수", "value": _foreign_net_eok(foreign_net_buy), "sub": "당일 추정"},
+            {"label": "외국인순매수", "value": foreign_net_eok(foreign_net_buy), "sub": "당일 추정"},
             {"label": "시장", "value": market, "sub": "분류"},
             {"label": "등락률", "value": f"{change_pct:+.2f}%", "sub": "전일 대비"},
         ],
@@ -230,7 +213,71 @@ def _build_stock_row(d: dict[str, Any], opinions: dict[str, Any]) -> dict[str, A
     }
 
 
-def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: dict[str, Any]) -> dict[str, Any]:
+def _build_company_reports(report_type: str, logger: TokenLogger) -> list[dict[str, Any]]:
+    """Build Gemini company briefs for scheduled hot-volume reports."""
+    rows: list[dict[str, Any]] = []
+    if report_type == "us_close_kr_before":
+        leaders = get_top_volume_us(5)
+        market_label = "US"
+    elif report_type == "kr_during":
+        leaders = get_top_volume_kr(5, market="KOSPI")
+        market_label = "KR"
+    else:
+        return rows
+
+    for item in leaders:
+        ticker = str(item.get("ticker", ""))
+        name = str(item.get("name", ticker))
+        market = str(item.get("market", market_label))
+        if market.upper() in {"US", "NASDAQ", "NYSE"}:
+            market = "US"
+        else:
+            market = "KOSPI"
+        snapshot: dict[str, Any] = {}
+        if market != "US" and ticker:
+            snapshot = get_stock_snapshot(ticker, market=market)
+        price = item.get("price_fmt") or item.get("price")
+        if market != "US" and snapshot.get("price"):
+            price = f"{snapshot['price']:,.0f}원"
+        elif isinstance(price, (int, float)):
+            price = f"${price:,.2f}" if market == "US" else f"{price:,.0f}원"
+
+        report = generate_company_report(
+            ticker=ticker,
+            name=name,
+            market=market,
+            logger=logger,
+            extra={**item, **(snapshot or {})},
+        )
+        low = snapshot.get("low_52") if snapshot else item.get("low_52")
+        high = snapshot.get("high_52") if snapshot else item.get("high_52")
+        if market == "US":
+            range_52w = "N/A"
+        else:
+            range_52w = (
+                f"{low:,.0f}원 ~ {high:,.0f}원"
+                if low and high
+                else _position_52w(snapshot.get("price"), low, high)
+            )
+        rows.append(
+            {
+                **report,
+                "price_display": price or "N/A",
+                "volume_ratio": f"{(item.get('volume_ratio') or 0):.2f}x",
+                "range_52w": range_52w,
+                "change": item.get("change", "N/A"),
+                "is_up": item.get("is_up", True),
+            }
+        )
+    return rows
+
+
+def _build_report_data(
+    report_type: str,
+    market_data: dict[str, Any],
+    opinions: dict[str, Any],
+    company_reports: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Build a normalized report payload for template rendering."""
     now = datetime.now()
     sector_signals = market_data.get("sector_flow", [])
@@ -280,7 +327,10 @@ def _build_report_data(report_type: str, market_data: dict[str, Any], opinions: 
         "glossary": [
             {"term": "거래량배수", "definition": "오늘 거래량이 평균 대비 몇 배인지"},
             {"term": "손절", "definition": "손실 확대 전 재평가를 위한 기준"},
+            {"term": "외국인순매수", "definition": "외국인 투자자의 순매수 금액 (억원 단위)"},
         ],
+        "company_reports": company_reports or [],
+        "has_company_reports": bool(company_reports),
     }
 
 
@@ -338,7 +388,10 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
         "macro": macro,
         "risk": risk,
     }
-    report_data = _build_report_data(report_type, market_data, opinions)
+    company_reports = _build_company_reports(report_type, logger)
+    if company_reports:
+        print(f"[INFO] company_reports: {len(company_reports)}")
+    report_data = _build_report_data(report_type, market_data, opinions, company_reports)
     indices = report_data.get("indices") or {}
     na_indices = [name for name, row in indices.items() if (row or {}).get("value") == "N/A"]
     if na_indices:
