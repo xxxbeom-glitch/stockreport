@@ -1,0 +1,97 @@
+{
+  "title": "투자 인사이트",
+  "market_line": "한국시장 | 2026-05-20 수요일 09:00 업데이트",
+  "indices": [
+    {"label": "코스피", "value": "7,540.88", "change": "+2.66%", "is_up": true},
+    {"label": "코스닥", "value": "1,555.98", "change": "-3.33%", "is_up": false},
+    {"label": "달러/원 환율", "value": "1,432.50", "change": "-0.42%", "is_up": false}
+  ],
+  "market_commentary": "(더미) 장전·장중·장후 시장 코멘트 placeholder. Gemini 매크로 요약 2~3문장.",
+  "sector_filter_options": ["전체섹터"],
+  "sectors": [
+    {
+      "name": "반도체 소재",
+      "flow_amount": "+1,300억원",
+      "is_inflow": true,
+      "tag": "주요 상승 종목",
+      "stock_names": ["종목A", "종목B", "종목C", "종목D"],
+      "commentary": "(더미) 섹터별 AI 코멘트 placeholder."
+    },
+    {
+      "name": "2차전지",
+      "flow_amount": "-820억원",
+      "is_inflow": false,
+      "tag": "주요 상승 종목",
+      "stock_names": ["종목E", "종목F", "종목G"],
+      "commentary": "(더미) 섹터 코멘트 placeholder."
+    },
+    {
+      "name": "바이오",
+      "flow_amount": "+210억원",
+      "is_inflow": true,
+      "tag": "주요 상승 종목",
+      "stock_names": ["종목H", "종목I"],
+      "commentary": "(더미) 섹터 코멘트 placeholder."
+    }
+  ],
+  "stock_filter_options": ["전체섹터"],
+  "stocks": [
+    {
+      "name": "더미종목 01",
+      "logo_url": "",
+      "verdict_badge": "안사면 후회함",
+      "verdict_class": "buy",
+      "opinion": "(더미) 최종 투자의견 3문장 placeholder.",
+      "metrics": [
+        {"label": "현재가", "value": "168,000원"},
+        {"label": "목표가", "value": "600,000원"},
+        {"label": "외국인 순매수", "value": "1,300억원"},
+        {"label": "52주 최고가", "value": "210,000원"}
+      ],
+      "company_summary": "(더미) 기업 한줄 소개 placeholder."
+    },
+    {
+      "name": "더미종목 02",
+      "logo_url": "",
+      "verdict_badge": "지금 사기엔 좀…",
+      "verdict_class": "hold",
+      "opinion": "(더미) 투자의견 placeholder 3문장.",
+      "metrics": [
+        {"label": "현재가", "value": "267,250원"},
+        {"label": "목표가", "value": "320,000원"},
+        {"label": "외국인 순매수", "value": "-250억원"},
+        {"label": "52주 최고가", "value": "299,500원"}
+      ],
+      "company_summary": "(더미) 회사 소개 placeholder."
+    },
+    {
+      "name": "더미종목 03",
+      "logo_url": "",
+      "verdict_badge": "관망 추천",
+      "verdict_class": "sell",
+      "opinion": "(더미) 관망 의견 placeholder.",
+      "metrics": [
+        {"label": "현재가", "value": "58,400원"},
+        {"label": "목표가", "value": "72,000원"},
+        {"label": "외국인 순매수", "value": "45억원"},
+        {"label": "52주 최고가", "value": "62,100원"}
+      ],
+      "company_summary": "(더미) 회사 소개 placeholder."
+    },
+    {
+      "name": "더미종목 04",
+      "logo_url": "",
+      "verdict_badge": "안사면 후회함",
+      "verdict_class": "buy",
+      "opinion": "(더미) 매수 의견 placeholder.",
+      "metrics": [
+        {"label": "현재가", "value": "12,450원"},
+        {"label": "목표가", "value": "18,000원"},
+        {"label": "외국인 순매수", "value": "88억원"},
+        {"label": "52주 최고가", "value": "14,200원"}
+      ],
+      "company_summary": "(더미) 회사 소개 placeholder."
+    }
+  ],
+  "disclaimer": "(더미) 면책 문구 placeholder · 투자 참고용"
+}
