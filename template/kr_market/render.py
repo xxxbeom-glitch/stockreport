@@ -30,8 +30,11 @@ def main() -> None:
     base = Path(__file__).resolve().parent
     sample_path = base / "sample_data.json"
     out_path = base / "index.html"
-    if len(sys.argv) > 1:
-        out_path = Path(sys.argv[1])
+    for arg in sys.argv[1:]:
+        if arg.startswith("-") or arg in ("--live", "--verify"):
+            continue
+        if arg.endswith(".html"):
+            out_path = Path(arg)
     if "--live" in sys.argv:
         from template.kr_market.build_index import build_index
 
@@ -42,13 +45,19 @@ def main() -> None:
         path = build_index(output=live_out)
         print(path)
         return
+
     from template.kr_market.report_adapter import build_kr_market_context
 
-    report_data = json.loads(sample_path.read_text(encoding="utf-8"))
-    if not report_data.get("stock_analysis"):
-        from template.kr_market.report_adapter import build_static_preview_report_data
+    if "--verify" in sys.argv:
+        from template.kr_market.report_adapter import build_watchlist_verify_report_data
 
-        report_data = build_static_preview_report_data()
+        report_data = build_watchlist_verify_report_data()
+    else:
+        report_data = json.loads(sample_path.read_text(encoding="utf-8"))
+        if not report_data.get("stock_analysis"):
+            from template.kr_market.report_adapter import build_static_preview_report_data
+
+            report_data = build_static_preview_report_data()
     ctx = build_kr_market_context(report_data, pipeline=None)
     path = render_kr_market(ctx, out_path)
     print(path)

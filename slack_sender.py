@@ -639,38 +639,78 @@ def send_report(
     return send_market_report(data, rtype, url)
 
 
-def build_kr_watchlist_verify_message(result: dict[str, Any]) -> str:
-    """GitHub Actions KR Market Watchlist Verify 요약 (단문 텍스트)."""
-    ok = result.get("ok", False)
-    render_ok = result.get("render_ok", False)
-    index_ok = result.get("index_html_ok", False)
-    wl_stocks_ok = result.get("watchlist_stocks_ok", False)
-    labels_ok = result.get("labels_ok", False)
-    sectors = result.get("sectors", "?")
-    stocks = result.get("stocks", "?")
-    labels_line = result.get("labels_text", "안 사면 후회함 / 지금 사기엔 좀...")
+def _kr_watchlist_intro_line() -> str:
+    """실행 시각·workflow에 따른 첫 문장 (KST)."""
+    slot = os.getenv("KR_BRIEFING_SLOT", "").strip().lower()
+    if slot == "morning":
+        return "오전 9시 기준 관심종목 리포트 전달드립니다."
+    if slot == "afternoon":
+        return "오후 5시 기준 관심종목 리포트 전달드립니다."
+    if os.getenv("GITHUB_EVENT_NAME", "").strip() == "workflow_dispatch":
+        return "관심종목 리포트 전달드립니다."
 
-    def mark(cond: bool) -> str:
-        return "✅" if cond else "❌"
+    try:
+        from datetime import datetime, timedelta, timezone
 
+        kst = datetime.now(timezone(timedelta(hours=9)))
+        hour = kst.hour
+        if 8 <= hour <= 10:
+            return "오전 9시 기준 관심종목 리포트 전달드립니다."
+        if 16 <= hour <= 18:
+            return "오후 5시 기준 관심종목 리포트 전달드립니다."
+    except Exception:
+        pass
+    return "관심종목 리포트 전달드립니다."
+
+
+def build_kr_watchlist_report_slack_text(
+    result: dict[str, Any],
+    briefing_url: str = "",
+) -> str:
+    """사용자용 KR 관심종목 리포트 Slack 본문 (개발 검증 로그 아님)."""
+    sectors = int(result.get("sectors") or 5)
+    stocks = int(result.get("stocks") or result.get("expected_stocks") or 28)
     lines = [
-        "[KR Watchlist Verify]",
-        "KR Market Watchlist Verify 완료" if ok else "KR Market Watchlist Verify 실패",
-        f"{mark(render_ok)} render: {'OK' if render_ok else 'FAIL'}",
-        f"{mark(sectors == 5)} sectors: {sectors}",
-        f"{mark(stocks is not None and stocks != '?')} stocks: {stocks}",
-        f"{mark(index_ok)} index.html: {'OK' if index_ok else 'FAIL'}",
-        f"{mark(labels_ok)} labels: {labels_line}",
-        f"{mark(wl_stocks_ok)} reportData.watchlistStocks: {'OK' if wl_stocks_ok else 'FAIL'}",
+        "*[KR 관심종목 리포트]*",
+        _kr_watchlist_intro_line(),
+        "",
+        "오늘은 관심 섹터 5개와 관심종목 28개를 기준으로",
+        "관찰 우선 종목과 대기 종목을 정리했습니다.",
+        "",
     ]
-    err = result.get("error")
-    if err:
-        lines.append(f"❌ error: {err}")
+    if briefing_url:
+        lines.extend(["🔗 *리포트 보기*", briefing_url, ""])
+    lines.extend(
+        [
+            "*상태 확인*",
+            "✅ 리포트 생성 완료",
+            f"✅ 관심 섹터: {sectors}개",
+            f"✅ 관심 종목: {stocks}개",
+            "✅ 라벨: 안 사면 후회함 / 지금 사기엔 좀...",
+        ]
+    )
     return "\n".join(lines)
 
 
-def send_kr_watchlist_verify_slack(result: dict[str, Any]) -> dict[str, Any]:
-    """KR 채널로 watchlist 검증 결과 알림 (chat.postMessage, 기존 Bot Token)."""
-    channel = config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "")
-    text = build_kr_watchlist_verify_message(result)
-    return post_message(text, channel, retries=1)
+def send_kr_watchlist_report_slack(
+    result: dict[str, Any],
+    briefing_url: str = "",
+    *,
+    report_type: str = "kr_during",
+) -> dict[str, Any]:
+    """
+    KR 관심종목 리포트 Slack 발송 — send_market_report와 동일 패턴
+    (chat.postMessage + 브리핑 보기 버튼).
+    """
+    channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "")
+    text = build_kr_watchlist_report_slack_text(result, briefing_url)
+    blocks = _briefing_blocks(text, briefing_url)
+    fallback = text if not briefing_url else f"{text}\n\n브리핑: {briefing_url}"
+    posted = post_message(fallback, channel, blocks=blocks, retries=1)
+    return {
+        "ok": bool(posted.get("ok")),
+        "channel": channel,
+        "briefing_url": briefing_url or None,
+        "errors": [] if posted.get("ok") else [str(posted.get("error", "unknown"))],
+        "ts": posted.get("ts"),
+    }

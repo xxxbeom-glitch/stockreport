@@ -30,6 +30,14 @@ class VerifyError(Exception):
     """검증 실패."""
 
 
+def _expected_stock_count() -> int:
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from data.kr_watchlist import watchlist_stock_count
+
+    return watchlist_stock_count()
+
+
 def _extract_report_data(html: str) -> dict[str, Any]:
     marker = "window.reportData = "
     start = html.find(marker)
@@ -77,11 +85,16 @@ def _stock_filter_options(html: str) -> list[str]:
     return re.findall(r'<option\s+value="([^"]*)"', block_m.group(1))
 
 
+def _count_stock_cards(html: str) -> int:
+    return len(re.findall(r'<article[^>]*class="[^"]*stock-card', html))
+
+
 def run_verify() -> dict[str, Any]:
-    """검증 실행. 성공 시 요약 dict, 실패 시 VerifyError."""
+    """검증 실행. data/kr_watchlist.json 전체 기준."""
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
+    expected_stocks = _expected_stock_count()
     result: dict[str, Any] = {
         "ok": False,
         "render_ok": False,
@@ -92,14 +105,17 @@ def run_verify() -> dict[str, Any]:
         "labels_text": "안 사면 후회함 / 지금 사기엔 좀...",
         "sectors": 0,
         "stocks": 0,
+        "expected_stocks": expected_stocks,
+        "source": "data/kr_watchlist.json",
         "error": None,
     }
 
     env = {**os.environ, "KR_MARKET_OFFLINE": "1", "PYTHONUTF8": "1"}
-    print("[KR WATCHLIST] render: python template/kr_market/render.py")
+    print(f"[KR WATCHLIST] source: data/kr_watchlist.json ({expected_stocks} stocks)")
+    print("[KR WATCHLIST] render: python template/kr_market/render.py --verify")
     try:
         subprocess.run(
-            [sys.executable, str(RENDER_SCRIPT)],
+            [sys.executable, str(RENDER_SCRIPT), "--verify"],
             cwd=str(ROOT),
             env=env,
             check=True,
@@ -112,7 +128,7 @@ def run_verify() -> dict[str, Any]:
     except subprocess.CalledProcessError as exc:
         print(exc.stdout or "", file=sys.stderr)
         print(exc.stderr or "", file=sys.stderr)
-        result["error"] = f"render.py 종료 코드 {exc.returncode}"
+        result["error"] = f"render.py --verify 종료 코드 {exc.returncode}"
         raise VerifyError(result["error"]) from exc
 
     if not INDEX_HTML.is_file():
@@ -127,11 +143,21 @@ def run_verify() -> dict[str, Any]:
         result["error"] = "reportData.watchlistStocks 없음"
         raise VerifyError(result["error"])
     watchlist_stocks = report_data["watchlistStocks"]
-    if not isinstance(watchlist_stocks, list) or len(watchlist_stocks) < 1:
-        result["error"] = "watchlistStocks가 비어 있음"
+    if not isinstance(watchlist_stocks, list):
+        result["error"] = "watchlistStocks 타입 오류"
+        raise VerifyError(result["error"])
+    result["stocks"] = len(watchlist_stocks)
+    if result["stocks"] != expected_stocks:
+        result["error"] = (
+            f"watchlistStocks 개수 오류 (기대 {expected_stocks}, 실제 {result['stocks']})"
+        )
         raise VerifyError(result["error"])
     result["watchlist_stocks_ok"] = True
-    result["stocks"] = len(watchlist_stocks)
+
+    card_count = _count_stock_cards(html)
+    if card_count != expected_stocks:
+        result["error"] = f"HTML stock-card 개수 오류 (기대 {expected_stocks}, 실제 {card_count})"
+        raise VerifyError(result["error"])
 
     meta = report_data.get("meta") or {}
     if "watchlistSectors" not in meta:
@@ -182,23 +208,63 @@ def run_verify() -> dict[str, Any]:
 
 
 def _print_summary(result: dict[str, Any]) -> None:
+    print(f"[KR WATCHLIST] render: {'OK' if result.get('render_ok') else 'FAIL'}")
+    print(f"[KR WATCHLIST] index.html: {'OK' if result.get('index_html_ok') else 'FAIL'}")
+    print(
+        "[KR WATCHLIST] reportData.watchlistStocks: "
+        f"{'OK' if result.get('watchlist_stocks_ok') else 'FAIL'}"
+    )
     print(f"[KR WATCHLIST] sectors: {result.get('sectors')}")
     print(f"[KR WATCHLIST] stocks: {result.get('stocks')}")
     print("[KR WATCHLIST] labels: 안 사면 후회함 / 지금 사기엔 좀...")
-    print("[KR WATCHLIST] render: OK" if result.get("render_ok") else "[KR WATCHLIST] render: FAIL")
     print("[KR WATCHLIST] dropdown sectors: OK (5)")
     print("[KR WATCHLIST] N/A fields: OK")
+    if "firebase_ok" in result:
+        print(f"[KR WATCHLIST] firebase upload: {'OK' if result.get('firebase_ok') else 'FAIL'}")
+    if result.get("briefing_url"):
+        print(f"[KR WATCHLIST] briefing_url: {result['briefing_url']}")
+    if "slack_ok" in result:
+        print(f"[KR WATCHLIST] slack: {'OK' if result.get('slack_ok') else 'FAIL'}")
+
+
+def _upload_index_to_firebase() -> dict[str, Any]:
+    """기존 firebase_client.save_report — 국장 브리핑과 동일."""
+    from datetime import datetime
+
+    from firebase_client import save_report
+
+    filename = f"{datetime.now().strftime('%y%m%d_%H%M')}_kr_watchlist.html"
+    return save_report(
+        payload={
+            "report_data": {
+                "report_type": "kr_during",
+                "one_line_summary": "KR 관심종목 watchlist 리포트",
+            },
+            "file_path": str(INDEX_HTML),
+            "report_type": "kr_during",
+            "filename": filename,
+        }
+    )
 
 
 def _notify_slack(result: dict[str, Any]) -> None:
-    from slack_sender import send_kr_watchlist_verify_slack
+    from slack_sender import send_kr_watchlist_report_slack
 
-    slack_result = send_kr_watchlist_verify_slack(result)
-    if slack_result.get("skipped"):
-        print("[KR WATCHLIST] Slack skipped:", slack_result.get("error"), file=sys.stderr)
-        sys.exit(1)
+    fb = _upload_index_to_firebase()
+    briefing_url = str(fb.get("url") or "")
+    result["firebase_ok"] = bool(briefing_url)
+    result["briefing_url"] = briefing_url
+    if not briefing_url:
+        err = fb.get("firebase_init_error") or fb.get("firestore_error") or "upload returned empty url"
+        print(f"[KR WATCHLIST] Firebase WARN: {err}", file=sys.stderr)
+        if not fb.get("firebase_init_ok"):
+            sys.exit(1)
+
+    slack_result = send_kr_watchlist_report_slack(result, briefing_url, report_type="kr_during")
+    result["slack_ok"] = bool(slack_result.get("ok"))
     if not slack_result.get("ok"):
-        print("[KR WATCHLIST] Slack FAIL:", slack_result.get("error"), file=sys.stderr)
+        errs = slack_result.get("errors") or ["unknown"]
+        print("[KR WATCHLIST] Slack FAIL:", "; ".join(errs), file=sys.stderr)
         sys.exit(1)
     print("[KR WATCHLIST] Slack: OK")
 
@@ -211,7 +277,7 @@ def main() -> None:
         except Exception:
             pass
 
-    parser = argparse.ArgumentParser(description="KR watchlist render 검증")
+    parser = argparse.ArgumentParser(description="KR watchlist render 검증 (kr_watchlist.json 전체)")
     parser.add_argument(
         "--notify-slack",
         action="store_true",
@@ -221,9 +287,9 @@ def main() -> None:
 
     try:
         summary = run_verify()
-        _print_summary(summary)
         if args.notify_slack:
             _notify_slack(summary)
+        _print_summary(summary)
     except VerifyError as exc:
         print(f"[KR WATCHLIST] FAIL: {exc}", file=sys.stderr)
         sys.exit(1)

@@ -18,9 +18,12 @@ from agents.label_vote_helpers import normalize_ticker
 from data.kr_market import get_kis_sector_trading_value, get_sector_top_stocks
 from data.kr_watchlist import (
     build_watchlist_stock_pool,
+    iter_watchlist_entries,
+    load_kr_watchlist_raw,
     sort_kr_focus_stocks,
     stock_filter_options,
     watchlist_sectors_meta,
+    SECTOR_ORDER,
 )
 from data.sources import fetch_yfinance_history
 from data.us_market import _fetch_usd_krw
@@ -444,8 +447,61 @@ def _weekday_ko(dt: datetime) -> str:
     return names[dt.weekday()]
 
 
+def _default_sector_flow_from_watchlist() -> dict[str, list[str]]:
+    raw = load_kr_watchlist_raw()
+    sectors = raw.get("sectors") or {}
+    labels = [str((sectors.get(k) or {}).get("label", k)) for k in SECTOR_ORDER]
+    if len(labels) >= 3:
+        return {"hot": labels[:2], "cold": [labels[-1]]}
+    return {"hot": labels, "cold": []}
+
+
+def build_watchlist_verify_report_data() -> dict[str, Any]:
+    """
+    CI 검증용: data/kr_watchlist.json 전체 종목(28) 기준 report_data.
+    sample_data.json 과 무관.
+    """
+    from agents.label_rules import LABEL_REGRET, LABEL_TIMING, label_to_badge_class
+
+    rows: list[dict[str, Any]] = []
+    for i, entry in enumerate(iter_watchlist_entries()):
+        label = LABEL_REGRET if i % 2 == 0 else LABEL_TIMING
+        rows.append(
+            {
+                "name": entry["name"],
+                "code": entry["ticker"],
+                "ticker": entry["ticker"],
+                "sector_key": entry["sector_key"],
+                "sector_name": entry["sector_name"],
+                "sector_order": entry["sector_order"],
+                "stock_order": entry["stock_order"],
+                "label": label,
+                "verdict": label,
+                "label_reason": f"{entry['sector_name']} 관심종목.\n지표·수급 확인 예정.",
+                "verdict_class": label_to_badge_class(label),
+                "price": NA,
+                "target_price": NA,
+                "foreign_net_eok": NA,
+                "high_52": NA,
+                "company_summary": "",
+            }
+        )
+
+    flow = _default_sector_flow_from_watchlist()
+    return {
+        "report_type": "us_close_kr_before",
+        "indices": {
+            "KOSPI": {"value": "2,650.00", "change": "+0.42%", "is_up": True},
+            "KOSDAQ": {"value": "850.12", "change": "-0.15%", "is_up": False},
+        },
+        "market_phase_reason": "코스피 소폭 상승.\n외국인 순매수는 제한적.",
+        "sector_flow": flow,
+        "stock_analysis": sort_kr_focus_stocks(rows),
+    }
+
+
 def build_static_preview_report_data() -> dict[str, Any]:
-    """Offline sample: watchlist subset, N/A metrics, 2-label examples only."""
+    """Offline UI 샘플용: watchlist 중 일부만 (sample_data.json). Verify는 build_watchlist_verify_report_data 사용."""
     from agents.label_rules import LABEL_REGRET, LABEL_TIMING
 
     samples: list[dict[str, Any]] = [

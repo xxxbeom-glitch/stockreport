@@ -118,6 +118,11 @@ def iter_watchlist_entries(*, resolve_missing_tickers: bool = False) -> Iterator
             }
 
 
+def watchlist_stock_count() -> int:
+    """관심종목 총 개수 (data/kr_watchlist.json)."""
+    return sum(1 for _ in iter_watchlist_entries())
+
+
 def _pipeline_index(pipeline: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
     idx: dict[str, dict[str, Any]] = {}
     if not pipeline:
