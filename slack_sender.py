@@ -637,3 +637,40 @@ def send_report(
     if summary and not data.get("one_line_summary"):
         data["one_line_summary"] = summary
     return send_market_report(data, rtype, url)
+
+
+def build_kr_watchlist_verify_message(result: dict[str, Any]) -> str:
+    """GitHub Actions KR Market Watchlist Verify 요약 (단문 텍스트)."""
+    ok = result.get("ok", False)
+    render_ok = result.get("render_ok", False)
+    index_ok = result.get("index_html_ok", False)
+    wl_stocks_ok = result.get("watchlist_stocks_ok", False)
+    labels_ok = result.get("labels_ok", False)
+    sectors = result.get("sectors", "?")
+    stocks = result.get("stocks", "?")
+    labels_line = result.get("labels_text", "안 사면 후회함 / 지금 사기엔 좀...")
+
+    def mark(cond: bool) -> str:
+        return "✅" if cond else "❌"
+
+    lines = [
+        "[KR Watchlist Verify]",
+        "KR Market Watchlist Verify 완료" if ok else "KR Market Watchlist Verify 실패",
+        f"{mark(render_ok)} render: {'OK' if render_ok else 'FAIL'}",
+        f"{mark(sectors == 5)} sectors: {sectors}",
+        f"{mark(stocks is not None and stocks != '?')} stocks: {stocks}",
+        f"{mark(index_ok)} index.html: {'OK' if index_ok else 'FAIL'}",
+        f"{mark(labels_ok)} labels: {labels_line}",
+        f"{mark(wl_stocks_ok)} reportData.watchlistStocks: {'OK' if wl_stocks_ok else 'FAIL'}",
+    ]
+    err = result.get("error")
+    if err:
+        lines.append(f"❌ error: {err}")
+    return "\n".join(lines)
+
+
+def send_kr_watchlist_verify_slack(result: dict[str, Any]) -> dict[str, Any]:
+    """KR 채널로 watchlist 검증 결과 알림 (chat.postMessage, 기존 Bot Token)."""
+    channel = config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "")
+    text = build_kr_watchlist_verify_message(result)
+    return post_message(text, channel, retries=1)

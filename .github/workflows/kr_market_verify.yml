@@ -10,6 +10,8 @@ on:
       - "scripts/verify_kr_watchlist_render.py"
       - "agents/label_*.py"
       - "main.py"
+      - "slack_sender.py"
+      - ".github/workflows/kr_market_verify.yml"
   pull_request:
     paths:
       - "data/kr_watchlist.json"
@@ -18,6 +20,8 @@ on:
       - "scripts/verify_kr_watchlist_render.py"
       - "agents/label_*.py"
       - "main.py"
+      - "slack_sender.py"
+      - ".github/workflows/kr_market_verify.yml"
   workflow_dispatch:
 
 jobs:
@@ -33,11 +37,22 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Verify kr_market render and watchlist reportData
+      - name: Verify kr_market render and notify Slack (KR 채널)
         env:
           KR_MARKET_OFFLINE: "1"
           PYTHONUTF8: "1"
-        run: python scripts/verify_kr_watchlist_render.py
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
+        run: python scripts/verify_kr_watchlist_render.py --notify-slack
+
+      - name: 실패 시 Slack 알림
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            -d '{"text":"❌ [KR Market Watchlist Verify] 검증 실패 — GitHub Actions 로그 확인"}'
 
       - name: Upload index.html artifact (debug)
         if: always()
