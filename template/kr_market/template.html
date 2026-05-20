@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>{{ title | default('투자 인사이트') }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="page-header">
+      <h1 class="page-title">{{ title | default('투자 인사이트') }}</h1>
+      <p class="page-sub">{{ market_line | default('한국시장') }}</p>
+    </header>
+
+    <section class="section-block" id="market">
+      <div class="card">
+        <h2 class="card-title">마켓 주요 지표</h2>
+        {% for row in indices %}
+        <div class="metric-row">
+          <span class="metric-label">{{ row.label }}</span>
+          <span class="metric-value {{ 'up' if row.is_up else 'down' }}">
+            {{ row.value }}
+            <span class="chg">{{ row.change }}</span>
+          </span>
+        </div>
+        {% endfor %}
+        {% if market_commentary %}
+        <div class="insight-box">{{ market_commentary }}</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="section-block" id="sectors">
+      <div class="section-head">
+        <h2 class="section-title">섹터 유입·유출</h2>
+        {% if sector_filter_options %}
+        <select class="filter-select" aria-label="섹터 필터">
+          {% for opt in sector_filter_options %}
+          <option value="{{ opt }}"{% if loop.first %} selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+        {% else %}
+        <select class="filter-select" aria-label="섹터 필터"><option selected>전체섹터</option></select>
+        {% endif %}
+      </div>
+
+      {% for sector in sectors %}
+      <article class="card sector-card">
+        <div class="sector-top">
+          <h3 class="sector-name">{{ sector.name }}</h3>
+          <span class="sector-flow {{ 'up' if sector.is_inflow else 'down' }}">{{ sector.flow_amount }}</span>
+        </div>
+        {% if sector.tag %}
+        <span class="tag-pill">{{ sector.tag }}</span>
+        {% endif %}
+        {% if sector.stock_names %}
+        <p class="stock-list">{{ sector.stock_names | join(', ') }}</p>
+        {% endif %}
+        {% if sector.commentary %}
+        <div class="insight-box">{{ sector.commentary }}</div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+
+    <section class="section-block" id="stocks">
+      <div class="section-head">
+        <h2 class="section-title">관심 종목 투자의견</h2>
+        {% if stock_filter_options %}
+        <select class="filter-select" aria-label="종목 섹터 필터">
+          {% for opt in stock_filter_options %}
+          <option value="{{ opt }}"{% if loop.first %} selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+        {% else %}
+        <select class="filter-select" aria-label="종목 섹터 필터"><option selected>전체섹터</option></select>
+        {% endif %}
+      </div>
+
+      {% for stock in stocks %}
+      <article class="card stock-card">
+        <div class="stock-head">
+          <div class="stock-logo{% if not stock.logo_url %} stock-logo--placeholder{% endif %}" aria-hidden="true">
+            {% if stock.logo_url %}
+            <img src="{{ stock.logo_url }}" alt="">
+            {% else %}
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="36" height="36" fill="#E5E7EB"/>
+              <path d="M12 24V14l6-4 6 4v10" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="15" y="18" width="6" height="6" rx="0.5" stroke="#9CA3AF" stroke-width="1.5"/>
+            </svg>
+            {% endif %}
+          </div>
+          <div class="stock-name-wrap">
+            <h3 class="stock-name">{{ stock.name }}</h3>
+          </div>
+          {% if stock.verdict_badge %}
+          <span class="verdict-badge {{ stock.verdict_class | default('hold') }}">{{ stock.verdict_badge }}</span>
+          {% endif %}
+        </div>
+
+        {% if stock.opinion %}
+        <p class="opinion-text">{{ stock.opinion }}</p>
+        {% endif %}
+
+        <table class="kv-table">
+          {% for item in stock.metrics %}
+          <tr>
+            <th scope="row">{{ item.label }}</th>
+            <td>{{ item.value }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        {% if stock.company_summary %}
+        <p class="company-box">{{ stock.company_summary }}</p>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+
+    {% if disclaimer %}
+    <p class="disclaimer">{{ disclaimer }}</p>
+    {% else %}
+    <p class="disclaimer">본 자료는 투자 참고용이며, 투자 판단과 손실 책임은 투자자 본인에게 있습니다.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

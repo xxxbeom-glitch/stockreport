@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>투자 인사이트 · kr_market (더미)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="page-header">
+      <h1 class="page-title">투자 인사이트</h1>
+      <p class="page-sub">한국시장 | 2026-05-20 수요일 09:00 업데이트</p>
+    </header>
+
+    <section class="section-block" id="market">
+      <div class="card">
+        <h2 class="card-title">마켓 주요 지표</h2>
+        <div class="metric-row">
+          <span class="metric-label">코스피</span>
+          <span class="metric-value up">7,540.88<span class="chg">+2.66%</span></span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">코스닥</span>
+          <span class="metric-value down">1,555.98<span class="chg">-3.33%</span></span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">달러/원 환율</span>
+          <span class="metric-value down">1,432.50<span class="chg">-0.42%</span></span>
+        </div>
+        <div class="insight-box">
+          (더미) 장전·장중·장후 시장 코멘트가 들어가는 영역입니다. Gemini 매크로 요약 2~3문장 placeholder.
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block" id="sectors">
+      <div class="section-head">
+        <h2 class="section-title">섹터 유입·유출</h2>
+        <select class="filter-select" aria-label="섹터 필터" disabled>
+          <option selected>전체섹터</option>
+        </select>
+      </div>
+
+      <article class="card sector-card">
+        <div class="sector-top">
+          <h3 class="sector-name">반도체 소재</h3>
+          <span class="sector-flow up">+1,300억원</span>
+        </div>
+        <span class="tag-pill">주요 상승 종목</span>
+        <p class="stock-list">종목A, 종목B, 종목C, 종목D</p>
+        <div class="insight-box">(더미) 섹터별 AI 코멘트 placeholder. 유입·유출 해석 2~3문장.</div>
+      </article>
+
+      <article class="card sector-card">
+        <div class="sector-top">
+          <h3 class="sector-name">2차전지</h3>
+          <span class="sector-flow down">-820억원</span>
+        </div>
+        <span class="tag-pill">주요 상승 종목</span>
+        <p class="stock-list">종목E, 종목F, 종목G</p>
+        <div class="insight-box">(더미) 섹터 수급·모멘텀 요약 placeholder.</div>
+      </article>
+
+      <article class="card sector-card">
+        <div class="sector-top">
+          <h3 class="sector-name">바이오</h3>
+          <span class="sector-flow up">+210억원</span>
+        </div>
+        <span class="tag-pill">주요 상승 종목</span>
+        <p class="stock-list">종목H, 종목I</p>
+        <div class="insight-box">(더미) 섹터 코멘트 placeholder.</div>
+      </article>
+    </section>
+
+    <section class="section-block" id="stocks">
+      <div class="section-head">
+        <h2 class="section-title">관심 종목 투자의견</h2>
+        <select class="filter-select" aria-label="종목 섹터 필터" disabled>
+          <option selected>전체섹터</option>
+        </select>
+      </div>
+
+      <article class="card stock-card">
+        <div class="stock-head">
+          <div class="stock-logo stock-logo--placeholder" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" fill="#E5E7EB"/><path d="M12 24V14l6-4 6 4v10" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="18" width="6" height="6" rx="0.5" stroke="#9CA3AF" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stock-name-wrap"><h3 class="stock-name">더미종목 01</h3></div>
+          <span class="verdict-badge buy">안사면 후회함</span>
+        </div>
+        <p class="opinion-text">(더미) 최종 투자의견 3문장 placeholder. 수급·모멘텀·밸류를 종합한 한국어 설명이 들어갑니다.</p>
+        <table class="kv-table">
+          <tr><th scope="row">현재가</th><td>168,000원</td></tr>
+          <tr><th scope="row">목표가</th><td>600,000원</td></tr>
+          <tr><th scope="row">외국인 순매수</th><td>1,300억원</td></tr>
+          <tr><th scope="row">52주 최고가</th><td>210,000원</td></tr>
+        </table>
+        <p class="company-box">(더미) 기업 한줄 소개 placeholder. 사업 개요·관계사 요약.</p>
+      </article>
+
+      <article class="card stock-card">
+        <div class="stock-head">
+          <div class="stock-logo stock-logo--placeholder" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" fill="#E5E7EB"/><path d="M12 24V14l6-4 6 4v10" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="18" width="6" height="6" rx="0.5" stroke="#9CA3AF" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stock-name-wrap"><h3 class="stock-name">더미종목 02</h3></div>
+          <span class="verdict-badge hold">지금 사기엔 좀…</span>
+        </div>
+        <p class="opinion-text">(더미) 투자의견 placeholder. 밸류 부담·시장 국면·손절 가이드 등 3문장.</p>
+        <table class="kv-table">
+          <tr><th scope="row">현재가</th><td>267,250원</td></tr>
+          <tr><th scope="row">목표가</th><td>320,000원</td></tr>
+          <tr><th scope="row">외국인 순매수</th><td>-250억원</td></tr>
+          <tr><th scope="row">52주 최고가</th><td>299,500원</td></tr>
+        </table>
+        <p class="company-box">(더미) 회사 소개 placeholder.</p>
+      </article>
+
+      <article class="card stock-card">
+        <div class="stock-head">
+          <div class="stock-logo stock-logo--placeholder" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" fill="#E5E7EB"/><path d="M12 24V14l6-4 6 4v10" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="18" width="6" height="6" rx="0.5" stroke="#9CA3AF" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stock-name-wrap"><h3 class="stock-name">더미종목 03</h3></div>
+          <span class="verdict-badge sell">관망 추천</span>
+        </div>
+        <p class="opinion-text">(더미) 리스크·관망 의견 placeholder 3문장.</p>
+        <table class="kv-table">
+          <tr><th scope="row">현재가</th><td>58,400원</td></tr>
+          <tr><th scope="row">목표가</th><td>72,000원</td></tr>
+          <tr><th scope="row">외국인 순매수</th><td>45억원</td></tr>
+          <tr><th scope="row">52주 최고가</th><td>62,100원</td></tr>
+        </table>
+        <p class="company-box">(더미) 회사 소개 placeholder.</p>
+      </article>
+
+      <article class="card stock-card">
+        <div class="stock-head">
+          <div class="stock-logo stock-logo--placeholder" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" fill="#E5E7EB"/><path d="M12 24V14l6-4 6 4v10" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="18" width="6" height="6" rx="0.5" stroke="#9CA3AF" stroke-width="1.5"/></svg>
+          </div>
+          <div class="stock-name-wrap"><h3 class="stock-name">더미종목 04</h3></div>
+          <span class="verdict-badge buy">안사면 후회함</span>
+        </div>
+        <p class="opinion-text">(더미) 매수 의견 placeholder 3문장.</p>
+        <table class="kv-table">
+          <tr><th scope="row">현재가</th><td>12,450원</td></tr>
+          <tr><th scope="row">목표가</th><td>18,000원</td></tr>
+          <tr><th scope="row">외국인 순매수</th><td>88억원</td></tr>
+          <tr><th scope="row">52주 최고가</th><td>14,200원</td></tr>
+        </table>
+        <p class="company-box">(더미) 회사 소개 placeholder.</p>
+      </article>
+    </section>
+
+    <p class="disclaimer">(더미) 면책 문구 placeholder · 투자 참고용</p>
+  </div>
+</body>
+</html>

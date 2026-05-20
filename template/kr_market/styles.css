@@ -1,0 +1,323 @@
+:root {
+  --page-bg: #f3f4f6;
+  --card-bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --up: #2563eb;
+  --down: #dc2626;
+  --insight-bg: #eff6ff;
+  --insight-border: #dbeafe;
+  --tag-green-bg: #dcfce7;
+  --tag-green-text: #166534;
+  --badge-buy-bg: #fee2e2;
+  --badge-buy-text: #b91c1c;
+  --badge-hold-bg: #374151;
+  --badge-hold-text: #ffffff;
+  --radius: 12px;
+  --pad: 16px;
+  --max-w: 390px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0 auto;
+  max-width: var(--max-w);
+  min-height: 100vh;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--page-bg);
+}
+
+.app {
+  padding: 0 0 32px;
+}
+
+.page-header {
+  padding: 20px var(--pad) 16px;
+  background: var(--card-bg);
+}
+
+.page-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.page-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.section-block {
+  padding: 16px var(--pad) 0;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.filter-select {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 28px 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--card-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+  cursor: pointer;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.card-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.metric-row:last-of-type {
+  border-bottom: none;
+}
+
+.metric-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.metric-value {
+  text-align: right;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-value .chg {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.up { color: var(--up); }
+.down { color: var(--down); }
+
+.insight-box {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--insight-bg);
+  border: 1px solid var(--insight-border);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1e3a8a;
+}
+
+.sector-card .sector-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sector-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sector-flow {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tag-pill {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--tag-green-bg);
+  color: var(--tag-green-text);
+}
+
+.stock-list {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.stock-card .stock-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* Figma: 종목 로고 36×36px 원형 */
+.stock-logo {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.stock-logo img {
+  width: 36px;
+  height: 36px;
+  display: block;
+  object-fit: cover;
+}
+
+.stock-logo--placeholder {
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+}
+
+.stock-logo--placeholder svg {
+  display: block;
+  width: 36px;
+  height: 36px;
+}
+
+.stock-name-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.stock-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.verdict-badge {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.verdict-badge.buy {
+  background: var(--badge-buy-bg);
+  color: var(--badge-buy-text);
+}
+
+.verdict-badge.hold {
+  background: var(--badge-hold-bg);
+  color: var(--badge-hold-text);
+}
+
+.verdict-badge.sell {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.opinion-text {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.kv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.kv-table th,
+.kv-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+.kv-table th {
+  width: 42%;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.kv-table td {
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.kv-table tr:last-child th,
+.kv-table tr:last-child td {
+  border-bottom: none;
+}
+
+.company-box {
+  margin: 0;
+  padding: 12px;
+  background: var(--insight-bg);
+  border: 1px solid var(--insight-border);
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #1e40af;
+}
+
+.disclaimer {
+  padding: 16px var(--pad);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.55;
+  text-align: center;
+}
