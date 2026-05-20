@@ -85,7 +85,7 @@ def indicator_change_pct(row: dict[str, Any] | None) -> float | None:
 
 
 def truncate_comment(text: Any, max_len: int = 40) -> str:
-    """One short sentence for HTML agent table cells."""
+    """Legacy short clip (Slack one-liners, etc.)."""
     raw = " ".join(str(text or "").split())
     if not raw or raw.upper() in {"N/A", "NONE", "NULL"}:
         return ""
@@ -96,6 +96,38 @@ def truncate_comment(text: Any, max_len: int = 40) -> str:
     if len(raw) > max_len:
         return raw[: max_len - 1].rstrip() + "…"
     return raw
+
+
+def format_analyst_comment(text: Any, max_sentences: int = 3) -> str:
+    """Up to N natural Korean sentences for HTML agent opinions."""
+    import re
+
+    raw = str(text or "").strip()
+    if not raw or raw.upper() in {"N/A", "NONE", "NULL"}:
+        return ""
+
+    normalized = " ".join(raw.split())
+    chunks = re.split(r"(?<=[.!?…])\s+|(?<=[。])\s*", normalized)
+    sentences = [c.strip() for c in chunks if c.strip()]
+    if not sentences:
+        sentences = [normalized]
+
+    picked: list[str] = []
+    for sent in sentences:
+        if len(picked) >= max_sentences:
+            break
+        picked.append(sent)
+
+    return " ".join(picked)
+
+
+ANALYST_VOICE_RULES = """
+말투·형식 (반드시 준수):
+- 숫자만 나열하지 말고, 그 숫자가 의미하는 바를 쉬운 말로 해석할 것
+- 최대 3문장, 전문가가 옆에서 설명하듯 자연스러운 구어체 (~해요, ~예요, ~세요)
+- 딱딱한 보고서체·명사 나열·JSON 설명 문구 금지
+- comment(또는 risk_comment) 필드에만 본문을 쓸 것
+"""
 
 
 def volume_flow_label(volume_ratio: float, change_pct: float) -> str:

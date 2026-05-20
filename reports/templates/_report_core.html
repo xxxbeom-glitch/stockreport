@@ -159,7 +159,7 @@
             <td>{{ ag.name }}</td>
             <td class="muted">{{ ag.title }}</td>
             <td class="vote-{{ 'buy' if ag.vote == '매수' else ('sell' if ag.vote == '매도' else 'hold') }}">{{ ag.vote }}</td>
-            <td>{% for r in ag.reason %}{% if r %}{{ r }}{% if not loop.last %} {% endif %}{% endif %}{% endfor %}</td>
+            <td class="agent-comment">{% for r in ag.reason %}{% if r %}{{ r }}{% endif %}{% endfor %}</td>
           </tr>
           {% endfor %}
         </tbody>

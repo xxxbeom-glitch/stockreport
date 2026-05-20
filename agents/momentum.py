@@ -8,7 +8,7 @@ from typing import Any
 import config
 from config import VOLUME_FIRE
 
-from .common import position_52w_label, position_52w_pct, safe_float
+from .common import ANALYST_VOICE_RULES, format_analyst_comment, position_52w_label, position_52w_pct, safe_float
 
 
 def _grok_momentum_analysis(
@@ -29,35 +29,31 @@ def _grok_momentum_analysis(
     ]
 
     prompt = f"""
-당신은 철저하게 숫자와 모멘텀에 기반하는 퀀트 애널리스트 Chris Yoon입니다.
-외국인·기관 수급·체결강도는 언급하지 말 것. 오직 52주 위치, 등락률, 거래량배수, 추세만.
-거래량 급등이 매집인지 차익실현(설거지)인지 반드시 판단.
-position_52w_analysis, x_buzz, momentum_direction 각 40자 이내 1문장(한국어).
+당신은 가격·거래량 모멘텀을 읽는 퀀트 애널리스트 Chris Yoon입니다.
+외국인·기관·체결강도는 언급하지 말고, 52주 위치·등락률·거래량배수·매집/차익(설거지)만 판단하세요.
+{ANALYST_VOICE_RULES}
+
+예시 (Chris Yoon 톤):
+"거래량이 폭발하면서 주가가 오르고 있어요. 파는 사람보다 사는 사람이 훨씬 많은 상황이에요. 단기 상승 모멘텀이 살아있어요."
+
 X 검색은 보조만 사용. 반드시 x_search 결과 기반. 추측 금지.
 
 [시장 국면] {supply_result.get("market_phase", "중립")}
 [분석 종목]
 {chr(10).join(stock_lines)}
 
-각 종목마다 다음을 분석:
-1. 단기 모멘텀 방향 (상승/하락/보합)과 강도
-2. X에서 지금 핫하게 언급되는 종목인지 (is_x_hot: true/false, 근거)
-3. 52주 고저 대비 현재 위치 기반 추세 판단
-4. 모멘텀 관점 매수/홀드/매도 의견 (vote는 "매수", "홀드", "매도" 중 하나)
+각 종목마다 vote(매수/홀드/매도), is_x_hot, comment(모멘텀 해석 3문장)를 작성하세요.
 
 JSON만 반환:
 {{
-  "top_theme": "지금 X에서 가장 강한 테마 한줄",
-  "summary": "모멘텀 전체 한줄",
+  "top_theme": "X에서 강한 테마 한 줄",
+  "summary": "모멘텀 전체 3문장",
   "verdicts": {{
     "티커": {{
       "name": "종목명",
       "vote": "매수",
-      "momentum_direction": "상승",
       "is_x_hot": true,
-      "position_52w_analysis": "52주 위치·매집/차익 40자 이내",
-      "x_buzz": "X 모멘텀 40자 이내",
-      "reasons": ["이유1", "이유2"]
+      "comment": "52주 위치·거래량·매집/차익을 해석한 3문장"
     }}
   }}
 }}
@@ -86,13 +82,18 @@ def _merge_grok_momentum(result: dict[str, Any], grok: dict[str, Any] | None) ->
         row = scores.get(ticker) or scores.get(ticker.zfill(6))
         if not row:
             continue
-        from .common import truncate_comment
-
         row["grok_vote"] = v.get("vote")
-        row["momentum_direction"] = truncate_comment(v.get("momentum_direction"))
         row["is_x_hot"] = v.get("is_x_hot")
-        row["x_momentum_comment"] = truncate_comment(v.get("x_buzz") or v.get("x_momentum_comment"))
-        row["position_52w_analysis"] = truncate_comment(v.get("position_52w_analysis"))
+        if v.get("comment"):
+            row["momentum_comment"] = format_analyst_comment(v["comment"])
+        elif v.get("position_52w_analysis") or v.get("x_buzz"):
+            row["momentum_comment"] = format_analyst_comment(
+                " ".join(
+                    str(x)
+                    for x in (v.get("position_52w_analysis"), v.get("x_buzz"), v.get("momentum_direction"))
+                    if x
+                )
+            )
 
 
 def analyze_momentum(

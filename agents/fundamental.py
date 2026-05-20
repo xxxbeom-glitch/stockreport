@@ -7,7 +7,7 @@ from typing import Any
 
 import config
 
-from .common import safe_float
+from .common import ANALYST_VOICE_RULES, format_analyst_comment, safe_float
 
 
 def _us_dart_summary(stock: dict[str, Any]) -> str | None:
@@ -102,15 +102,18 @@ def analyze_fundamental(
         from .gemini_client import generate_gemini_json
 
         prompt = f"""
-당신은 기업 재무 상태와 밸류에이션을 평가하는 애널리스트 이준혁입니다.
-주가 모멘텀과 무관하게 현재 가격이 장부 가치 대비 합리적인지만 평가.
-성장주는 PER 높아도 업종 특성 반영하여 합리적으로 해석.
-comment는 40자 이내 1문장. 인사말·서론 없이 JSON만.
+당신은 PER·PBR로 밸류에이션을 설명하는 애널리스트 이준혁입니다.
+주가 모멘텀·수급은 다루지 말고, 장부가치 대비 비싼지·싼지만 쉽게 설명하세요.
+{ANALYST_VOICE_RULES}
+
+예시 (이준혁 톤):
+"PBR이 3.3으로 자산 대비 꽤 비싼 편이에요. 업종 평균보다 높아서 밸류 부담이 있어요. 실적이 뒷받침돼야 정당화되는 수준이에요."
 
 아래 PER/PBR·실적 데이터만 사용. 추측 금지.
-[종목]{json.dumps(list(scores.values()), ensure_ascii=False)[:3000]}
+[종목]{json.dumps(list(scores.items()), ensure_ascii=False)[:3000]}
 
-스키마: {{"fundamental_scores": {{"티커": {{"comment":"한줄","valuation":"저평가/적정/고평가","fundamental_score":0-100}}}}}}
+인사말·서론 없이 JSON만.
+스키마: {{"fundamental_scores": {{"티커": {{"comment":"3문장","valuation":"저평가/적정/고평가","fundamental_score":0-100}}}}}}
 """
         parsed = generate_gemini_json(prompt, agent="fundamental", logger=logger)
         if parsed and isinstance(parsed.get("fundamental_scores"), dict):
@@ -118,7 +121,7 @@ comment는 40자 이내 1문장. 인사말·서론 없이 JSON만.
                 if ticker not in scores or not isinstance(row, dict):
                     continue
                 if row.get("comment"):
-                    scores[ticker]["comment"] = str(row["comment"])
+                    scores[ticker]["comment"] = format_analyst_comment(str(row["comment"]))
                 if row.get("valuation"):
                     scores[ticker]["valuation"] = str(row["valuation"])
                 if row.get("fundamental_score") is not None:

@@ -9,7 +9,7 @@ import config
 from data.kis_client import get_sector_trading_value
 from utils.retry import retry
 
-from .common import indicator_change_pct, normalize_phase, safe_float
+from .common import ANALYST_VOICE_RULES, indicator_change_pct, normalize_phase, safe_float
 
 
 def _sector_inflow_outflow() -> tuple[list[str], list[str]]:
@@ -169,10 +169,11 @@ def analyze_macro(
 
             prompt = f"""
 당신은 20년 경력의 글로벌 매크로 애널리스트 Michael Chen입니다.
-감정적 표현 배제, 건조하고 객관적으로 작성.
-위험회피/중립/강세 중 하나로 시장 국면 정의.
-타겟 섹터에 미치는 영향 2문장 이내로 요약.
-인사말·서론 없이 JSON만 반환.
+시장 국면(위험회피/중립/강세)을 정하고, 초보 투자자에게 옆에서 설명하듯 말해 주세요.
+{ANALYST_VOICE_RULES}
+
+예시 (Michael Chen 톤):
+"지금 시장 전체가 위험회피 분위기예요. 주요 지수가 다 내리고 있고 이런 환경에서 중소형주는 더 취약해요."
 
 아래 실데이터만 사용. 없는 수치는 N/A, 추측 금지.
 기존 market_phase는 유지하거나 동의할 때만 수정: {phase}
@@ -181,14 +182,15 @@ def analyze_macro(
 [지표]{json.dumps(indicators, ensure_ascii=False)[:2000]}
 [섹터]{json.dumps({"유입": favorable, "유출": unfavorable}, ensure_ascii=False)}
 
+인사말·서론 없이 JSON만 반환.
 스키마:
 {{
   "market_phase":"위험회피/중립/강세",
-  "market_phase_reason":"한줄",
+  "market_phase_reason":"시장 국면 3문장 이내 설명",
   "macro_comments":{{"dollar":"","rate":"","vix":"","wti":"","copper":""}},
   "favorable_sectors":[],
   "unfavorable_sectors":[],
-  "watchlist_verdict":{{"KR":"","US":""}}
+  "watchlist_verdict":{{"KR":"국장 관심종목 3문장","US":"미장 관심종목 3문장"}}
 }}
 """
             parsed = generate_gemini_json(prompt, agent="macro", logger=logger)

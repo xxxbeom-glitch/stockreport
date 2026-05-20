@@ -7,7 +7,7 @@ from typing import Any
 
 import config
 
-from .common import compute_stop_loss, distance_from_high_pct, normalize_phase, safe_float, truncate_comment
+from .common import ANALYST_VOICE_RULES, compute_stop_loss, distance_from_high_pct, format_analyst_comment, normalize_phase, safe_float
 
 
 def _risk_level(base: str, phase: str) -> str:
@@ -99,18 +99,32 @@ def analyze_risk(
     if config.GEMINI_API_KEY and assessments_map:
         from .gemini_client import generate_gemini_json
 
+        stocks_for_prompt = [
+            {
+                "ticker": s.get("ticker"),
+                "name": s.get("name"),
+                "price": s.get("price"),
+                "stop_loss": assessments_map.get(str(s.get("ticker")), {}).get("stop_loss"),
+                "final_verdict": assessments_map.get(str(s.get("ticker")), {}).get("final_verdict"),
+            }
+            for s in supply_result.get("filtered_stocks", [])
+        ]
         prompt = f"""
-당신은 최종 매수 여부를 결정하고 리스크를 통제하는 리스크 매니저 강민서입니다.
-4명 애널리스트 의견을 모순 없이 하나의 결론으로 통합.
-손절선(stop_loss)은 현재가 대비 -5%~-8% 구간에서 지지선을 고려해 구체적 원화 가격으로 제시 (예: 230,000원).
-시장 국면이 위험회피면 점수가 높아도 분할 매수를 강력 권고.
-어떠한 인사말, 서론도 포함하지 말 것. JSON만 반환.
+당신은 최종 리스크를 정리하는 리스크 매니저 강민서입니다.
+4명 애널리스트 의견을 종합해, 초보자에게 옆에서 조언하듯 말해 주세요.
+{ANALYST_VOICE_RULES}
+
+예시 (강민서 톤):
+"PBR 고평가에 시장도 불안한 상황이에요. 지금은 관망하는 게 나을 것 같아요. 혹시 보유 중이라면 1,503원 밑에서 손절하세요."
+
+손절가(stop_loss)는 현재가×0.94 근처 원화 가격(예: 98,700원). comment에 손절 가격을 자연스럽게 넣으세요.
+시장 국면이 위험회피면 분할·관망을 권하세요.
+인사말·서론 없이 JSON만.
 
 [매크로]{json.dumps({"phase": phase, "warning": risk_warning}, ensure_ascii=False)}
-[수급·모멘텀·펀더 요약]{json.dumps({"supply_filtered": len(supply_result.get("filtered_stocks", [])), "phase": phase}, ensure_ascii=False)}
-[평가]{json.dumps(assessments_map, ensure_ascii=False)[:3000]}
+[종목]{json.dumps(stocks_for_prompt, ensure_ascii=False)[:3000]}
 
-스키마: {{"risk_assessments": {{"티커": {{"risk_comment":"한줄","verdict_comment":"한줄","final_verdict":"매수/홀드/매도","stop_loss":"구체적 원화 가격"}}}}, "one_line_summary":"한줄"}}
+스키마: {{"risk_assessments": {{"티커": {{"comment":"리스크·관망·손절 3문장","final_verdict":"매수/홀드/매도","stop_loss":"98,700원"}}}}, "one_line_summary":"한줄"}}
 """
         parsed = generate_gemini_json(prompt, agent="risk", logger=logger)
         if parsed:
@@ -118,9 +132,18 @@ def analyze_risk(
                 for ticker, row in parsed["risk_assessments"].items():
                     if ticker not in assessments_map or not isinstance(row, dict):
                         continue
-                    for key in ("risk_comment", "verdict_comment", "final_verdict"):
-                        if row.get(key):
-                            assessments_map[ticker][key] = truncate_comment(str(row[key]))
+                    if row.get("comment"):
+                        assessments_map[ticker]["comment"] = format_analyst_comment(str(row["comment"]))
+                    elif row.get("risk_comment"):
+                        assessments_map[ticker]["comment"] = format_analyst_comment(
+                            " ".join(
+                                str(x)
+                                for x in (row.get("risk_comment"), row.get("verdict_comment"))
+                                if x
+                            )
+                        )
+                    if row.get("final_verdict"):
+                        assessments_map[ticker]["final_verdict"] = str(row["final_verdict"])
                     if row.get("stop_loss"):
                         sl = str(row["stop_loss"])
                         if "원" in sl and sl not in ("N/A", "n/a"):
