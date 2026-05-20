@@ -1,0 +1,48 @@
+name: KR Market Watchlist Verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/kr_watchlist.json"
+      - "data/kr_watchlist.py"
+      - "template/kr_market/**"
+      - "scripts/verify_kr_watchlist_render.py"
+      - "agents/label_*.py"
+      - "main.py"
+  pull_request:
+    paths:
+      - "data/kr_watchlist.json"
+      - "data/kr_watchlist.py"
+      - "template/kr_market/**"
+      - "scripts/verify_kr_watchlist_render.py"
+      - "agents/label_*.py"
+      - "main.py"
+  workflow_dispatch:
+
+jobs:
+  verify-kr-watchlist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Verify kr_market render and watchlist reportData
+        env:
+          KR_MARKET_OFFLINE: "1"
+          PYTHONUTF8: "1"
+        run: python scripts/verify_kr_watchlist_render.py
+
+      - name: Upload index.html artifact (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kr-market-index-html
+          path: template/kr_market/index.html
+          if-no-files-found: warn

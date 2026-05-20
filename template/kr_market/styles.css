@@ -435,6 +435,21 @@ body {
   flex: 1;
 }
 
+.stock-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.stock-sector {
+  margin: 0;
+  font-size: 0.833rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .stock-logo {
   flex: 0 0 2.333rem;
   width: 2.333rem;

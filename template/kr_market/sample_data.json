@@ -3,76 +3,277 @@
   "title": "투자 인사이트",
   "market_meta": {
     "market": "한국시장",
-    "date": "2026-05-21 수요일",
-    "updated_at": "09:00 업데이트"
+    "date": "2026-05-21 목요일",
+    "updated_at": "04:53 업데이트"
   },
   "indices": [
-    {"label": "코스피", "value": "2,650.00", "change": "+0.42%", "is_up": true},
-    {"label": "코스닥", "value": "850.12", "change": "-0.15%", "is_up": false},
-    {"label": "달러/원 환율", "value": "1,380.50", "change": "+0.10%", "is_up": true}
+    {
+      "label": "코스피",
+      "value": "2,650.00",
+      "change": "+0.42%",
+      "is_up": true
+    },
+    {
+      "label": "코스닥",
+      "value": "850.12",
+      "change": "-0.15%",
+      "is_up": false
+    },
+    {
+      "label": "달러/원 환율",
+      "value": "1,496.62",
+      "change": "+0.29%",
+      "is_up": true
+    }
   ],
-  "market_commentary": "코스피 소폭 상승.\n외국인 순매수는 제한적.",
-  "market_commentary_source": "rules",
+  "market_commentary": "코스피 소폭 상승.\n외국인 순매수는 제한적",
+  "market_commentary_source": "ai",
   "sectors": [
     {
-      "name": "반도체",
-      "sector_key": "반도체",
+      "name": "반도체 소재",
+      "sector_key": "반도체 소재",
       "is_inflow": true,
-      "flow_amount": "+1.20%",
-      "tag": "주요 상승 종목",
-      "stock_names": ["삼성전자"],
-      "commentary": "반도체 유입. 삼성전자 거래 집중.",
-      "commentary_source": "rules"
+      "flow_amount": "N/A",
+      "tag": "N/A",
+      "stock_names": [],
+      "commentary": "시장·섹터 데이터 기준 코멘트 생성 중.",
+      "commentary_source": "fallback"
     },
     {
-      "name": "2차전지",
-      "sector_key": "2차전지",
+      "name": "반도체 장비",
+      "sector_key": "반도체 장비",
+      "is_inflow": true,
+      "flow_amount": "N/A",
+      "tag": "N/A",
+      "stock_names": [],
+      "commentary": "시장·섹터 데이터 기준 코멘트 생성 중.",
+      "commentary_source": "fallback"
+    },
+    {
+      "name": "조선·해양방산·해운",
+      "sector_key": "조선·해양방산·해운",
       "is_inflow": false,
-      "flow_amount": "-0.85%",
-      "tag": "주요 종목",
-      "stock_names": ["LG에너지솔루션", "삼성SDI"],
-      "commentary": "2차전지 유출. 단기 조정 흐름.",
-      "commentary_source": "rules"
+      "flow_amount": "N/A",
+      "tag": "N/A",
+      "stock_names": [],
+      "commentary": "시장·섹터 데이터 기준 코멘트 생성 중.",
+      "commentary_source": "fallback"
     }
   ],
-  "sector_filter_options": ["전체섹터", "반도체", "2차전지"],
+  "sector_filter_options": [
+    "전체섹터",
+    "반도체 소재",
+    "반도체 장비",
+    "조선·해양방산·해운"
+  ],
   "stocks": [
     {
-      "name": "삼성전자",
-      "ticker": "005930",
-      "sector_key": "반도체",
+      "name": "솔브레인",
+      "ticker": "036830",
+      "sector_key": "semiconductor_materials",
+      "sector_name": "반도체 소재",
       "verdict_badge": "안 사면 후회함",
       "verdict_class": "buy",
-      "opinion": "외국인 순매수와 거래량 동반.\n52주 상단은 부담.",
-      "opinion_source": "rules",
+      "opinion": "유입 섹터 내 수급 개선.\n실적 확인 전제",
+      "opinion_source": "ai",
       "metrics": [
-        {"label": "현재가", "value": "72,000원"},
-        {"label": "목표가", "value": "N/A"},
-        {"label": "외국인 순매수", "value": "+120억"},
-        {"label": "52주 최고가", "value": "75,000원"}
+        {
+          "label": "현재가",
+          "value": "N/A"
+        },
+        {
+          "label": "목표가",
+          "value": "N/A"
+        },
+        {
+          "label": "외국인 순매수",
+          "value": "N/A"
+        },
+        {
+          "label": "52주 최고가",
+          "value": "N/A"
+        }
       ],
-      "company_summary": "메모리·파운드리 중심.\n단기 수급 재료는 유효.",
-      "company_summary_source": "rules"
+      "company_summary": "반도체 소재·세정 케미칼.\n단기 테마 수급은 유효",
+      "company_summary_source": "ai",
+      "logo_url": null,
+      "sector_order": 0,
+      "stock_order": 0
     },
     {
-      "name": "샘플종목B",
-      "ticker": "000660",
-      "sector_key": "반도체",
+      "name": "리노공업",
+      "ticker": "058470",
+      "sector_key": "semiconductor_parts",
+      "sector_name": "반도체 부품",
+      "verdict_badge": "안 사면 후회함",
+      "verdict_class": "buy",
+      "opinion": "외국인 순매수와 거래량 동반.\n52주 상단은 부담",
+      "opinion_source": "ai",
+      "metrics": [
+        {
+          "label": "현재가",
+          "value": "72,000원"
+        },
+        {
+          "label": "목표가",
+          "value": "N/A"
+        },
+        {
+          "label": "외국인 순매수",
+          "value": "+120억"
+        },
+        {
+          "label": "52주 최고가",
+          "value": "75,000원"
+        }
+      ],
+      "company_summary": "테스트·소켓 부품.\n단기 수급 재료는 유효",
+      "company_summary_source": "ai",
+      "logo_url": null,
+      "sector_order": 1,
+      "stock_order": 0
+    },
+    {
+      "name": "한미반도체",
+      "ticker": "042700",
+      "sector_key": "semiconductor_equipment",
+      "sector_name": "반도체 장비",
       "verdict_badge": "지금 사기엔 좀...",
       "verdict_class": "sell",
-      "opinion": "단기 과열 구간.\n고점 부담이 큼.",
-      "opinion_source": "rules",
+      "opinion": "단기 과열 구간.\n고점 부담이 큼",
+      "opinion_source": "ai",
       "metrics": [
-        {"label": "현재가", "value": "N/A"},
-        {"label": "목표가", "value": "N/A"},
-        {"label": "외국인 순매수", "value": "N/A"},
-        {"label": "52주 최고가", "value": "N/A"}
+        {
+          "label": "현재가",
+          "value": "N/A"
+        },
+        {
+          "label": "목표가",
+          "value": "N/A"
+        },
+        {
+          "label": "외국인 순매수",
+          "value": "N/A"
+        },
+        {
+          "label": "52주 최고가",
+          "value": "N/A"
+        }
       ],
       "company_summary": "기업 개요 데이터 수집 중.",
-      "company_summary_source": "fallback"
+      "company_summary_source": "fallback",
+      "logo_url": null,
+      "sector_order": 2,
+      "stock_order": 0
+    },
+    {
+      "name": "한화에어로스페이스",
+      "ticker": "012450",
+      "sector_key": "defense_space",
+      "sector_name": "방산·우주",
+      "verdict_badge": "안 사면 후회함",
+      "verdict_class": "buy",
+      "opinion": "방산 수주 모멘텀.\n변동성은 존재",
+      "opinion_source": "ai",
+      "metrics": [
+        {
+          "label": "현재가",
+          "value": "N/A"
+        },
+        {
+          "label": "목표가",
+          "value": "N/A"
+        },
+        {
+          "label": "외국인 순매수",
+          "value": "N/A"
+        },
+        {
+          "label": "52주 최고가",
+          "value": "N/A"
+        }
+      ],
+      "company_summary": "기업 개요 데이터 수집 중.",
+      "company_summary_source": "fallback",
+      "logo_url": null,
+      "sector_order": 3,
+      "stock_order": 0
+    },
+    {
+      "name": "HD현대중공업",
+      "ticker": "329180",
+      "sector_key": "shipbuilding_marine_shipping",
+      "sector_name": "조선·해양방산·해운",
+      "verdict_badge": "지금 사기엔 좀...",
+      "verdict_class": "sell",
+      "opinion": "조선 사이클 부담.\n단기 조정 가능",
+      "opinion_source": "ai",
+      "metrics": [
+        {
+          "label": "현재가",
+          "value": "N/A"
+        },
+        {
+          "label": "목표가",
+          "value": "N/A"
+        },
+        {
+          "label": "외국인 순매수",
+          "value": "N/A"
+        },
+        {
+          "label": "52주 최고가",
+          "value": "N/A"
+        }
+      ],
+      "company_summary": "기업 개요 데이터 수집 중.",
+      "company_summary_source": "fallback",
+      "logo_url": null,
+      "sector_order": 4,
+      "stock_order": 1
+    },
+    {
+      "name": "HMM",
+      "ticker": "011200",
+      "sector_key": "shipbuilding_marine_shipping",
+      "sector_name": "조선·해양방산·해운",
+      "verdict_badge": "지금 사기엔 좀...",
+      "verdict_class": "sell",
+      "opinion": "운임 둔화 신호.\n진입 타이밍 부담",
+      "opinion_source": "ai",
+      "metrics": [
+        {
+          "label": "현재가",
+          "value": "N/A"
+        },
+        {
+          "label": "목표가",
+          "value": "N/A"
+        },
+        {
+          "label": "외국인 순매수",
+          "value": "N/A"
+        },
+        {
+          "label": "52주 최고가",
+          "value": "N/A"
+        }
+      ],
+      "company_summary": "기업 개요 데이터 수집 중.",
+      "company_summary_source": "fallback",
+      "logo_url": null,
+      "sector_order": 4,
+      "stock_order": 5
     }
   ],
-  "stock_filter_options": ["전체섹터", "반도체"],
+  "stock_filter_options": [
+    "전체섹터",
+    "반도체 소재",
+    "반도체 부품",
+    "반도체 장비",
+    "방산·우주",
+    "조선·해양방산·해운"
+  ],
   "disclaimer": "투자 참고용이며, 데이터·AI 코멘트는 실시간과 다를 수 있음.",
-  "report_data_json": "{\"market\":{\"type\":\"KR\",\"meta\":{\"market\":\"한국시장\"},\"commentary\":\"코스피 소폭 상승.\\n외국인 순매수는 제한적.\",\"indices\":{}},\"sectors\":{\"반도체\":{\"name\":\"반도체\",\"is_inflow\":true}},\"stocks\":[{\"ticker\":\"005930\",\"name\":\"삼성전자\",\"label\":\"안 사면 후회함\",\"reason\":\"외국인 순매수와 거래량 동반.\\n52주 상단은 부담.\"},{\"ticker\":\"000660\",\"name\":\"샘플종목B\",\"label\":\"지금 사기엔 좀...\",\"reason\":\"단기 과열 구간.\\n고점 부담이 큼.\"}],\"aiVotes\":[{\"ticker\":\"005930\",\"model\":\"deepseek-v4-pro\",\"engine\":\"DeepSeek\",\"label\":\"안 사면 후회함\",\"reason\":\"수급·펀더멘털 우호.\",\"confidence\":72,\"source\":\"rules\"}],\"meta\":{\"market_type\":\"KR\",\"labels\":[\"안 사면 후회함\",\"지금 사기엔 좀...\"]}}"
+  "report_data_json": "{\"market\": {\"type\": \"KR\", \"meta\": {\"market\": \"한국시장\", \"date\": \"2026-05-21 목요일\", \"updated_at\": \"04:53 업데이트\"}, \"commentary\": \"코스피 소폭 상승.\\n외국인 순매수는 제한적\", \"commentary_source\": \"ai\", \"indices\": {\"코스피\": {\"value\": \"2,650.00\", \"change\": \"+0.42%\", \"is_up\": true}, \"코스닥\": {\"value\": \"850.12\", \"change\": \"-0.15%\", \"is_up\": false}, \"달러/원 환율\": {\"value\": \"1,496.62\", \"change\": \"+0.29%\", \"is_up\": true}}}, \"sectors\": {\"반도체 소재\": {\"name\": \"반도체 소재\", \"is_inflow\": true, \"flow_amount\": \"N/A\", \"commentary\": \"시장·섹터 데이터 기준 코멘트 생성 중.\", \"commentary_source\": \"fallback\", \"stock_names\": []}, \"반도체 장비\": {\"name\": \"반도체 장비\", \"is_inflow\": true, \"flow_amount\": \"N/A\", \"commentary\": \"시장·섹터 데이터 기준 코멘트 생성 중.\", \"commentary_source\": \"fallback\", \"stock_names\": []}, \"조선·해양방산·해운\": {\"name\": \"조선·해양방산·해운\", \"is_inflow\": false, \"flow_amount\": \"N/A\", \"commentary\": \"시장·섹터 데이터 기준 코멘트 생성 중.\", \"commentary_source\": \"fallback\", \"stock_names\": []}}, \"stocks\": [{\"ticker\": \"036830\", \"name\": \"솔브레인\", \"sector_key\": \"semiconductor_materials\", \"label\": \"안 사면 후회함\", \"reason\": \"유입 섹터 내 수급 개선.\\n실적 확인 전제.\", \"verdict_class\": \"buy\"}, {\"ticker\": \"058470\", \"name\": \"리노공업\", \"sector_key\": \"semiconductor_parts\", \"label\": \"안 사면 후회함\", \"reason\": \"외국인 순매수와 거래량 동반.\\n52주 상단은 부담.\", \"verdict_class\": \"buy\"}, {\"ticker\": \"042700\", \"name\": \"한미반도체\", \"sector_key\": \"semiconductor_equipment\", \"label\": \"지금 사기엔 좀...\", \"reason\": \"단기 과열 구간.\\n고점 부담이 큼.\", \"verdict_class\": \"sell\"}, {\"ticker\": \"012450\", \"name\": \"한화에어로스페이스\", \"sector_key\": \"defense_space\", \"label\": \"안 사면 후회함\", \"reason\": \"방산 수주 모멘텀.\\n변동성은 존재.\", \"verdict_class\": \"buy\"}, {\"ticker\": \"329180\", \"name\": \"HD현대중공업\", \"sector_key\": \"shipbuilding_marine_shipping\", \"label\": \"지금 사기엔 좀...\", \"reason\": \"조선 사이클 부담.\\n단기 조정 가능.\", \"verdict_class\": \"sell\"}, {\"ticker\": \"011200\", \"name\": \"HMM\", \"sector_key\": \"shipbuilding_marine_shipping\", \"label\": \"지금 사기엔 좀...\", \"reason\": \"운임 둔화 신호.\\n진입 타이밍 부담.\", \"verdict_class\": \"sell\"}], \"watchlistStocks\": [{\"sector_key\": \"semiconductor_materials\", \"sector_name\": \"반도체 소재\", \"ticker\": \"036830\", \"name\": \"솔브레인\", \"label\": \"안 사면 후회함\", \"reason\": \"유입 섹터 내 수급 개선.\\n실적 확인 전제.\", \"current_price\": \"N/A\", \"target_price\": \"N/A\", \"foreign_net_buy\": \"N/A\", \"high_52w\": \"N/A\", \"memo\": \"반도체 소재·세정 케미칼.\\n단기 테마 수급은 유효.\", \"verdict_class\": \"buy\"}, {\"sector_key\": \"semiconductor_parts\", \"sector_name\": \"반도체 부품\", \"ticker\": \"058470\", \"name\": \"리노공업\", \"label\": \"안 사면 후회함\", \"reason\": \"외국인 순매수와 거래량 동반.\\n52주 상단은 부담.\", \"current_price\": \"72,000원\", \"target_price\": \"N/A\", \"foreign_net_buy\": \"+120억\", \"high_52w\": \"75,000원\", \"memo\": \"테스트·소켓 부품.\\n단기 수급 재료는 유효.\", \"verdict_class\": \"buy\"}, {\"sector_key\": \"semiconductor_equipment\", \"sector_name\": \"반도체 장비\", \"ticker\": \"042700\", \"name\": \"한미반도체\", \"label\": \"지금 사기엔 좀...\", \"reason\": \"단기 과열 구간.\\n고점 부담이 큼.\", \"current_price\": \"N/A\", \"target_price\": \"N/A\", \"foreign_net_buy\": \"N/A\", \"high_52w\": \"N/A\", \"memo\": \"기업 개요 데이터 수집 중.\", \"verdict_class\": \"sell\"}, {\"sector_key\": \"defense_space\", \"sector_name\": \"방산·우주\", \"ticker\": \"012450\", \"name\": \"한화에어로스페이스\", \"label\": \"안 사면 후회함\", \"reason\": \"방산 수주 모멘텀.\\n변동성은 존재.\", \"current_price\": \"N/A\", \"target_price\": \"N/A\", \"foreign_net_buy\": \"N/A\", \"high_52w\": \"N/A\", \"memo\": \"기업 개요 데이터 수집 중.\", \"verdict_class\": \"buy\"}, {\"sector_key\": \"shipbuilding_marine_shipping\", \"sector_name\": \"조선·해양방산·해운\", \"ticker\": \"329180\", \"name\": \"HD현대중공업\", \"label\": \"지금 사기엔 좀...\", \"reason\": \"조선 사이클 부담.\\n단기 조정 가능.\", \"current_price\": \"N/A\", \"target_price\": \"N/A\", \"foreign_net_buy\": \"N/A\", \"high_52w\": \"N/A\", \"memo\": \"기업 개요 데이터 수집 중.\", \"verdict_class\": \"sell\"}, {\"sector_key\": \"shipbuilding_marine_shipping\", \"sector_name\": \"조선·해양방산·해운\", \"ticker\": \"011200\", \"name\": \"HMM\", \"label\": \"지금 사기엔 좀...\", \"reason\": \"운임 둔화 신호.\\n진입 타이밍 부담.\", \"current_price\": \"N/A\", \"target_price\": \"N/A\", \"foreign_net_buy\": \"N/A\", \"high_52w\": \"N/A\", \"memo\": \"기업 개요 데이터 수집 중.\", \"verdict_class\": \"sell\"}], \"aiVotes\": [], \"meta\": {\"market_type\": \"KR\", \"labels\": [\"안 사면 후회함\", \"지금 사기엔 좀...\"], \"watchlistSectors\": [{\"sector_key\": \"semiconductor_materials\", \"sector_name\": \"반도체 소재\", \"order\": 0}, {\"sector_key\": \"semiconductor_parts\", \"sector_name\": \"반도체 부품\", \"order\": 1}, {\"sector_key\": \"semiconductor_equipment\", \"sector_name\": \"반도체 장비\", \"order\": 2}, {\"sector_key\": \"defense_space\", \"sector_name\": \"방산·우주\", \"order\": 3}, {\"sector_key\": \"shipbuilding_marine_shipping\", \"sector_name\": \"조선·해양방산·해운\", \"order\": 4}], \"generated_at\": \"2026-05-21T04:53:28\", \"indices\": {\"KOSPI\": \"live\", \"KOSDAQ\": \"live\", \"USDKRW\": \"live\"}, \"sectors\": {\"반도체 소재\": \"fallback\", \"반도체 장비\": \"fallback\", \"조선·해양방산·해운\": \"fallback\"}, \"pipeline_engines\": []}}"
 }

@@ -110,7 +110,7 @@
       <p id="stock-filter-empty" class="filter-empty" hidden>선택한 섹터에 해당하는 종목이 없습니다.</p>
       <div class="stock-list-vertical">
         {% for stock in stocks %}
-        <article class="card stock-card" data-sector="{{ stock.sector_key | default('') }}">
+        <article class="card stock-card" data-sector="{{ stock.sector_name | default(stock.sector_key) | default('') }}">
           <div class="stock-head">
             <div class="stock-identity">
               <div class="stock-logo{% if not stock.logo_url %} stock-logo--placeholder{% endif %}" aria-hidden="true">
@@ -123,7 +123,12 @@
                 </svg>
                 {% endif %}
               </div>
-              <h3 class="stock-name">{{ stock.name }}</h3>
+              <div class="stock-title-block">
+                <h3 class="stock-name">{{ stock.name }}</h3>
+                {% if stock.sector_name and stock.sector_name != 'N/A' %}
+                <p class="stock-sector">{{ stock.sector_name }}</p>
+                {% endif %}
+              </div>
             </div>
             {% if stock.verdict_badge %}
             <span class="verdict-badge {{ stock.verdict_class | default('hold') }}">{{ stock.verdict_badge }}</span>

@@ -203,8 +203,12 @@ def _build_stock_row(
         ],
         "momentum_tags": _momentum_tags(ratio, change_pct),
         "guidance": opinions["risk"].get("do_not", "과도한 추격매수는 지양"),
-        "theme": str(d.get("theme", "")),
-        "sector_key": str(d.get("theme", "")),
+        "theme": str(d.get("sector_name") or d.get("theme", "")),
+        "sector_key": str(d.get("sector_key") or d.get("theme", "")),
+        "sector_name": str(d.get("sector_name") or d.get("theme", "")),
+        "sector_order": d.get("sector_order"),
+        "stock_order": d.get("stock_order"),
+        "target_price": d.get("target_price"),
         "verdict_badge": label_bundle["final_label"],
         "opinion": label_bundle["label_reason"],
         "company_summary": "",
@@ -431,8 +435,16 @@ def _build_report_data(
         agent_targets = [
             s for s in wl_all if int(s.get("pre_score") or 0) >= SCORE_THRESHOLD
         ]
-    analysis_pool = agent_targets or discovered[:5]
-    stock_analysis = [_build_stock_row(d, opinions, pipeline) for d in analysis_pool]
+    if _uses_kr_watchlist(report_type):
+        from data.kr_watchlist import build_watchlist_stock_pool, sort_kr_focus_stocks
+
+        analysis_pool = build_watchlist_stock_pool(pipeline, resolve_missing_tickers=True)
+        stock_analysis = sort_kr_focus_stocks(
+            [_build_stock_row(d, opinions, pipeline) for d in analysis_pool]
+        )
+    else:
+        analysis_pool = agent_targets or discovered[:5]
+        stock_analysis = [_build_stock_row(d, opinions, pipeline) for d in analysis_pool]
     watchlist_by_theme = _build_watchlist_by_theme(pipeline, report_type)
 
     risk = opinions.get("risk") or {}

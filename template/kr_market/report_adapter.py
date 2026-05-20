@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +16,12 @@ if str(_ROOT) not in sys.path:
 from agents.label_rules import VALID_LABELS, normalize_label
 from agents.label_vote_helpers import normalize_ticker
 from data.kr_market import get_kis_sector_trading_value, get_sector_top_stocks
+from data.kr_watchlist import (
+    build_watchlist_stock_pool,
+    sort_kr_focus_stocks,
+    stock_filter_options,
+    watchlist_sectors_meta,
+)
 from data.sources import fetch_yfinance_history
 from data.us_market import _fetch_usd_krw
 from utils.ui_comment import format_ui_comment
@@ -22,6 +29,11 @@ from utils.ui_comment import format_ui_comment
 NA = "N/A"
 AI_COMMENT_FALLBACK = "시장·섹터 데이터 기준 코멘트 생성 중."
 COMPANY_SUMMARY_FALLBACK = "기업 개요 데이터 수집 중."
+
+
+def _is_offline_render() -> bool:
+    """CI/검증: KIS·KRX·yfinance 호출 생략."""
+    return os.getenv("KR_MARKET_OFFLINE", "").strip().lower() in ("1", "true", "yes")
 
 KR_INDEX_SPECS: tuple[tuple[str, str], ...] = (
     ("코스피", "KOSPI"),
@@ -75,6 +87,8 @@ def _build_indices(indices: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[
 
 
 def _usd_krw_snapshot() -> tuple[str, str, bool, str]:
+    if _is_offline_render():
+        return (NA, NA, False, "offline")
     hist = fetch_yfinance_history("USDKRW=X", period="5d")
     if hist is not None and len(hist) >= 1:
         last = float(hist["Close"].iloc[-1])
@@ -139,8 +153,12 @@ def _build_sectors(
     sector_flow = report_data.get("sector_flow") or {}
     hot = list(sector_flow.get("hot") or [])[:6]
     cold = list(sector_flow.get("cold") or [])[:6]
-    chg_map = _sector_change_map()
-    top_stocks = get_sector_top_stocks(3) or {}
+    if _is_offline_render():
+        chg_map: dict[str, float] = {}
+        top_stocks: dict[str, list] = {}
+    else:
+        chg_map = _sector_change_map()
+        top_stocks = get_sector_top_stocks(3) or {}
     pulse = str(((pipeline or {}).get("engines") or {}).get("market_pulse", {}).get("pulse_summary", ""))
 
     cards: list[dict[str, Any]] = []
@@ -239,19 +257,28 @@ def _map_stock(
     reason = format_ui_comment(reason) if reason else AI_COMMENT_FALLBACK
 
     company_text, company_src = _company_summary_text(company_by_ticker.get(key), pipeline=pipeline, ticker=key)
+    if not company_text or company_text == COMPANY_SUMMARY_FALLBACK:
+        inline = str(row.get("company_summary") or "").strip()
+        if inline and inline != NA:
+            company_text = format_ui_comment(inline)
+            company_src = "ai"
 
-    theme = str(row.get("theme") or row.get("sector_key") or "기타")
+    sector_key = str(row.get("sector_key") or "")
+    sector_name = str(row.get("sector_name") or row.get("theme") or NA)
+    target_price = row.get("target_price")
+
     metrics = [
         {"label": "현재가", "value": _safe_str(row.get("price"))},
-        {"label": "목표가", "value": NA},
+        {"label": "목표가", "value": _safe_str(target_price)},
         {"label": "외국인 순매수", "value": _safe_str(row.get("foreign_net_eok"))},
         {"label": "52주 최고가", "value": _safe_str(row.get("high_52"))},
     ]
 
     return {
         "name": row.get("name", NA),
-        "ticker": ticker,
-        "sector_key": theme,
+        "ticker": ticker or NA,
+        "sector_key": sector_key or NA,
+        "sector_name": sector_name,
         "verdict_badge": label if label in VALID_LABELS else NA,
         "verdict_class": row.get("verdict_class", "hold"),
         "opinion": reason,
@@ -260,6 +287,8 @@ def _map_stock(
         "company_summary": company_text,
         "company_summary_source": company_src,
         "logo_url": row.get("logo_url"),
+        "sector_order": row.get("sector_order"),
+        "stock_order": row.get("stock_order"),
     }
 
 
@@ -295,12 +324,29 @@ def build_report_data_js(
                 "stock_names": card.get("stock_names") or [],
             }
 
+    watchlist_stocks_out: list[dict[str, Any]] = []
     stocks_out: list[dict[str, Any]] = []
     ai_votes_out: list[dict[str, Any]] = []
     for row in rd.get("stock_analysis") or []:
         ticker = str(row.get("code") or row.get("ticker") or "")
         label = normalize_label(row.get("label") or row.get("verdict"))
         reason = row.get("label_reason") or ""
+        memo = str(row.get("company_summary") or "").strip() or COMPANY_SUMMARY_FALLBACK
+        wl_row = {
+            "sector_key": row.get("sector_key") or NA,
+            "sector_name": row.get("sector_name") or row.get("theme", NA),
+            "ticker": ticker or NA,
+            "name": row.get("name", NA),
+            "label": label,
+            "reason": reason or NA,
+            "current_price": row.get("price", NA),
+            "target_price": row.get("target_price", NA),
+            "foreign_net_buy": row.get("foreign_net_eok", NA),
+            "high_52w": row.get("high_52", NA),
+            "memo": memo,
+            "verdict_class": row.get("verdict_class", NA),
+        }
+        watchlist_stocks_out.append(wl_row)
         stocks_out.append(
             {
                 "ticker": ticker or NA,
@@ -326,14 +372,30 @@ def build_report_data_js(
                 }
             )
 
-    if not stocks_out:
+    if not watchlist_stocks_out:
         for s in ctx.get("stocks") or []:
+            label = normalize_label(s.get("verdict_badge"))
+            wl_row = {
+                "sector_key": s.get("sector_key", NA),
+                "sector_name": s.get("sector_name", NA),
+                "ticker": s.get("ticker", NA),
+                "name": s.get("name", NA),
+                "label": label,
+                "reason": s.get("opinion", NA),
+                "current_price": NA,
+                "target_price": NA,
+                "foreign_net_buy": NA,
+                "high_52w": NA,
+                "memo": s.get("company_summary", COMPANY_SUMMARY_FALLBACK),
+                "verdict_class": s.get("verdict_class", NA),
+            }
+            watchlist_stocks_out.append(wl_row)
             stocks_out.append(
                 {
                     "ticker": s.get("ticker", NA),
                     "name": s.get("name", NA),
                     "sector_key": s.get("sector_key", NA),
-                    "label": normalize_label(s.get("verdict_badge")),
+                    "label": label,
                     "reason": s.get("opinion", NA),
                     "verdict_class": s.get("verdict_class", NA),
                 }
@@ -350,10 +412,12 @@ def build_report_data_js(
         },
         "sectors": sectors_map,
         "stocks": stocks_out,
+        "watchlistStocks": watchlist_stocks_out,
         "aiVotes": ai_votes_out,
         "meta": {
             "market_type": "KR",
             "labels": list(VALID_LABELS),
+            "watchlistSectors": watchlist_sectors_meta(),
             "generated_at": meta.get("generated_at", NA),
             "indices": meta.get("indices", {}),
             "sectors": meta.get("sectors", {}),
@@ -380,6 +444,123 @@ def _weekday_ko(dt: datetime) -> str:
     return names[dt.weekday()]
 
 
+def build_static_preview_report_data() -> dict[str, Any]:
+    """Offline sample: watchlist subset, N/A metrics, 2-label examples only."""
+    from agents.label_rules import LABEL_REGRET, LABEL_TIMING
+
+    samples: list[dict[str, Any]] = [
+        {
+            "name": "솔브레인",
+            "code": "036830",
+            "sector_key": "semiconductor_materials",
+            "sector_name": "반도체 소재",
+            "sector_order": 0,
+            "stock_order": 0,
+            "label": LABEL_REGRET,
+            "label_reason": "유입 섹터 내 수급 개선.\n실적 확인 전제.",
+            "verdict_class": "buy",
+            "price": "N/A",
+            "target_price": "N/A",
+            "foreign_net_eok": "N/A",
+            "high_52": "N/A",
+            "company_summary": "반도체 소재·세정 케미칼.\n단기 테마 수급은 유효.",
+        },
+        {
+            "name": "리노공업",
+            "code": "058470",
+            "sector_key": "semiconductor_parts",
+            "sector_name": "반도체 부품",
+            "sector_order": 1,
+            "stock_order": 0,
+            "label": LABEL_REGRET,
+            "label_reason": "외국인 순매수와 거래량 동반.\n52주 상단은 부담.",
+            "verdict_class": "buy",
+            "price": "72,000원",
+            "target_price": "N/A",
+            "foreign_net_eok": "+120억",
+            "high_52": "75,000원",
+            "company_summary": "테스트·소켓 부품.\n단기 수급 재료는 유효.",
+        },
+        {
+            "name": "한미반도체",
+            "code": "042700",
+            "sector_key": "semiconductor_equipment",
+            "sector_name": "반도체 장비",
+            "sector_order": 2,
+            "stock_order": 0,
+            "label": LABEL_TIMING,
+            "label_reason": "단기 과열 구간.\n고점 부담이 큼.",
+            "verdict_class": "sell",
+            "price": "N/A",
+            "target_price": "N/A",
+            "foreign_net_eok": "N/A",
+            "high_52": "N/A",
+            "company_summary": "",
+        },
+        {
+            "name": "한화에어로스페이스",
+            "code": "012450",
+            "sector_key": "defense_space",
+            "sector_name": "방산·우주",
+            "sector_order": 3,
+            "stock_order": 0,
+            "label": LABEL_REGRET,
+            "label_reason": "방산 수주 모멘텀.\n변동성은 존재.",
+            "verdict_class": "buy",
+            "price": "N/A",
+            "target_price": "N/A",
+            "foreign_net_eok": "N/A",
+            "high_52": "N/A",
+            "company_summary": "",
+        },
+        {
+            "name": "HD현대중공업",
+            "code": "329180",
+            "sector_key": "shipbuilding_marine_shipping",
+            "sector_name": "조선·해양방산·해운",
+            "sector_order": 4,
+            "stock_order": 1,
+            "label": LABEL_TIMING,
+            "label_reason": "조선 사이클 부담.\n단기 조정 가능.",
+            "verdict_class": "sell",
+            "price": "N/A",
+            "target_price": "N/A",
+            "foreign_net_eok": "N/A",
+            "high_52": "N/A",
+            "company_summary": "",
+        },
+        {
+            "name": "HMM",
+            "code": "011200",
+            "sector_key": "shipbuilding_marine_shipping",
+            "sector_name": "조선·해양방산·해운",
+            "sector_order": 4,
+            "stock_order": 5,
+            "label": LABEL_TIMING,
+            "label_reason": "운임 둔화 신호.\n진입 타이밍 부담.",
+            "verdict_class": "sell",
+            "price": "N/A",
+            "target_price": "N/A",
+            "foreign_net_eok": "N/A",
+            "high_52": "N/A",
+            "company_summary": "",
+        },
+    ]
+    return {
+        "report_type": "us_close_kr_before",
+        "indices": {
+            "KOSPI": {"value": "2,650.00", "change": "+0.42%", "is_up": True},
+            "KOSDAQ": {"value": "850.12", "change": "-0.15%", "is_up": False},
+        },
+        "market_phase_reason": "코스피 소폭 상승.\n외국인 순매수는 제한적.",
+        "sector_flow": {
+            "hot": ["반도체 소재", "반도체 장비"],
+            "cold": ["조선·해양방산·해운"],
+        },
+        "stock_analysis": sort_kr_focus_stocks(samples),
+    }
+
+
 def build_kr_market_context(
     report_data: dict[str, Any],
     *,
@@ -400,11 +581,42 @@ def build_kr_market_context(
     company_by = _company_map(report_data.get("company_reports") or [])
     stocks_in = report_data.get("stock_analysis") or []
     if not stocks_in:
-        wl = ((pipeline or {}).get("watchlist_data") or {}).get("stocks") or []
-        stocks_in = [s for s in wl if str(s.get("market", "KR")) in ("KR", "KOSPI", "KOSDAQ")][:12]
+        stocks_in = [
+            {
+                "name": e["name"],
+                "code": e["ticker"],
+                "ticker": e["ticker"],
+                "sector_key": e["sector_key"],
+                "sector_name": e["sector_name"],
+                "theme": e["sector_name"],
+                "sector_order": e["sector_order"],
+                "stock_order": e["stock_order"],
+                "price": NA,
+                "target_price": NA,
+                "foreign_net_eok": NA,
+                "high_52": NA,
+                "label": NA,
+                "label_reason": "",
+                "verdict_class": "hold",
+                "company_summary": "",
+            }
+            for e in build_watchlist_stock_pool(pipeline)
+        ]
+        stocks_in = sort_kr_focus_stocks(stocks_in)
 
     stocks = [_map_stock(r, company_by_ticker=company_by, pipeline=pipeline) for r in stocks_in]
-    stock_filters = ["전체섹터"] + sorted({s["sector_key"] for s in stocks if s.get("sector_key")})
+    if stocks and stocks[0].get("sector_order") is None:
+        stocks = sorted(
+            stocks,
+            key=lambda s: (
+                stock_filter_options().index(s.get("sector_name", ""))
+                if s.get("sector_name") in stock_filter_options()
+                else 99,
+                0 if "후회" in str(s.get("verdict_badge", "")) else 1,
+                str(s.get("name", "")),
+            ),
+        )
+    stock_filters = stock_filter_options()
 
     updated = now.strftime("%H:%M") + " 업데이트"
 

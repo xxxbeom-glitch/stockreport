@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "sectors": {
+    "semiconductor_materials": {
+      "label": "반도체 소재",
+      "stocks": [
+        { "name": "솔브레인", "ticker": "036830" },
+        { "name": "동진쎄미켐", "ticker": "005290" },
+        { "name": "원익머트리얼즈", "ticker": "104830" },
+        { "name": "후성", "ticker": "093370" },
+        { "name": "한솔케미칼", "ticker": "014680" }
+      ]
+    },
+    "semiconductor_parts": {
+      "label": "반도체 부품",
+      "stocks": [
+        { "name": "리노공업", "ticker": "058470" },
+        { "name": "ISC", "ticker": "095340" },
+        { "name": "티씨케이", "ticker": "064760" },
+        { "name": "하나머티리얼즈", "ticker": "166090" },
+        { "name": "원익QnC", "ticker": "074600" }
+      ]
+    },
+    "semiconductor_equipment": {
+      "label": "반도체 장비",
+      "stocks": [
+        { "name": "한미반도체", "ticker": "042700" },
+        { "name": "이오테크닉스", "ticker": "039030" },
+        { "name": "주성엔지니어링", "ticker": "036930" },
+        { "name": "테크윙", "ticker": "089030" },
+        { "name": "피에스케이홀딩스", "ticker": "031980" },
+        { "name": "와이씨", "ticker": "232140" }
+      ]
+    },
+    "defense_space": {
+      "label": "방산·우주",
+      "stocks": [
+        { "name": "한화에어로스페이스", "ticker": "012450" },
+        { "name": "한화시스템", "ticker": "272210" },
+        { "name": "LIG넥스원", "ticker": "079550" },
+        { "name": "현대로템", "ticker": "064350" },
+        { "name": "한국항공우주", "ticker": "047810" }
+      ]
+    },
+    "shipbuilding_marine_shipping": {
+      "label": "조선·해양방산·해운",
+      "stocks": [
+        { "name": "한화오션", "ticker": "042660" },
+        { "name": "HD현대중공업", "ticker": "329180" },
+        { "name": "HD한국조선해양", "ticker": "009540" },
+        { "name": "삼성중공업", "ticker": "010140" },
+        { "name": "HD현대미포", "ticker": "010620" },
+        { "name": "HMM", "ticker": "011200" },
+        { "name": "팬오션", "ticker": "028670" }
+      ]
+    }
+  }
+}

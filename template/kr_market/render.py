@@ -42,8 +42,15 @@ def main() -> None:
         path = build_index(output=live_out)
         print(path)
         return
-    data = json.loads(sample_path.read_text(encoding="utf-8"))
-    path = render_kr_market(data, out_path)
+    from template.kr_market.report_adapter import build_kr_market_context
+
+    report_data = json.loads(sample_path.read_text(encoding="utf-8"))
+    if not report_data.get("stock_analysis"):
+        from template.kr_market.report_adapter import build_static_preview_report_data
+
+        report_data = build_static_preview_report_data()
+    ctx = build_kr_market_context(report_data, pipeline=None)
+    path = render_kr_market(ctx, out_path)
     print(path)
 
 
