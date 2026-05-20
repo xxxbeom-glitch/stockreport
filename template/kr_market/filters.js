@@ -47,7 +47,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    bind("sector-filter", "#sectors .sector-track", "sector-filter-empty");
+    bind("sector-filter", "#sectors .sector-stack", "sector-filter-empty");
     bind("stock-filter", "#stocks .stock-list-vertical", "stock-filter-empty");
   });
 })();

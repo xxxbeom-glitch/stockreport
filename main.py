@@ -286,7 +286,12 @@ def _build_watchlist_by_theme(
         by_key[key] = snap
         by_key[ticker] = snap
 
-    watchlist = config.KR_WATCHLIST if kr else config.US_WATCHLIST
+    if kr:
+        from data.kr_watchlist import kr_watchlist_theme_map
+
+        watchlist = kr_watchlist_theme_map()
+    else:
+        watchlist = config.US_WATCHLIST
     grouped: dict[str, list[dict[str, Any]]] = {}
     for theme, tickers in watchlist.items():
         rows: list[dict[str, Any]] = []
@@ -378,15 +383,24 @@ def _build_report_data(
     """Build a normalized report payload for template rendering."""
     now = datetime.now()
     macro = opinions.get("macro") or {}
-    hot = list(macro.get("favorable_sectors") or [])[:5]
-    cold = list(macro.get("unfavorable_sectors") or [])[:5]
-    if not hot:
-        sector_signals = market_data.get("sector_flow", [])
-        hot = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유입"][:5]
-        cold = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유출"][:5]
+    if _uses_kr_watchlist(report_type):
+        from data.kr_watchlist import default_sector_flow, filter_rows_to_watchlist
+
+        flow = default_sector_flow()
+        hot = list(flow.get("hot") or [])
+        cold = list(flow.get("cold") or [])
+    else:
+        hot = list(macro.get("favorable_sectors") or [])[:5]
+        cold = list(macro.get("unfavorable_sectors") or [])[:5]
+        if not hot:
+            sector_signals = market_data.get("sector_flow", [])
+            hot = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유입"][:5]
+            cold = [s.get("sector", "UNKNOWN") for s in sector_signals if s.get("flow") == "유출"][:5]
 
     recommendations = opinions.get("recommendations") or (pipeline or {}).get("recommendations") or {}
     buy_rows = recommendations.get("buy_recommendations") or []
+    if _uses_kr_watchlist(report_type) and buy_rows:
+        buy_rows = filter_rows_to_watchlist(buy_rows)
     if buy_rows:
         discovered = [
             {
@@ -452,7 +466,11 @@ def _build_report_data(
     wl_stocks = ((pipeline or {}).get("watchlist_data") or {}).get("stocks", [])
     watchlist_kr = [s for s in wl_stocks if str(s.get("market", "KR")) == "KR"]
     watchlist_us = [s for s in wl_stocks if str(s.get("market")) == "US"]
-    if not watchlist_kr:
+    if not watchlist_kr and _uses_kr_watchlist(report_type):
+        from data.kr_watchlist import build_watchlist_stock_pool
+
+        watchlist_kr = build_watchlist_stock_pool(pipeline)
+    elif not watchlist_kr:
         watchlist_kr = [
             {"ticker": t, "name": n, "theme": theme}
             for theme, stocks in config.KR_WATCHLIST.items()

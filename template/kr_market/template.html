@@ -55,7 +55,7 @@
 
     <section class="section-block" id="sectors">
       <div class="section-head">
-        <h2 class="section-title">섹터 유입 · 유출</h2>
+        <h2 class="section-title">관심 섹터 흐름</h2>
         {% if sector_filter_options %}
         <select id="sector-filter" class="filter-select" aria-label="섹터 필터">
           {% for opt in sector_filter_options %}
@@ -68,26 +68,25 @@
       </div>
 
       <p id="sector-filter-empty" class="filter-empty" hidden>선택한 섹터에 해당하는 카드가 없습니다.</p>
-      <div class="sector-track">
+      <div class="sector-stack">
         {% for sector in sectors %}
         <article class="card sector-card" data-sector="{{ sector.sector_key | default(sector.name) }}">
-          <div class="sector-top">
+          <div class="sector-card-head">
             <h3 class="sector-name">{{ sector.name }}</h3>
-            <span class="sector-flow {{ 'up' if sector.is_inflow else 'down' }}">{{ sector.flow_amount }}</span>
-          </div>
-          <div class="sector-body">
-            <div class="sector-stocks-wrap">
-              {% if sector.tag %}
-              <span class="tag-pill">{{ sector.tag }}</span>
-              {% endif %}
-              {% if sector.stock_names %}
-              <p class="stock-list">{{ sector.stock_names | join(', ') }}</p>
-              {% endif %}
-            </div>
-            {% if sector.commentary %}
-            <div class="insight-box ai-comment" data-ui-comment="sector">{{ sector.commentary | ui_comment }}</div>
+            {% if sector.stock_names %}
+            <p class="sector-stocks">{{ sector.stock_names | join(', ') }}</p>
             {% endif %}
           </div>
+          {% if sector.kv_rows %}
+          <dl class="kv-list sector-kv-list">
+            {% for item in sector.kv_rows %}
+            <div class="kv-row">
+              <dt>{{ item.label }}</dt>
+              <dd>{{ item.value }}</dd>
+            </div>
+            {% endfor %}
+          </dl>
+          {% endif %}
         </article>
         {% endfor %}
       </div>
@@ -95,7 +94,7 @@
 
     <section class="section-block" id="stocks">
       <div class="section-head">
-        <h2 class="section-title">관심 종목 투자의견</h2>
+        <h2 class="section-title">관찰이 필요한 종목</h2>
         {% if stock_filter_options %}
         <select id="stock-filter" class="filter-select" aria-label="종목 섹터 필터">
           {% for opt in stock_filter_options %}
@@ -111,35 +110,27 @@
       <div class="stock-list-vertical">
         {% for stock in stocks %}
         <article class="card stock-card" data-sector="{{ stock.sector_name | default(stock.sector_key) | default('') }}">
-          <div class="stock-head">
-            <div class="stock-identity">
-              <div class="stock-title-block">
-                <h3 class="stock-name">{{ stock.name }}</h3>
-                {% if stock.sector_name and stock.sector_name != 'N/A' %}
-                <p class="stock-sector">{{ stock.sector_name }}</p>
-                {% endif %}
-              </div>
-            </div>
-            {% if stock.verdict_badge %}
-            <span class="verdict-badge {{ stock.verdict_class | default('hold') }}">{{ stock.verdict_badge }}</span>
+          <div class="stock-price-head">
+            <h3 class="stock-name">{{ stock.name }}</h3>
+            {% if stock.current_price and stock.current_price != 'N/A' %}
+            <span class="stock-price {{ stock.price_tone | default('neutral') }}">{{ stock.current_price }}</span>
             {% endif %}
           </div>
 
-          {% if stock.opinion %}
-          <p class="opinion-text ai-comment" data-ui-comment="label-reason">{{ stock.opinion | ui_comment }}</p>
-          {% endif %}
-
-          <dl class="kv-list">
+          <dl class="kv-list stock-kv-list">
             {% for item in stock.metrics %}
             <div class="kv-row">
               <dt>{{ item.label }}</dt>
-              <dd>{{ item.value }}</dd>
+              <dd{% if item.label == '주요사업' %} class="kv-value-wrap"{% endif %}>{{ item.value }}</dd>
             </div>
             {% endfor %}
           </dl>
 
-          {% if stock.company_summary %}
-          <div class="company-box ai-comment" data-ui-comment="company">{{ stock.company_summary | ui_comment }}</div>
+          {% if stock.selection_reason %}
+          <div class="selection-box">
+            <p class="selection-title">선정이유</p>
+            <p class="selection-body ai-comment" data-ui-comment="label-reason">{{ stock.selection_reason | ui_comment }}</p>
+          </div>
           {% endif %}
         </article>
         {% endfor %}

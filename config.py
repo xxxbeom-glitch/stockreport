@@ -101,27 +101,37 @@ US_SECTOR_ETFS: Final[dict[str, str]] = {
     "AI인프라": "BOTZ",
 }
 
-# ---- KR watchlist (ticker -> name per theme) ----
-KR_WATCHLIST: Final[dict[str, dict[str, str]]] = {
-    "반도체 대형": {
-        "005930": "삼성전자",
-        "000660": "SK하이닉스",
-    },
-    "반도체 소부장": {
-        "042700": "한미반도체",
-        "403870": "HPSP",
-        "058470": "리노공업",
-        "039030": "이오테크닉스",
-        "240810": "원익IPS",
-        "319660": "피에스케이",
-    },
-    "AI 전력 인프라": {
-        "010120": "LS일렉트릭",
-        "267260": "HD현대일렉트릭",
-        "103590": "일진전기",
-        "033100": "제룡전기",
-    },
-}
+# ---- KR watchlist (data/kr_watchlist.json — 5섹터·25종목 고정) ----
+def _kr_watchlist_from_json() -> dict[str, dict[str, str]]:
+    """config ↔ data 순환 import 방지: JSON 직접 로드."""
+    import json
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parent / "data" / "kr_watchlist.json"
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    order = (
+        "semiconductor_materials",
+        "semiconductor_parts",
+        "semiconductor_equipment",
+        "defense_space",
+        "shipbuilding_materials",
+    )
+    out: dict[str, dict[str, str]] = {}
+    sectors = raw.get("sectors") or {}
+    for key in order:
+        block = sectors.get(key) or {}
+        theme = str(block.get("label", key))
+        for item in block.get("stocks") or []:
+            if not isinstance(item, dict):
+                continue
+            ticker = str(item.get("ticker", "")).strip().zfill(6)
+            name = str(item.get("name", "")).strip()
+            if ticker and name:
+                out.setdefault(theme, {})[ticker] = name
+    return out
+
+
+KR_WATCHLIST: Final[dict[str, dict[str, str]]] = _kr_watchlist_from_json()
 
 # ---- US watchlist (ticker -> name per theme) ----
 US_WATCHLIST: Final[dict[str, dict[str, str]]] = {

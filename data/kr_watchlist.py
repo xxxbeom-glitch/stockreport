@@ -15,10 +15,14 @@ SECTOR_ORDER: tuple[str, ...] = (
     "semiconductor_parts",
     "semiconductor_equipment",
     "defense_space",
-    "shipbuilding_marine_shipping",
+    "shipbuilding_materials",
 )
 
 FILTER_ALL = "전체섹터"
+
+WATCHLIST_STOCK_LIMIT = 25
+WATCHLIST_SECTOR_LIMIT = 5
+FORBIDDEN_SECTOR_KEYWORDS: tuple[str, ...] = ("해운", "조선·해양방산·해운")
 
 
 @lru_cache(maxsize=1)
@@ -100,12 +104,16 @@ def iter_watchlist_entries(*, resolve_missing_tickers: bool = False) -> Iterator
         sector_name = str(block.get("label", sector_key))
         stocks = block.get("stocks") or []
         for stock_order, item in enumerate(stocks):
+            business = ""
+            selection_reason = ""
             if isinstance(item, str):
                 name = item.strip()
                 ticker = ""
             else:
                 name = str(item.get("name", "")).strip()
                 ticker = _normalize_ticker(item.get("ticker"))
+                business = str(item.get("business", "")).strip()
+                selection_reason = str(item.get("selection_reason", "")).strip()
             if resolve_missing_tickers and not ticker and name:
                 ticker = _resolve_ticker_by_name(name)
             yield {
@@ -113,6 +121,8 @@ def iter_watchlist_entries(*, resolve_missing_tickers: bool = False) -> Iterator
                 "sector_name": sector_name,
                 "name": name or "UNKNOWN",
                 "ticker": ticker,
+                "business": business,
+                "selection_reason": selection_reason,
                 "sector_order": sector_order,
                 "stock_order": stock_order,
             }
@@ -121,6 +131,76 @@ def iter_watchlist_entries(*, resolve_missing_tickers: bool = False) -> Iterator
 def watchlist_stock_count() -> int:
     """관심종목 총 개수 (data/kr_watchlist.json)."""
     return sum(1 for _ in iter_watchlist_entries())
+
+
+def watchlist_ticker_set() -> set[str]:
+    """관심종목 티커 집합 (6자리)."""
+    return {e["ticker"] for e in iter_watchlist_entries() if e.get("ticker")}
+
+
+def watchlist_sector_labels() -> list[str]:
+    """섹터 표시명 (SECTOR_ORDER)."""
+    raw = load_kr_watchlist_raw()
+    sectors = raw.get("sectors") or {}
+    return [str((sectors.get(k) or {}).get("label", k)) for k in SECTOR_ORDER]
+
+
+def default_sector_flow() -> dict[str, list[str]]:
+    """관심 5섹터 기준 hot/cold (오프라인·검증용)."""
+    labels = watchlist_sector_labels()
+    if len(labels) >= 3:
+        return {"hot": labels[:2], "cold": [labels[-1]]}
+    return {"hot": labels, "cold": []}
+
+
+def kr_watchlist_theme_map() -> dict[str, dict[str, str]]:
+    """config.KR_WATCHLIST 호환: 섹터명 → {ticker: name}."""
+    out: dict[str, dict[str, str]] = {}
+    for entry in iter_watchlist_entries():
+        theme = entry["sector_name"]
+        ticker = entry["ticker"]
+        if not ticker:
+            continue
+        out.setdefault(theme, {})[ticker] = entry["name"]
+    return out
+
+
+def validate_watchlist_spec() -> list[str]:
+    """01_watchlist.md 기준 검증. 문제 없으면 빈 리스트."""
+    errors: list[str] = []
+    raw = load_kr_watchlist_raw()
+    sectors = raw.get("sectors") or {}
+    if len(SECTOR_ORDER) != WATCHLIST_SECTOR_LIMIT:
+        errors.append(f"SECTOR_ORDER 개수: {len(SECTOR_ORDER)} (기대 {WATCHLIST_SECTOR_LIMIT})")
+    count = watchlist_stock_count()
+    if count != WATCHLIST_STOCK_LIMIT:
+        errors.append(f"종목 수: {count} (기대 {WATCHLIST_STOCK_LIMIT})")
+    for key in SECTOR_ORDER:
+        if key not in sectors:
+            errors.append(f"섹터 키 누락: {key}")
+    for key, block in sectors.items():
+        label = str(block.get("label", ""))
+        if any(kw in label for kw in FORBIDDEN_SECTOR_KEYWORDS):
+            errors.append(f"금지 섹터 라벨: {label}")
+        for item in block.get("stocks") or []:
+            if isinstance(item, dict):
+                nm = str(item.get("name", ""))
+                if any(kw in nm for kw in ("HMM", "팬오션")):
+                    errors.append(f"금지 종목: {nm}")
+    return errors
+
+
+def filter_rows_to_watchlist(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """관심종목 풀 밖 항목 제거."""
+    allowed = watchlist_ticker_set()
+    if not allowed:
+        return rows
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        t = _normalize_ticker(str(row.get("ticker", "")))
+        if t and t in allowed:
+            out.append(row)
+    return out
 
 
 def _pipeline_index(pipeline: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
@@ -159,6 +239,8 @@ def build_watchlist_stock_pool(
             "sector_name": entry["sector_name"],
             "sector_order": entry["sector_order"],
             "stock_order": entry["stock_order"],
+            "business": entry.get("business", ""),
+            "selection_reason": entry.get("selection_reason", ""),
         }
         if ticker and ticker in pipe_idx:
             merged.update({k: v for k, v in pipe_idx[ticker].items() if v is not None})

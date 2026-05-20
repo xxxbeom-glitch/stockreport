@@ -1,0 +1,395 @@
+# 10. Cursor 진행 기록
+
+## 현재 상태
+
+**01~08 + 라이브 데이터 + DeepSeek 필수 + Grok/Gemini optional 멀티 모델.**
+
+- `live=True`: KIS/pykrx 수집 (실패 시 더미 대체 없음)
+- **DeepSeek**: 1차 판단·`ai_send_slack`·슬랙 발송 조건 (필수)
+- **Grok** (optional): `ai_send_slack=true` 종목만 X/뉴스 맥락 보조, 발송 결정 변경 없음
+- **Gemini** (optional): 슬랙 초안 문장 polish, 실패 시 DeepSeek 초안 유지
+- 키 없음/API 실패 → 로그만, 더미 대체 없음
+- `--send` 없으면 드라이런
+
+## 다음 작업 (선택)
+
+- Gemini polish: `AI_SUMMARY_MODEL`을 `.env`의 `GEMINI_SUMMARY_MODEL`(또는 동작 확인된 모델)로 맞추기 — 현재 `gemini-1.5-flash`는 응답 없음 → 전건 fallback
+- `google.generativeai` → `google.genai` 마이그레이션 (deprecated 경고)
+- HD현대미포(010620) 시세/티커 정합
+- 기관 수급·뉴스 필드 보강
+
+---
+
+## 2026-05-21 작업 기록 — 멀티 모델 E2E 검증 (로컬)
+
+검증 일시: 2026-05-21 (KST, 로컬 `.env` + Secrets 반영 환경)
+
+### 실행 명령·결과 요약
+
+| # | 명령 | exit | 메시지 수 | Slack 발송 |
+|---|------|------|-----------|------------|
+| 1 | `--slot 0930 --live` | 0 | **2** | **없음** (`--send` 미사용, `slack send` 로그 없음) |
+| 2 | `--slot 0930 --live --json` | 0 | **3** | **없음** |
+| 3 | `--slot 0930 --live --send` | 0 | **2** | **2건** `ok=True`, `count=2`, `errors=[]` |
+
+※ DeepSeek 판단은 실행마다 비결정적이라 메시지 수·종목이 달라질 수 있음. 구조 검증은 3회 모두 통과.
+
+### 검증 체크리스트
+
+| 항목 | 결과 |
+|------|------|
+| KIS/pykrx 라이브 수집 | `live 수집 완료 total=25 ok=24 fail=1` (010620 HD현대미포 실패, 기존 이슈) |
+| DeepSeek 필수 호출 | `HTTP/1.1 200 OK`, `[kr_intraday_batch] OK provider=deepseek model=deepseek-chat` |
+| Grok `configured=True` | CLI·JSON `aux_models.grok.configured: true`, `model: grok-3` |
+| Gemini `configured=True` | CLI·JSON `aux_models.gemini.configured: true`, `model: gemini-1.5-flash` |
+| Grok 보조 (optional) | `ai_send_slack=true` 종목만 호출; 실행별 `Grok enrich ok=2/2` 또는 `4/4` |
+| Gemini polish (optional) | 전건 `gemini_polish.status=fallback`, `reason=Gemini 응답 없음` → **초안 fallback 정상** |
+| 메시지 0~3건 제한 | 2~3건 (SendFilter `max 3` 이내) |
+| `--send` 없을 때 미발송 | 테스트 1·2: `send_kr_intraday_slack` 미호출 확인 |
+| `--send` 시 승인 종목만 | 테스트 3: `274090` 켄코아, `099320` 세트렉아만 `sent: true` |
+| 비추천 미발송 | `007810` 코리아써키트, `036930` 주성엔지니어링 → `skip_reason: 발송 금지 decision: 비추천`, `grok_context: null`, Slack 미발송 |
+| jsonl grok/gemini 메타 | `data/logs/kr_slack/2026-05-21.jsonl`에 `grok_status`, `grok_context`, `gemini_polish`, `slack_message_draft` 기록 확인 |
+
+### 테스트 1 상세 (`--live` 드라이런)
+
+```text
+models primary=True grok=True gemini=True
+live 수집: total=25 ok=24 fail=1
+DeepSeek: candidates=4 send_slack=2 errors=2
+  - [코리아써키트] 발송 금지 decision: 비추천
+  - [주성엔지니어링] 발송 금지 decision: 비추천
+Grok enrich ok=2/2 (send_slack=true 2종목만)
+Gemini: gemini_polished 0/2 (전건 fallback)
+messages: 2
+```
+
+### 테스트 2 상세 (`--live --json`)
+
+```json
+"aux_models": {
+  "primary": { "configured": true, "provider": "deepseek", "model": "deepseek-chat" },
+  "grok": { "configured": true, "provider": "grok", "model": "grok-3" },
+  "gemini": { "configured": true, "provider": "gemini", "model": "gemini-1.5-flash" }
+}
+"message_count": 3
+"ai_errors": []
+```
+
+- DeepSeek `send_slack=4` → SendFilter 후 **3건** 메시지 (상한 3 적용 확인)
+
+### 테스트 3 상세 (`--live --send`)
+
+```text
+DeepSeek: candidates=4 send_slack=2 (비추천 2건 스킵)
+messages: 2
+slack send: {'ok': True, 'channel': 'C0B4X9JBK5X', 'count': 2, 'errors': []}
+```
+
+**jsonl 발송 기록 (마지막 2행)**
+
+- `274090` 켄코아에어로스페이스: `sent: true`, `grok_context`·`gemini_polish`·`slack_message_draft` 포함
+- `099320` 세트렉아이: `sent: true`, 동일 메타 포함
+- `007810`/`036930`: `sent: false`, `발송 금지 decision: 비추천`
+
+### 실패·스킵 로그
+
+| 구분 | 내용 |
+|------|------|
+| 라이브 수집 | `010620` HD현대미포: KIS 0시세·pykrx 미등록 (기존) |
+| DeepSeek 스킵 | `비추천` decision → `ai_send_slack=false`, Grok 미호출 |
+| Gemini | API 키는 있으나 `gemini-1.5-flash` 응답 없음 → 초안 사용 (의도한 fallback) |
+| pykrx WARNING | `get_index_ohlcv_by_date` 컬럼 오류 (수집은 진행) |
+
+### 다음 보완 작업
+
+1. **Gemini polish 실호출**: `AI_SUMMARY_MODEL`을 `GEMINI_SUMMARY_MODEL`(예: `gemini-3.1-flash-lite-preview`)로 변경 후 `gemini_polish.status=ok` 재검증
+2. **SDK 마이그레이션**: `google.generativeai` deprecated → `google.genai`
+3. **010620** 시세 정합, 기관 수급 필드 보강 (선택)
+
+---
+
+## 2026-05-21 작업 기록 (01~08 일괄)
+
+### 처리한 문서
+
+- 01_watchlist.md ~ 08_cursor_prompt.md
+
+### 수정·추가한 파일
+
+| 구분 | 파일 |
+|------|------|
+| 관심종목 | `data/kr_watchlist.json`, `data/kr_watchlist.py` |
+| 슬랙 v2 | `data/kr_slack_alerts.py`, `agents/kr_intraday_slack/*` |
+| 발송 | `slack_sender.py` (`send_kr_intraday_slack`) |
+| 실행 | `scripts/run_kr_intraday_slack.py` |
+| CI | `.github/workflows/kr_intraday_slack.yml` |
+| 진행 | `09_task_queue.md`, `10_progress.md` |
+
+### 작업 내용 (문서별)
+
+**01_watchlist**
+
+- 5섹터·25종목 JSON 고정, 해운 제외
+- `validate_watchlist_spec()` 검증 함수
+- 세트렉아이 표기 문서 정합 (티커 099320)
+
+**02_message_goal**
+
+- `constants.py`: 발송 허용/금지 상태, 금지 표현, 최대 3건, 조건 없으면 미발송
+
+**03_scan_logic**
+
+- `market_data.py` / `watchlist_pick.py` / `entry_price.py`: 수집→선별→예약가 범위(더미)
+
+**04_agents**
+
+- 6단계 에이전트 모듈 분리 + `pipeline.run_intraday_scan`
+
+**05_schedule**
+
+- 슬롯 `0930|1050|1350|1450`, GitHub Actions cron(KST 기준 슬롯 판별)
+
+**06_slack_message**
+
+- `slack_message.build_slack_message`: 판단 / 진입 관점 / 주의 조건 포맷
+
+**07_system_changes**
+
+- 발송 로그 `data/logs/kr_slack/YYYY-MM-DD.jsonl`
+- 당일 중복 발송 방지·예약가 변경 시 재발송 허용
+- 앱 리포트(kr_market)는 기존 watchlist 연동 유지
+
+**08_cursor_prompt**
+
+- `scripts/run_kr_intraday_slack.py` CLI 통합
+- `agents/kr_intraday_slack/README.md` 안내
+
+### 검증
+
+```text
+validate_watchlist_spec() → []
+python scripts/run_kr_intraday_slack.py --slot 0930 → messages 0~3건
+```
+
+### 이슈/주의사항
+
+- `config.KR_WATCHLIST`는 JSON 직접 로드(순환 import 방지)
+- 장중 스캔은 **더미 시드 데이터** — 라이브 API 전환 필요
+- GitHub cron은 UTC; 슬롯은 실행 시 `Asia/Seoul` 시각으로 결정
+
+## 2026-05-21 작업 기록 — KIS/pykrx 라이브 연동
+
+### 처리한 항목
+
+- `10_progress.md` 다음 작업: MarketDataAgent 라이브 경로
+
+### 수정·추가한 파일
+
+- `agents/kr_intraday_slack/live_market_data.py` (신규)
+- `agents/kr_intraday_slack/market_data.py` (`live`, `tickers` 인자)
+- `agents/kr_intraday_slack/pipeline.py` (`live`, `tickers` 전달)
+- `scripts/run_kr_intraday_slack.py` (`--live`, `--ticker`)
+- `scripts/test_live_watchlist_data.py` (신규 스모크 테스트)
+- `agents/kr_intraday_slack/README.md`
+
+### 작업 내용
+
+- KIS `inquire-price`: 현재가·전일종가·당일 고저·누적거래대금 (필드 없으면 pykrx 보완, **조용한 더미 대체 없음**)
+- pykrx `get_market_ohlcv` / `get_market_ohlcv_by_date`: OHLC·거래대금·52주 고가·전일종가 보완
+- 외국인 순매수: `get_foreign_net_by_ticker` (KIS → pykrx)
+- 기관 순매수: pykrx `get_market_trading_value_by_ticker` (미지원 시 WARNING만, `inst_net_eok=None` → 0)
+- 거래량비율: 기존 `_kr_volume_ratio` 재사용
+- `data_complete=False` + `fetch_errors`에 최종 누락 필드만 기록
+
+### 테스트 명령어
+
+```powershell
+# 1종목 (테크윙)
+python scripts/test_live_watchlist_data.py --ticker 089030
+
+# 25종목 전체
+python scripts/test_live_watchlist_data.py --all
+
+# 장중 스캔 파이프라인(라이브)
+python scripts/run_kr_intraday_slack.py --slot 0930 --live
+python scripts/run_kr_intraday_slack.py --slot 0930 --live --ticker 089030
+```
+
+### 성공/실패 로그 (실행일 2026-05-21, KST)
+
+**1종목 (089030 테크윙)**
+
+```text
+INFO kr_intraday.market_data: [089030] KIS 부분 필드 — pykrx로 보완 완료
+INFO kr_intraday.market_data: [089030 테크윙] live OK source=kis price=48,000원 tv=41,621,662,875원 foreign_eok=4 inst_eok=None
+[SUMMARY] fetched=1 ok=1 fail=0
+```
+
+**25종목 전체**
+
+```text
+INFO kr_intraday.market_data: [KR INTRADAY] live 수집 완료 slot=0930 total=25 ok=24 fail=1
+[SUMMARY] fetched=25 ok=24 fail=1 expected=25
+```
+
+**실패 1건**
+
+- `010620` HD현대미포: KIS 현재가·거래대금 **0** 응답, pykrx 당일 OHLC에 티커 없음 → `data_complete=False`, `fetch_errors`: 필수 필드 전체 누락
+
+**공통 WARNING**
+
+- pykrx `get_market_trading_value_by_ticker` 미지원 → 기관 수급 미연동(외국인만)
+- `get_trading_date()` probe 시 pykrx index API 컬럼 오류 메시지(수집 자체는 진행)
+
+### 다음 작업
+
+- Actions 워크플로에 `--live` 추가
+- 010620 티커·KIS 장중 시세 유효성 점검
+- 기관 수급 대체 수집 경로
+- 라이브 E2E 슬랙 발송 검증
+
+## 2026-05-21 작업 기록 — DeepSeek LLM 판단 연동
+
+### 수정·추가한 파일
+
+- `agents/kr_intraday_slack/llm_client.py` (신규)
+- `agents/kr_intraday_slack/ai_judge.py` (신규)
+- `agents/kr_intraday_slack/pipeline.py` (LLM 필수 경로)
+- `agents/kr_intraday_slack/slack_message.py` (`build_slack_message_from_ai`)
+- `agents/kr_intraday_slack/send_filter.py` (`require_ai`)
+- `agents/kr_intraday_slack/watchlist_pick.py` (후보 최대 7)
+- `scripts/run_kr_intraday_slack.py` (AI 상태 출력, `--send` 가드)
+- `agents/kr_intraday_slack/README.md`
+
+### 환경변수 (하드코딩 없음)
+
+```env
+AI_PROVIDER=deepseek
+AI_MODEL=deepseek-chat
+DEEPSEEK_API_KEY=...
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+```
+
+`AI_MODEL` 미설정 시 `DEEPSEEK_MODEL` → 최종 fallback `deepseek-chat`.
+
+### 파이프라인 흐름
+
+1. `collect_watchlist_market_data` (dummy 또는 `--live`)
+2. `pick_watchlist_candidates` 규칙 1차 (최대 7)
+3. `run_ai_judgments` → DeepSeek JSON `{ "decisions": [...] }`
+4. `send_slack=true` + 허용 decision 만 `build_slack_message_from_ai`
+5. `filter_for_slack_send(require_ai=True)` 최대 3건
+
+### 테스트 명령어
+
+```powershell
+# 드라이런 (더미 시세 + LLM, 슬랙 미발송)
+python scripts/run_kr_intraday_slack.py --slot 0930
+
+# 라이브 시세 + LLM 드라이런
+python scripts/run_kr_intraday_slack.py --slot 0930 --live
+
+# 실발송 (AI 승인 메시지 있을 때만)
+python scripts/run_kr_intraday_slack.py --slot 0930 --live --send
+```
+
+### 성공/실패 조건
+
+| 조건 | 동작 |
+|------|------|
+| `DEEPSEEK_API_KEY` 없음 | `ai_errors` 로그, 메시지 0, `--send` 해도 미발송 |
+| LLM API 오류 | 동일, 더미 판단 **없음** |
+| JSON 파싱 실패 | 동일 |
+| `send_slack=false` / 금지 decision | 해당 종목 스킵, 로그 `skip_reason` |
+| `send_slack=true` + 허용 decision | 메시지 생성 → `--send` 시 Slack |
+
+### 실행 로그 예시 (2026-05-21, dummy + deepseek-chat)
+
+```text
+INFO kr_intraday.llm: [kr_intraday_batch] LLM OK provider=deepseek model=deepseek-chat
+INFO kr_intraday.ai_judge: [KR INTRADAY AI] slot=0930 candidates=4 send_slack=4 errors=0
+messages: 4 (드라이런, --send 없음)
+```
+
+### 실패 시 미발송 보장
+
+- 규칙 기반 `evaluate_entry` / `build_slack_message` 는 슬랙 경로에서 **사용 안 함**
+- `--send` 분기: `not result.messages` 또는 `not result.ai_enabled` → `send_kr_intraday_slack` 호출 안 함
+
+### 다음 작업
+
+- Actions에 `AI_PROVIDER` / `AI_MODEL` secrets 추가
+- `deepseek-reasoner` vs `deepseek-chat` 운영 모델 선택 가이드
+- LLM 배치 실패 시 종목별 재시도(선택)
+
+## 2026-05-21 작업 기록 — 멀티 모델 optional (Grok/Gemini)
+
+### 수정·추가한 파일
+
+| 구분 | 파일 |
+|------|------|
+| 설정 | `agents/kr_intraday_slack/llm_client.py` (`primary`/`social`/`summary`, `aux_models_status`) |
+| Grok 보조 | `agents/kr_intraday_slack/grok_social.py` (신규) |
+| Gemini polish | `agents/kr_intraday_slack/gemini_polish.py` (신규) |
+| 파이프라인 | `agents/kr_intraday_slack/pipeline.py`, `slack_message.py` |
+| 실행 | `scripts/run_kr_intraday_slack.py` |
+| 발송 로그 | `slack_sender.py` (`grok_context`, `gemini_polish` 필드) |
+| 문서 | `agents/kr_intraday_slack/README.md`, `.env.example` |
+
+### 환경변수 (추가)
+
+```env
+AI_SOCIAL_PROVIDER=grok
+AI_SOCIAL_MODEL=grok-3
+GROK_API_KEY=
+
+AI_SUMMARY_PROVIDER=gemini
+AI_SUMMARY_MODEL=gemini-1.5-flash
+GEMINI_API_KEY=
+```
+
+### 파이프라인 흐름 (갱신)
+
+1. 규칙 1차 후보 → **DeepSeek** `run_ai_judgments`
+2. **Grok** `enrich_rows_with_grok` (`ai_send_slack=true` 만, optional)
+3. SendFilter → `build_slack_message_from_ai` (Grok 맥락은 판단 섹션에 병합)
+4. **Gemini** `polish_slack_message` (optional, 실패 시 초안)
+5. `--send` 시 `send_kr_intraday_slack` (조건은 DeepSeek `ai_send_slack` 그대로)
+
+### 테스트 명령어
+
+```powershell
+# DeepSeek만 (Grok/Gemini 키 없으면 skip 로그)
+python scripts/run_kr_intraday_slack.py --slot 0930
+
+# optional 모델 상태 확인
+python scripts/run_kr_intraday_slack.py --slot 0930 --json
+
+# 라이브 + 드라이런
+python scripts/run_kr_intraday_slack.py --slot 0930 --live
+```
+
+### 성공/실패 조건
+
+| 조건 | 동작 |
+|------|------|
+| `DEEPSEEK_API_KEY` 없음 | 메시지 0, 슬랙 미발송 (기존과 동일) |
+| `GROK_API_KEY` 없음 | `grok_notes`에 skip, DeepSeek 단독 진행 |
+| Grok API/JSON 실패 | 해당 종목 `grok_status=skipped`, 발송 조건 불변 |
+| `GEMINI_API_KEY` 없음 | `gemini_polish.status=skipped`, DeepSeek 초안 사용 |
+| Gemini 실패/금지표현/형식불일치 | `status=fallback`, 초안 사용 |
+| Grok이 `send_slack` 변경 시도 | 코드상 병합만, `ai_send_slack` 미변경 |
+
+### 로그 필드 (`data/logs/kr_slack/*.jsonl`)
+
+- `grok_status`, `grok_skip_reason`, `grok_context`
+- `gemini_polish`, `slack_message_draft`
+- 스캔 요약: `aux_models` (primary/grok/gemini configured 여부)
+
+### 다음 작업
+
+- Gemini 모델명 정합 후 polish `status=ok` 검증 (위 E2E 검증 섹션 참고)
+
+## 기록 규칙
+
+Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

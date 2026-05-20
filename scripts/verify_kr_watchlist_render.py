@@ -22,7 +22,7 @@ EXPECTED_SECTOR_OPTIONS = [
     "반도체 부품",
     "반도체 장비",
     "방산·우주",
-    "조선·해양방산·해운",
+    "조선·기자재",
 ]
 
 
@@ -182,17 +182,23 @@ def run_verify() -> dict[str, Any]:
         result["error"] = f"드롭다운 섹터 옵션 불일치: {sector_opts}"
         raise VerifyError(result["error"])
 
-    na_in_report = any(
-        str(row.get("current_price", "")) == "N/A"
-        or str(row.get("target_price", "")) == "N/A"
-        or str(row.get("foreign_net_buy", "")) == "N/A"
-        or str(row.get("high_52w", "")) == "N/A"
+    forbidden = ("해운", "HMM", "팬오션", "조선·해양방산·해운")
+    if any(token in html for token in forbidden):
+        result["error"] = f"제외 섹터/종목 문자열 포함: {[t for t in forbidden if t in html]}"
+        raise VerifyError(result["error"])
+
+    missing_price = [
+        str(row.get("name", ""))
         for row in watchlist_stocks
         if isinstance(row, dict)
-    )
-    na_in_html = ">N/A<" in html or ">N/A</" in html
-    if not (na_in_report and na_in_html):
-        result["error"] = "N/A 필드 렌더링 확인 실패"
+        and str(row.get("current_price", "")).strip() in ("", "N/A")
+    ]
+    if missing_price:
+        result["error"] = f"current_price 미기재: {missing_price[:3]}"
+        raise VerifyError(result["error"])
+
+    if "선정이유" not in html:
+        result["error"] = "선정이유 섹션 미렌더"
         raise VerifyError(result["error"])
 
     for row in watchlist_stocks:
@@ -218,7 +224,7 @@ def _print_summary(result: dict[str, Any]) -> None:
     print(f"[KR WATCHLIST] stocks: {result.get('stocks')}")
     print("[KR WATCHLIST] labels: 안 사면 후회함 / 지금 사기엔 좀...")
     print("[KR WATCHLIST] dropdown sectors: OK (5)")
-    print("[KR WATCHLIST] N/A fields: OK")
+    print("[KR WATCHLIST] fixed pool (no shipping): OK")
     if "firebase_ok" in result:
         print(f"[KR WATCHLIST] firebase upload: {'OK' if result.get('firebase_ok') else 'FAIL'}")
     if result.get("briefing_url"):

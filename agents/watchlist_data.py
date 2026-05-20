@@ -14,9 +14,11 @@ from .common import safe_float
 
 # Watchlist theme → KIS 업종명 (KR supply filter)
 KR_THEME_SECTORS: dict[str, list[str]] = {
-    "반도체 대형": ["전기·전자"],
-    "반도체 소부장": ["전기·전자", "기계·장비", "의료·정밀기기"],
-    "AI 전력 인프라": ["전기·가스", "기계·장비"],
+    "반도체 소재": ["전기·전자", "화학"],
+    "반도체 부품": ["전기·전자", "의료·정밀기기"],
+    "반도체 장비": ["기계·장비", "전기·전자"],
+    "방산·우주": ["운송장비·부품", "전기·전자"],
+    "조선·기자재": ["운송장비·부품", "철강·금속", "화학"],
 }
 
 # Watchlist theme → US sector_flow / macro keyword hints
@@ -90,16 +92,34 @@ def _kr_fundamentals(ticker: str) -> dict[str, Any]:
 
 def _flatten_watchlist() -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
-    for theme, stocks in config.KR_WATCHLIST.items():
-        for ticker, name in stocks.items():
+    try:
+        from data.kr_watchlist import iter_watchlist_entries
+
+        for entry in iter_watchlist_entries():
+            ticker = str(entry.get("ticker", "")).strip()
+            if not ticker:
+                continue
             rows.append(
                 {
                     "ticker": ticker.zfill(6),
-                    "name": name,
+                    "name": entry["name"],
                     "market": "KR",
-                    "theme": theme,
+                    "theme": entry["sector_name"],
                 }
             )
+    except Exception:
+        pass
+    if not rows:
+        for theme, stocks in config.KR_WATCHLIST.items():
+            for ticker, name in stocks.items():
+                rows.append(
+                    {
+                        "ticker": ticker.zfill(6),
+                        "name": name,
+                        "market": "KR",
+                        "theme": theme,
+                    }
+                )
     for theme, stocks in config.US_WATCHLIST.items():
         for ticker, name in stocks.items():
             rows.append(

@@ -437,8 +437,11 @@ def build_msg3(report_data: dict[str, Any], report_type: str) -> str:
 
 
 def build_msg4(report_data: dict[str, Any], report_type: str) -> str:
-    del report_type
     buys = report_data.get("buy_recommendations") or []
+    if _is_kr_report(report_type) and buys:
+        from data.kr_watchlist import filter_rows_to_watchlist
+
+        buys = filter_rows_to_watchlist(buys)
     risk_warning = _safe_str(report_data.get("risk_warning"), "N/A")
 
     lines = [
@@ -669,12 +672,12 @@ def build_kr_watchlist_report_slack_text(
 ) -> str:
     """사용자용 KR 관심종목 리포트 Slack 본문 (개발 검증 로그 아님)."""
     sectors = int(result.get("sectors") or 5)
-    stocks = int(result.get("stocks") or result.get("expected_stocks") or 28)
+    stocks = int(result.get("stocks") or result.get("expected_stocks") or 25)
     lines = [
         "*[KR 관심종목 리포트]*",
         _kr_watchlist_intro_line(),
         "",
-        "오늘은 관심 섹터 5개와 관심종목 28개를 기준으로",
+        "오늘은 관심 섹터 5개와 관심종목 25개를 기준으로",
         "관찰 우선 종목과 대기 종목을 정리했습니다.",
         "",
     ]
@@ -690,6 +693,59 @@ def build_kr_watchlist_report_slack_text(
         ]
     )
     return "\n".join(lines)
+
+
+def send_kr_intraday_slack(
+    result: Any,
+    *,
+    report_type: str = "kr_during",
+) -> dict[str, Any]:
+    """
+    장중 관심종목 스캔 결과 슬랙 발송 (조건 충족 시에만).
+    result: agents.kr_intraday_slack.IntradayScanResult
+    """
+    from agents.kr_intraday_slack.send_log import append_log_record
+
+    messages = list(getattr(result, "messages", None) or [])
+    send_rows = list(getattr(result, "send_rows", None) or [])
+    slot = str(getattr(result, "slot", ""))
+    if not messages:
+        return {"ok": True, "skipped": True, "reason": "no_messages", "count": 0}
+
+    channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
+        "SLACK_CHANNEL_KR", ""
+    )
+    errors: list[str] = []
+    sent = 0
+    for row, text in zip(send_rows, messages):
+        posted = post_message(text, channel, retries=1)
+        ok = bool(posted.get("ok"))
+        if ok:
+            sent += 1
+        else:
+            errors.append(str(posted.get("error", "unknown")))
+        append_log_record(
+            {
+                "slot": slot,
+                "ticker": row.get("ticker"),
+                "name": row.get("name"),
+                "status": row.get("ai_decision") or row.get("status"),
+                "current_price": row.get("current_price_fmt"),
+                "entry_range": row.get("entry_range"),
+                "sent": ok,
+                "message": text,
+                "skip_reason": None if ok else posted.get("error"),
+                "grok_context": row.get("grok_context"),
+                "gemini_polish": row.get("gemini_polish"),
+                "slack_message_draft": row.get("slack_message_draft"),
+            }
+        )
+    return {
+        "ok": sent > 0 and not errors,
+        "channel": channel,
+        "count": sent,
+        "errors": errors,
+    }
 
 
 def send_kr_watchlist_report_slack(

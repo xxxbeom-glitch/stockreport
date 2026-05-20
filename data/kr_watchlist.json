@@ -1,57 +1,179 @@
 {
-  "version": 1,
+  "version": 2,
   "sectors": {
     "semiconductor_materials": {
       "label": "반도체 소재",
       "stocks": [
-        { "name": "솔브레인", "ticker": "036830" },
-        { "name": "동진쎄미켐", "ticker": "005290" },
-        { "name": "원익머트리얼즈", "ticker": "104830" },
-        { "name": "후성", "ticker": "093370" },
-        { "name": "한솔케미칼", "ticker": "014680" }
+        {
+          "name": "하나머티리얼즈",
+          "ticker": "166090",
+          "business": "식각 공정용 SiC 부품 전문",
+          "selection_reason": "반도체 소재 밸류체인 핵심.\n공정용 부품 수요 회복 구간 관찰."
+        },
+        {
+          "name": "한솔케미칼",
+          "ticker": "014680",
+          "business": "반도체용 특수 화학 소재",
+          "selection_reason": "특수 화학 소재 수급 개선.\nCAPEX 사이클 연동 여부 확인."
+        },
+        {
+          "name": "원익머트리얼즈",
+          "ticker": "104830",
+          "business": "반도체용 고순도 특수 가스",
+          "selection_reason": "고순도 가스 공급 안정성.\n메모리·파운드리 가동률 민감."
+        },
+        {
+          "name": "동진쎄미켐",
+          "ticker": "005290",
+          "business": "감광액(PR) 및 공정 재료",
+          "selection_reason": "PR·공정재료 수요 회복 기대.\n수출·환율 변수 점검."
+        },
+        {
+          "name": "티씨케이",
+          "ticker": "064760",
+          "business": "SiC 링 및 웨이퍼 부품",
+          "selection_reason": "SiC 부품 수요 확대.\n전력반도체 라인 증설 모멘텀."
+        }
       ]
     },
     "semiconductor_parts": {
       "label": "반도체 부품",
       "stocks": [
-        { "name": "리노공업", "ticker": "058470" },
-        { "name": "ISC", "ticker": "095340" },
-        { "name": "티씨케이", "ticker": "064760" },
-        { "name": "하나머티리얼즈", "ticker": "166090" },
-        { "name": "원익QnC", "ticker": "074600" }
+        {
+          "name": "해성디에스",
+          "ticker": "195870",
+          "business": "반도체 패키징용 리드프레임",
+          "selection_reason": "패키징 리드프레임 수요.\nOSAT 가동률·재고 흐름 확인."
+        },
+        {
+          "name": "심텍",
+          "ticker": "222800",
+          "business": "메모리 패키지 기판",
+          "selection_reason": "메모리 패키지 기판 사이클.\nHBM·고대역폭 수요 연동."
+        },
+        {
+          "name": "대덕전자",
+          "ticker": "353200",
+          "business": "고다층 기판(MLB) 및 FC-BGA",
+          "selection_reason": "고다층·FC-BGA 수요.\n모바일·서버 보드 투자 추적."
+        },
+        {
+          "name": "비에이치",
+          "ticker": "090460",
+          "business": "모바일/IT기기 연성회로기판",
+          "selection_reason": "연성기판 수요 회복.\nIT 기기 출하·재고 사이클 민감."
+        },
+        {
+          "name": "코리아써키트",
+          "ticker": "007810",
+          "business": "반도체 패키지 기판",
+          "selection_reason": "패키지 기판 밸류체인.\n선행 지표·수주 모멘텀 점검."
+        }
       ]
     },
     "semiconductor_equipment": {
       "label": "반도체 장비",
       "stocks": [
-        { "name": "한미반도체", "ticker": "042700" },
-        { "name": "이오테크닉스", "ticker": "039030" },
-        { "name": "주성엔지니어링", "ticker": "036930" },
-        { "name": "테크윙", "ticker": "089030" },
-        { "name": "피에스케이홀딩스", "ticker": "031980" },
-        { "name": "와이씨", "ticker": "232140" }
+        {
+          "name": "테크윙",
+          "ticker": "089030",
+          "business": "메모리 테스트 핸들러",
+          "selection_reason": "테스트 핸들러 수요.\n메모리 CAPEX·검증 장비 사이클."
+        },
+        {
+          "name": "유진테크",
+          "ticker": "084370",
+          "business": "증착(ALD) 공정 장비",
+          "selection_reason": "ALD 장비 수주 모멘텀.\n파운드리·메모리 투자 연동."
+        },
+        {
+          "name": "주성엔지니어링",
+          "ticker": "036930",
+          "business": "원자층 증착 장비",
+          "selection_reason": "원자층 증착 장비 수요.\n신규 라인 증설 일정 확인."
+        },
+        {
+          "name": "피에스케이",
+          "ticker": "319660",
+          "business": "웨이퍼 세정 및 애싱 장비",
+          "selection_reason": "세정·애싱 장비 수요.\n공정 스텝 증가에 따른 설비 투자."
+        },
+        {
+          "name": "에스티아이",
+          "ticker": "039440",
+          "business": "약품공급장치 및 세정 장비",
+          "selection_reason": "약품·세정 장비 밸류체인.\n라인 증설·리필 주기 추적."
+        }
       ]
     },
     "defense_space": {
       "label": "방산·우주",
       "stocks": [
-        { "name": "한화에어로스페이스", "ticker": "012450" },
-        { "name": "한화시스템", "ticker": "272210" },
-        { "name": "LIG넥스원", "ticker": "079550" },
-        { "name": "현대로템", "ticker": "064350" },
-        { "name": "한국항공우주", "ticker": "047810" }
+        {
+          "name": "현대로템",
+          "ticker": "064350",
+          "business": "지상 무기(K2 전차) 체계",
+          "selection_reason": "지상무기 수출·내수 수주.\n방산 예산·지정학 리스크 점검."
+        },
+        {
+          "name": "한화시스템",
+          "ticker": "272210",
+          "business": "군 위성·레이더·통신 시스템",
+          "selection_reason": "위성·레이더·통신 체계.\n방산 IT·우주 사업 확대 관찰."
+        },
+        {
+          "name": "세트렉아이",
+          "ticker": "099320",
+          "business": "소형 위성 및 영상 플랫폼",
+          "selection_reason": "소형위성·영상 플랫폼.\n우주 상용화·수주 파이프라인."
+        },
+        {
+          "name": "켄코아에어로스페이스",
+          "ticker": "274090",
+          "business": "항공 구조물 제작 및 정비",
+          "selection_reason": "항공 구조물·MRO.\n민항·방산 수주 믹스 확인."
+        },
+        {
+          "name": "비츠로테크",
+          "ticker": "042370",
+          "business": "발사체 부품 및 플라즈마",
+          "selection_reason": "발사체 부품·플라즈마.\n우주·방산 부품 수요 연동."
+        }
       ]
     },
-    "shipbuilding_marine_shipping": {
-      "label": "조선·해양방산·해운",
+    "shipbuilding_materials": {
+      "label": "조선·기자재",
       "stocks": [
-        { "name": "한화오션", "ticker": "042660" },
-        { "name": "HD현대중공업", "ticker": "329180" },
-        { "name": "HD한국조선해양", "ticker": "009540" },
-        { "name": "삼성중공업", "ticker": "010140" },
-        { "name": "HD현대미포", "ticker": "010620" },
-        { "name": "HMM", "ticker": "011200" },
-        { "name": "팬오션", "ticker": "028670" }
+        {
+          "name": "HD현대미포",
+          "ticker": "010620",
+          "business": "중형 선박 및 특수선 건조",
+          "selection_reason": "중형·특수선 수주 사이클.\n선가·수주잔고 추적."
+        },
+        {
+          "name": "한화오션",
+          "ticker": "042660",
+          "business": "잠수함/특수선 및 상선 건조",
+          "selection_reason": "특수선·상선 건조.\n방산·민간 수주 믹스 확인."
+        },
+        {
+          "name": "한국카본",
+          "ticker": "017960",
+          "business": "LNG선 초저온 보냉재",
+          "selection_reason": "LNG 보냉재 수요.\nLNG선 발주·보냉재 단가."
+        },
+        {
+          "name": "동성화인텍",
+          "ticker": "033500",
+          "business": "LNG선 보냉재 및 냉매",
+          "selection_reason": "보냉재·냉매 밸류체인.\n조선 사이클·원자재 비용."
+        },
+        {
+          "name": "태광",
+          "ticker": "023160",
+          "business": "배관 연결 부품 피팅",
+          "selection_reason": "배관 피팅·기자재.\n조선·플랜트 투자 연동."
+        }
       ]
     }
   }
