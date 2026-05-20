@@ -1,58 +1,13 @@
-name: 미장 개장 브리핑 (19:00 KST)
+# [DISABLED] 미장 개장 브리핑 — Slack 자동 발송 중단
+name: "[DISABLED] 미장 개장 브리핑"
 
 on:
-  # schedule disabled — re-enable when ready (was: 50 9 * * 2-6 → 19:00 KST)
   workflow_dispatch:
 
 jobs:
-  report:
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-
-      - name: Python 3.11 세팅
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: 패키지 캐시
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-
-      - name: 패키지 설치
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          sudo apt-get install -y fonts-nanum
-          sudo apt-get install -y \
-            libpango-1.0-0 libpangoft2-1.0-0 \
-            libcairo2 libgdk-pixbuf2.0-0
-
-      - name: 리포트 생성 및 발송
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
-          SLACK_CHANNEL_US: ${{ secrets.SLACK_CHANNEL_US }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
-          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
-          KIS_ACCOUNT_NO: ${{ secrets.KIS_ACCOUNT_NO }}
-          KRX_ID: ${{ secrets.KRX_ID }}
-          KRX_PW: ${{ secrets.KRX_PW }}
-        run: python main.py us_during
-
-      - name: 실패 시 Slack 알림
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            -d '{"text":"❌ [04_us_open] 미국 장중 리포트 실패 — GitHub Actions 로그 확인"}'
+      - run: |
+          echo "이 workflow는 비활성화되었습니다."
+          echo "Slack 자동 발송: kr_intraday_slack.yml 만 사용합니다."

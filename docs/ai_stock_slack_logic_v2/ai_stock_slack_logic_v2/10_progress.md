@@ -2,21 +2,99 @@
 
 ## 현재 상태
 
-**01~08 + 라이브 데이터 + DeepSeek 필수 + Grok/Gemini optional 멀티 모델.**
+**Slack 자동 발송: 장중 관심종목 알림만** (`kr_intraday_slack.yml`).
 
-- `live=True`: KIS/pykrx 수집 (실패 시 더미 대체 없음)
-- **DeepSeek**: 1차 판단·`ai_send_slack`·슬랙 발송 조건 (필수)
-- **Grok** (optional): `ai_send_slack=true` 종목만 X/뉴스 맥락 보조, 발송 결정 변경 없음
-- **Gemini** (optional): 슬랙 초안 문장 polish, 실패 시 DeepSeek 초안 유지
-- 키 없음/API 실패 → 로그만, 더미 대체 없음
-- `--send` 없으면 드라이런
+- 스케줄: KST **09:30 / 10:50 / 13:50 / 14:50** (월~금)
+- CI: `python scripts/run_kr_intraday_slack.py --slot <SLOT> --live --send`
+- **예전 장시작/장마감 리포트 Slack: OFF** (workflow 비활성 + `main.py`/`slack_sender` 기본 skip)
+- 리포트 HTML·kr_market 데이터 생성은 로컬 `main.py` 가능 (Slack 없음)
 
 ## 다음 작업 (선택)
 
-- Gemini polish: `AI_SUMMARY_MODEL`을 `.env`의 `GEMINI_SUMMARY_MODEL`(또는 동작 확인된 모델)로 맞추기 — 현재 `gemini-1.5-flash`는 응답 없음 → 전건 fallback
-- `google.generativeai` → `google.genai` 마이그레이션 (deprecated 경고)
+- Actions 첫 스케줄 실행 후 Slack 채널·발송 건수 확인
+- Gemini `AI_SUMMARY_MODEL` 정합, `google.genai` 마이그레이션
 - HD현대미포(010620) 시세/티커 정합
-- 기관 수급·뉴스 필드 보강
+
+---
+
+## 2026-05-21 작업 기록 — GitHub Actions 자동 발송 운영 전환
+
+### 수정 파일
+
+- `.github/workflows/kr_intraday_slack.yml`
+- `scripts/run_kr_intraday_slack.py`
+- `10_progress.md`
+
+### workflow 실행 명령 (운영)
+
+```bash
+python scripts/run_kr_intraday_slack.py --slot <0930|1050|1350|1450> --live --send
+```
+
+`<SLOT>`은 cron 트리거별 `github.event.schedule` 매핑 (수동 실행 시 `workflow_dispatch` input).
+
+### 자동 발송 시간 (KST, 월~금)
+
+| KST | UTC cron | slot |
+|-----|----------|------|
+| 09:30 | `30 0 * * 1-5` | 0930 |
+| 10:50 | `50 1 * * 1-5` | 1050 |
+| 13:50 | `50 4 * * 1-5` | 1350 |
+| 14:50 | `50 5 * * 1-5` | 1450 |
+
+### 실제 발송 조건 (변경 없음)
+
+1. KIS/pykrx 라이브 수집 → 규칙 1차 후보 → **DeepSeek** JSON 판단
+2. `ai_send_slack=true` 이고 decision ∈ {테스트 진입 검토, 예약가 제안, 관찰 강화, 눌림 진입 가능, 수급 반전 감지}
+3. 금지 decision(비추천, 진입 보류 등) → 메시지·발송 없음
+4. **SendFilter**: 최대 3건, 당일 동일 티커 중복 발송 제외(예약가 유의미 변경 시 재발송 가능)
+5. `result.messages` 비어 있으면 `send_kr_intraday_slack` 호출 안 함
+
+### workflow 보강 내용
+
+- `env`: KIS, KRX, Grok, Gemini, DeepSeek, Slack (기존 Secrets 사용)
+- 슬롯: `github.event.schedule` 우선 매핑 (지연 시 KST 시각 fallback)
+- `workflow_dispatch`: `live`/`send` 기본 true
+- `concurrency`: 슬롯별 중복 실행 방지
+
+### 스크립트 보강
+
+- `--live --send` 시 `운영 모드` 로그
+- 발송 0건 → exit 0 (`발송 대상 0건 — 슬랙 미발송`)
+- AI 미설정 + `--send` → exit 1
+
+### 다음 확인 사항
+
+- 내일 장중 첫 cron(09:30 KST) Actions 로그에서 `slack send: {'count': N}` 확인
+- 당일 중복 발송 스킵(`당일 이미 발송됨`) 동작이 의도와 맞는지 점검
+- 010620 라이브 수집 실패가 후보 선정에 영향 없는지 모니터링
+
+---
+
+## 2026-05-21 작업 기록 — 예전 리포트 Slack 발송 비활성화
+
+### 수정 요약
+
+- **Slack 자동 발송 ON**: `kr_intraday_slack.yml` 만 (KST 09:30/10:50/13:50/14:50)
+- **Slack 자동 발송 OFF**: `01_us_close`, `02_kr_open`, `03_kr_close`, `04_us_open` (workflow DISABLED stub)
+- **CI Slack OFF**: `kr_market_verify.yml` (`--notify-slack` 제거)
+- **코드 게이트**: `STOCKREPORT_ALLOW_LEGACY_REPORT_SLACK` 미설정 시 `main.py`·`send_market_report`·`send_kr_watchlist_report_slack` skip
+- **유지**: `send_kr_intraday_slack`, 멀티모델 파이프라인, kr_market 렌더
+
+### Workflow 표
+
+| 상태 | 파일 |
+|------|------|
+| ON | `kr_intraday_slack.yml` |
+| OFF | `01_us_close.yml`, `02_kr_open.yml`, `03_kr_close.yml`, `04_us_open.yml` |
+| ON (Slack 없음) | `kr_market_verify.yml`, `test_html.yml` |
+
+### 로컬
+
+```bash
+python scripts/run_kr_intraday_slack.py --slot auto --live --send   # 장중 알림
+python main.py kr_during   # 리포트 생성만, Slack 없음
+```
 
 ---
 

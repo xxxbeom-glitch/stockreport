@@ -7,6 +7,7 @@ import argparse
 import json
 import logging
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,14 +24,31 @@ from agents.kr_intraday_slack.llm_client import (
 )
 from data.kr_watchlist import validate_watchlist_spec
 
+SLOT_CHOICES = list(SCAN_SLOTS.keys()) + ["auto"]
+
+
+def resolve_intraday_slot(slot_arg: str) -> str:
+    """KST 시각 또는 auto → 0930|1050|1350|1450."""
+    if slot_arg != "auto":
+        return slot_arg
+    kst = datetime.now(timezone(timedelta(hours=9)))
+    hm = kst.strftime("%H:%M")
+    if hm < "10:20":
+        return "0930"
+    if hm < "12:20":
+        return "1050"
+    if hm < "14:20":
+        return "1350"
+    return "1450"
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="KR 관심종목 장중 슬랙 스캔")
     parser.add_argument(
         "--slot",
         required=True,
-        choices=list(SCAN_SLOTS.keys()),
-        help="0930|1050|1350|1450 (KST)",
+        choices=SLOT_CHOICES,
+        help="0930|1050|1350|1450|auto (auto=KST 시각 기준)",
     )
     parser.add_argument("--dry-run", action="store_true", help="슬랙 발송 없이 결과만 출력")
     parser.add_argument("--send", action="store_true", help="조건 충족 시 Slack 발송")
@@ -60,6 +78,9 @@ def main() -> int:
         return 1
 
     tickers = [str(t).zfill(6) for t in (args.tickers or [])] or None
+    slot = resolve_intraday_slot(args.slot)
+    if args.slot == "auto":
+        print(f"[KR INTRADAY] --slot auto → resolved {slot} (KST)")
     cfg = ai_config()
     aux = aux_models_status()
     print(
@@ -75,7 +96,14 @@ def main() -> int:
         f"configured={is_gemini_configured()}"
     )
 
-    result = run_intraday_scan(args.slot, live=args.live, tickers=tickers)
+    if args.live and args.send:
+        print("[KR INTRADAY] 운영 모드: --live --send (조건 충족 시 Slack 실발송)")
+    elif args.live:
+        print("[KR INTRADAY] 라이브 드라이런: --live (슬랙 미발송)")
+    elif args.send:
+        print("[KR INTRADAY] 더미 시세 + --send")
+
+    result = run_intraday_scan(slot, live=args.live, tickers=tickers)
 
     if args.json:
         print(
@@ -123,17 +151,21 @@ def main() -> int:
     if args.dry_run:
         print("[KR INTRADAY] --dry-run: 슬랙 발송 생략")
     elif args.send:
+        if not result.ai_enabled:
+            print("[KR INTRADAY] AI 미설정 — 슬랙 미발송", file=sys.stderr)
+            return 1
         if not result.messages:
-            print("[KR INTRADAY] AI 승인 메시지 없음 — 슬랙 미발송")
-        elif not result.ai_enabled:
-            print("[KR INTRADAY] AI 미설정 — 슬랙 미발송")
-        else:
-            from slack_sender import send_kr_intraday_slack
+            print("[KR INTRADAY] 발송 대상 0건 — 슬랙 미발송 (정상)")
+            return 0
+        from slack_sender import send_kr_intraday_slack
 
-            posted = send_kr_intraday_slack(result)
-            print(f"[KR INTRADAY] slack send: {posted}")
+        posted = send_kr_intraday_slack(result)
+        print(f"[KR INTRADAY] slack send: {posted}")
+        if not posted.get("ok") and posted.get("count", 0) == 0:
+            print("[KR INTRADAY] Slack API 실패", file=sys.stderr)
+            return 1
     elif not result.messages:
-        print("[KR INTRADAY] 슬랙 미발송 (AI 판단 없음 또는 send_slack=false)")
+        print("[KR INTRADAY] 슬랙 미발송 (드라이런 또는 send_slack=false)")
 
     return 0
 

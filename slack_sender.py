@@ -553,12 +553,26 @@ def post_message(
     return {"ok": False, "error": last_error}
 
 
+def _legacy_slack_skipped(report_type: str) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "skipped": True,
+        "reason": "legacy_report_slack_disabled",
+        "report_type": report_type,
+        "sent_count": 0,
+        "errors": [],
+    }
+
+
 def send_market_report(
     report_data: dict[str, Any],
     report_type: str,
     pdf_url: str = "",
 ) -> dict[str, Any]:
     """Send one Slack message with summary text and optional briefing button."""
+    if not config.legacy_report_slack_enabled():
+        return _legacy_slack_skipped(report_type)
+
     token = config.SLACK_BOT_TOKEN or os.getenv("SLACK_BOT_TOKEN", "")
     channel = resolve_slack_channel(report_type) or ""
     if not token:
@@ -758,6 +772,9 @@ def send_kr_watchlist_report_slack(
     KR 관심종목 리포트 Slack 발송 — send_market_report와 동일 패턴
     (chat.postMessage + 브리핑 보기 버튼).
     """
+    if not config.legacy_report_slack_enabled():
+        return _legacy_slack_skipped(report_type)
+
     channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "")
     text = build_kr_watchlist_report_slack_text(result, briefing_url)
     blocks = _briefing_blocks(text, briefing_url)

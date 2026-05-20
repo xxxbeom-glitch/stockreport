@@ -1,8 +1,10 @@
-# KR 관심종목 장중 슬랙 스캔 (KST 09:30 / 10:50 / 13:50 / 14:50)
+# KR 관심종목 장중 슬랙 자동 발송 (운영 모드: --live --send)
+# KST 09:30 / 10:50 / 13:50 / 14:50 (월~금)
 name: KR Intraday Slack Scan
 
 on:
   schedule:
+    # UTC → KST(+9): 00:30=09:30, 01:50=10:50, 04:50=13:50, 05:50=14:50
     - cron: "30 0 * * 1-5"
     - cron: "50 1 * * 1-5"
     - cron: "50 4 * * 1-5"
@@ -13,41 +15,93 @@ on:
         description: "Scan slot (0930|1050|1350|1450)"
         required: true
         default: "0930"
+      live:
+        description: "KIS/pykrx 라이브 수집"
+        type: boolean
+        default: true
+      send:
+        description: "조건 충족 시 Slack 실발송"
+        type: boolean
+        default: true
+
+concurrency:
+  group: kr-intraday-slack-${{ github.event.schedule || inputs.slot }}
+  cancel-in-progress: false
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Determine slot (KST)
+
+      - name: Determine slot
         id: slot
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             SLOT="${{ inputs.slot }}"
           else
-            HM=$(TZ=Asia/Seoul date +%H:%M)
-            case "$HM" in
-              09:30) SLOT=0930 ;;
-              10:50) SLOT=1050 ;;
-              13:50) SLOT=1350 ;;
-              14:50) SLOT=1450 ;;
-              *) SLOT=0930 ;;
+            case "${{ github.event.schedule }}" in
+              "30 0 * * 1-5") SLOT=0930 ;;
+              "50 1 * * 1-5") SLOT=1050 ;;
+              "50 4 * * 1-5") SLOT=1350 ;;
+              "50 5 * * 1-5") SLOT=1450 ;;
+              *)
+                HM=$(TZ=Asia/Seoul date +%H:%M)
+                case "$HM" in
+                  09:3*) SLOT=0930 ;;
+                  10:5*) SLOT=1050 ;;
+                  13:5*) SLOT=1350 ;;
+                  14:5*) SLOT=1450 ;;
+                  *) SLOT=0930 ;;
+                esac
+                ;;
             esac
           fi
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-          echo "Using slot=$SLOT (KST clock for schedule)"
-      - name: Run intraday scan and send Slack
+          echo "KST now: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M') slot=$SLOT schedule=${{ github.event.schedule }}"
+
+      - name: Build run flags
+        id: flags
+        shell: bash
+        run: |
+          LIVE="--live"
+          SEND="--send"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            [ "${{ inputs.live }}" = "true" ] || LIVE=""
+            [ "${{ inputs.send }}" = "true" ] || SEND=""
+          fi
+          echo "extra=$LIVE $SEND" >> "$GITHUB_OUTPUT"
+
+      - name: Run intraday scan (live + send)
         env:
           AI_PROVIDER: ${{ vars.AI_PROVIDER || 'deepseek' }}
           AI_MODEL: ${{ vars.AI_MODEL || 'deepseek-chat' }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_BASE_URL: ${{ vars.DEEPSEEK_BASE_URL || 'https://api.deepseek.com' }}
+          AI_SOCIAL_PROVIDER: ${{ vars.AI_SOCIAL_PROVIDER || 'grok' }}
+          AI_SOCIAL_MODEL: ${{ vars.AI_SOCIAL_MODEL || 'grok-3' }}
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          GROK_BASE_URL: ${{ vars.GROK_BASE_URL || 'https://api.x.ai/v1' }}
+          AI_SUMMARY_PROVIDER: ${{ vars.AI_SUMMARY_PROVIDER || 'gemini' }}
+          AI_SUMMARY_MODEL: ${{ vars.AI_SUMMARY_MODEL || vars.GEMINI_SUMMARY_MODEL || 'gemini-1.5-flash' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
-        run: python scripts/run_kr_intraday_slack.py --slot ${{ steps.slot.outputs.slot }} --live --send
+          KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+          KIS_ACCOUNT_NO: ${{ secrets.KIS_ACCOUNT_NO }}
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
+        run: |
+          set -e
+          python scripts/run_kr_intraday_slack.py \
+            --slot ${{ steps.slot.outputs.slot }} \
+            ${{ steps.flags.outputs.extra }}

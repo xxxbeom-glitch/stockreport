@@ -37,25 +37,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Verify kr_market, Firebase upload, Slack (KR 채널)
+      - name: Verify kr_market render (Slack 발송 없음)
         env:
           KR_MARKET_OFFLINE: "1"
           PYTHONUTF8: "1"
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-        run: python scripts/verify_kr_watchlist_render.py --notify-slack
-
-      - name: 실패 시 Slack 알림
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            -d '{"text":"❌ [KR Market Watchlist Verify] 검증 실패 — GitHub Actions 로그 확인"}'
+        run: python scripts/verify_kr_watchlist_render.py
 
       - name: Upload index.html artifact (debug)
         if: always()

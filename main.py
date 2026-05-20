@@ -635,20 +635,27 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
 
     wait_until_send_time(report_type)
     report_data["pdf_url"] = pdf_url
-    slack_result = _safe_call_with_default(
-        "send_report",
-        {
-            "payload": {
-                "report_data": report_data,
-                "report_type": report_type,
-                "pdf_url": pdf_url,
-                "summary": report_data.get("one_line_summary", ""),
-                "message": f"{report_type} generated: {saved_path}",
-            }
-        },
-    )
-    if not slack_result["ok"]:
-        print(f"[WARN] {slack_result['error']}")
+    if config.legacy_report_slack_enabled():
+        slack_result = _safe_call_with_default(
+            "send_report",
+            {
+                "payload": {
+                    "report_data": report_data,
+                    "report_type": report_type,
+                    "pdf_url": pdf_url,
+                    "summary": report_data.get("one_line_summary", ""),
+                    "message": f"{report_type} generated: {saved_path}",
+                }
+            },
+        )
+        if not slack_result["ok"]:
+            print(f"[WARN] {slack_result['error']}")
+    else:
+        slack_result = {
+            "ok": True,
+            "result": {"skipped": True, "reason": "legacy_report_slack_disabled"},
+        }
+        print("[INFO] Legacy report Slack skipped (use kr_intraday_slack for alerts).")
     logger.print_summary()
 
     result = {

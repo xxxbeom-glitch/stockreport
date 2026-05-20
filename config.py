@@ -10,6 +10,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def legacy_report_slack_enabled() -> bool:
+    """장시작/장마감 브리핑 등 예전 리포트 Slack. 기본 OFF — 장중 알림만 허용."""
+    return os.getenv("STOCKREPORT_ALLOW_LEGACY_REPORT_SLACK", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
 # ---- Paths ----
 PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent
 

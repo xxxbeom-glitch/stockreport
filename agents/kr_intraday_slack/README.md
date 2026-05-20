@@ -14,9 +14,13 @@ python scripts/test_live_watchlist_data.py --ticker 089030
 # 라이브 25종목
 python scripts/test_live_watchlist_data.py --all
 
-# 라이브 스캔 + 슬랙(조건 충족 시)
+# 라이브 드라이런
 python scripts/run_kr_intraday_slack.py --slot 0930 --live
+
+# 운영 발송 (로컬)
 python scripts/run_kr_intraday_slack.py --slot 1050 --live --send
+
+# GitHub Actions: `.github/workflows/kr_intraday_slack.yml` — KST 09:30/10:50/13:50/14:50 자동 --live --send
 ```
 
 ## AI (멀티 모델)

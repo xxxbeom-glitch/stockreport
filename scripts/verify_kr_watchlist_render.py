@@ -254,6 +254,16 @@ def _upload_index_to_firebase() -> dict[str, Any]:
 
 
 def _notify_slack(result: dict[str, Any]) -> None:
+    import config
+
+    if not config.legacy_report_slack_enabled():
+        print(
+            "[KR WATCHLIST] --notify-slack skipped (legacy_report_slack_disabled). "
+            "Set STOCKREPORT_ALLOW_LEGACY_REPORT_SLACK=1 to enable.",
+            file=sys.stderr,
+        )
+        return
+
     from slack_sender import send_kr_watchlist_report_slack
 
     fb = _upload_index_to_firebase()
