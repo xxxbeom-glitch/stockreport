@@ -1,6 +1,27 @@
-"""Per-stock agent vote and comment resolution for HTML report."""
+"""
+DEPRECATED — 국장 MVP는 agents.label_voting 사용.
+
+레거시 5인 분석가(매수/홀드/매도) HTML 리포트용.
+kr_market / label_voting 경로와 충돌하지 않도록 main에서 import 금지.
+"""
 
 from __future__ import annotations
+
+import warnings
+
+warnings.warn(
+    "agents.stock_votes is deprecated for KR MVP; use agents.label_voting instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Re-export helpers moved to label_vote_helpers (backward compat only)
+from .label_vote_helpers import (  # noqa: F401
+    enrich_stock_metrics as _enrich_stock_metrics,
+    grok_momentum_verdict as _grok_momentum,
+    grok_supply_verdict as _grok_supply,
+    normalize_ticker,
+)
 
 from typing import Any
 
@@ -16,13 +37,6 @@ from .common import (
     volume_flow_label,
 )
 from .supply_demand import KR_THEME_SECTORS, US_THEME_KEYWORDS, _theme_matches_favorable
-
-
-def normalize_ticker(ticker: str) -> str:
-    t = str(ticker).strip()
-    if t.isdigit():
-        return t.zfill(6)
-    return t.upper()
 
 
 def _dedupe_lines(parts: list[str]) -> list[str]:
@@ -54,20 +68,6 @@ def score_to_vote(score: float) -> str:
     return "홀드"
 
 
-def _enrich_stock_metrics(stock: dict[str, Any], ticker: str) -> dict[str, Any]:
-    row = dict(stock)
-    market = str(row.get("market", "KR")).upper()
-    if market in {"KR", "KOSPI", "KOSDAQ"} and (row.get("per") is None or row.get("pbr") is None):
-        fin = get_kr_fundamentals(ticker)
-        if row.get("per") is None:
-            row["per"] = fin.get("per")
-        if row.get("pbr") is None:
-            row["pbr"] = fin.get("pbr")
-        if row.get("foreign_ownership") is None:
-            row["foreign_ownership"] = fin.get("foreign_ownership")
-    return row
-
-
 def _find_supply_stock(pipeline: dict[str, Any], ticker: str) -> dict[str, Any]:
     key = normalize_ticker(ticker)
     for stock in (pipeline.get("supply") or {}).get("filtered_stocks", []):
@@ -82,20 +82,6 @@ def _find_watchlist_stock(pipeline: dict[str, Any], ticker: str) -> dict[str, An
         if normalize_ticker(str(stock.get("ticker", ""))) == key:
             return stock
     return {}
-
-
-def _grok_supply(ticker: str, supply: dict[str, Any]) -> dict[str, Any]:
-    key = normalize_ticker(ticker)
-    return (supply.get("grok_verdicts") or {}).get(key) or (supply.get("grok_verdicts") or {}).get(
-        ticker
-    ) or {}
-
-
-def _grok_momentum(ticker: str, momentum: dict[str, Any]) -> dict[str, Any]:
-    key = normalize_ticker(ticker)
-    return (momentum.get("grok_verdicts") or {}).get(key) or (momentum.get("grok_verdicts") or {}).get(
-        ticker
-    ) or {}
 
 
 def _index_moves_summary(pipeline: dict[str, Any] | None) -> str:
@@ -200,7 +186,7 @@ def _momentum_narrative(
     elif vol >= 3 and chg < 0:
         parts.append("거래량은 크지만 가격은 밀리고 있어요.")
         parts.append("차익실현 매물이 나오는 구간으로 보여요.")
-        parts.append("단기 반등 전까지는 관망이 나을 수 있어요.")
+        parts.append("단기 반등 전까지는 신중한 접근이 나을 수 있어요.")
     else:
         pos = momentum_row.get("position_52w")
         if pos and pos != "N/A":
@@ -262,11 +248,11 @@ def _risk_narrative(stock: dict[str, Any], r: dict[str, Any], pipeline: dict[str
     if r.get("risk_comment") and r.get("risk_comment") != "N/A":
         parts.append(str(r["risk_comment"]))
     elif verdict == "매도":
-        parts.append("지금은 관망하거나 비중을 줄이는 편이 낫겠어요.")
+        parts.append("지금은 비중 축소 관점이 나을 수 있어요.")
     elif verdict == "매수":
-        parts.append("진입은 가능하지만 분할 매수를 권해요.")
+        parts.append("진입은 가능하지만 분할 접근을 권해요.")
     else:
-        parts.append("급하게 추격하기보다 지켜보는 게 나을 것 같아요.")
+        parts.append("급하게 추격하기보다 지켜보는 편이 나을 것 같아요.")
 
     if sl_display != "N/A":
         parts.append(f"혹시 보유 중이라면 {sl_display} 밑에서 손절하세요.")
@@ -394,7 +380,7 @@ def resolve_stock_agent_vote(
     stock_hint: dict[str, Any],
     pipeline: dict[str, Any] | None,
 ) -> tuple[str, list[str]]:
-    """Return vote + comment lines for one agent and one stock."""
+    """DEPRECATED: legacy 5-analyst vote (매수/홀드/매도)."""
     if not pipeline:
         summary = str((stock_hint or {}).get("summary", "")).strip()
         return "홀드", _analyst_reason(summary, "의견 없음")

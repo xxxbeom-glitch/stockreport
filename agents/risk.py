@@ -97,7 +97,7 @@ def analyze_risk(
     }
 
     if config.GEMINI_API_KEY and assessments_map:
-        from .gemini_client import generate_gemini_json
+        from .llm_router import generate_vote_json
 
         stocks_for_prompt = [
             {
@@ -126,8 +126,11 @@ def analyze_risk(
 
 스키마: {{"risk_assessments": {{"티커": {{"comment":"리스크·관망·손절 3문장","final_verdict":"매수/홀드/매도","stop_loss":"98,700원"}}}}, "one_line_summary":"한줄"}}
 """
-        parsed = generate_gemini_json(prompt, agent="risk", logger=logger)
+        parsed, llm_meta = generate_vote_json(
+            prompt, agent="risk", logger=logger, prefer="gemini"
+        )
         if parsed:
+            result["meta"]["llm"] = llm_meta
             if isinstance(parsed.get("risk_assessments"), dict):
                 for ticker, row in parsed["risk_assessments"].items():
                     if ticker not in assessments_map or not isinstance(row, dict):
@@ -150,7 +153,7 @@ def analyze_risk(
                             assessments_map[ticker]["stop_loss"] = sl
             if parsed.get("one_line_summary"):
                 result["one_line_summary"] = str(parsed["one_line_summary"])
-            result["meta"]["mode"] = "rules+gemini"
+            result["meta"]["mode"] = f"rules+{llm_meta.get('engine', 'llm')}"
 
     for stock in supply_result.get("filtered_stocks", []):
         ticker = str(stock.get("ticker", ""))

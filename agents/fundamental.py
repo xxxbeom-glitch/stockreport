@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import ai_models
 import config
 
 from .common import ANALYST_VOICE_RULES, format_analyst_comment, safe_float
@@ -98,8 +99,8 @@ def analyze_fundamental(
 
     result: dict[str, Any] = {"fundamental_scores": scores, "meta": {"mode": "rules"}}
 
-    if config.GEMINI_API_KEY and scores:
-        from .gemini_client import generate_gemini_json
+    if (config.GEMINI_API_KEY or ai_models.DEEPSEEK_API_KEY) and scores:
+        from .llm_router import generate_vote_json
 
         prompt = f"""
 당신은 PER·PBR로 밸류에이션을 설명하는 애널리스트 이준혁입니다.
@@ -115,8 +116,9 @@ def analyze_fundamental(
 인사말·서론 없이 JSON만.
 스키마: {{"fundamental_scores": {{"티커": {{"comment":"3문장","valuation":"저평가/적정/고평가","fundamental_score":0-100}}}}}}
 """
-        parsed = generate_gemini_json(prompt, agent="fundamental", logger=logger)
+        parsed, llm_meta = generate_vote_json(prompt, agent="fundamental", logger=logger)
         if parsed and isinstance(parsed.get("fundamental_scores"), dict):
+            result["meta"]["llm"] = llm_meta
             for ticker, row in parsed["fundamental_scores"].items():
                 if ticker not in scores or not isinstance(row, dict):
                     continue
@@ -137,6 +139,6 @@ def analyze_fundamental(
                             ),
                         ),
                     )
-            result["meta"]["mode"] = "rules+gemini"
+            result["meta"]["mode"] = f"rules+{llm_meta.get('engine', 'llm')}"
 
     return result

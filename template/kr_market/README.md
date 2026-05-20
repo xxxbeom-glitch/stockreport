@@ -6,7 +6,7 @@ Figma: [제목 없음 · node 6-142](https://www.figma.com/design/CxxvVJfcOcZX6g
 
 | 파일 | 용도 |
 |------|------|
-| `index.html` | Figma 목업과 동일 레이아웃 **정적 미리보기** (브라우저에서 바로 열기) |
+| `index.html` | Figma 목업과 동일 레이아웃 **정적 미리보기** (`kr_market.html`로 부르는 파일 — 브라우저에서 바로 열기) |
 | `template.html` | Jinja2 템플릿 (파이프라인 데이터 바인딩) |
 | `styles.css` | 공통 스타일 |
 | `sample_data.json` | 렌더 예시 JSON |
@@ -76,8 +76,15 @@ python template/kr_market/render.py
 }
 ```
 
+## 디자인 토큰 (`kr_market-tokens.json`)
+
+- 캔버스 360px, 배경 `#F5F6F6`, 카드 `#FFFFFF` / radius 8px / shadow `#E4E8E8`
+- 상승 `#2769E3`, 하락 `#FF1212`, 인사이트 박스 `#EFF6F9` / `#7A919A`
+- 섹터 카드 가로 스크롤(320px), 필터 pill radius 15px
+
 ## Figma와의 차이 (현재)
 
-- 드롭다운(`전체섹터`)은 UI만 있고 **필터 동작 JS는 없음** (필요 시 추가)
+- 드롭다운: `filters.js`로 섹터·종목 **더미 필터** 동작 (`전체섹터` / `반도체` / `2차전지` / `바이오` / `금융`)
 - 에이전트 5명 테이블은 이 Figma 화면에 없어 **종목 카드 1개 의견**만 표시
 - 탭 네비게이션 없음 (Figma 단일 스크롤 화면 기준)
+- 면책 문구는 Figma에 없음 — `disclaimer` 필드가 있을 때만 Jinja 렌더에 표시

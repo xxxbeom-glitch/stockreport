@@ -58,7 +58,9 @@ JSON만 반환:
   }}
 }}
 """
-    return grok_x_search_json(prompt, agent="momentum", logger=logger, model="grok-3")
+    return grok_x_search_json(
+        prompt, agent="momentum", logger=logger, model=config.GROK_VOTE_MODEL
+    )
 
 
 def _merge_grok_momentum(result: dict[str, Any], grok: dict[str, Any] | None) -> None:

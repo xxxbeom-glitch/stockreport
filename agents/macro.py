@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import ai_models
 import config
 from data.kis_client import get_sector_trading_value
 from utils.retry import retry
@@ -163,9 +164,9 @@ def analyze_macro(
         "meta": {"mode": "rules"},
     }
 
-    if config.GEMINI_API_KEY:
+    if config.GEMINI_API_KEY or ai_models.DEEPSEEK_API_KEY:
         try:
-            from .gemini_client import generate_gemini_json
+            from .llm_router import generate_vote_json
 
             prompt = f"""
 당신은 20년 경력의 글로벌 매크로 애널리스트 Michael Chen입니다.
@@ -193,8 +194,9 @@ def analyze_macro(
   "watchlist_verdict":{{"KR":"국장 관심종목 3문장","US":"미장 관심종목 3문장"}}
 }}
 """
-            parsed = generate_gemini_json(prompt, agent="macro", logger=logger)
+            parsed, llm_meta = generate_vote_json(prompt, agent="macro", logger=logger)
             if parsed:
+                result["meta"]["llm"] = llm_meta
                 result["market_phase"] = normalize_phase(str(parsed.get("market_phase", phase)))
                 result["market_phase_reason"] = str(
                     parsed.get("market_phase_reason") or result["market_phase_reason"]
@@ -209,7 +211,7 @@ def analyze_macro(
                     result["unfavorable_sectors"] = list(parsed["unfavorable_sectors"])
                 if isinstance(parsed.get("watchlist_verdict"), dict):
                     result["watchlist_verdict"].update(parsed["watchlist_verdict"])
-                result["meta"]["mode"] = "rules+gemini"
+                result["meta"]["mode"] = f"rules+{llm_meta.get('engine', 'llm')}"
         except Exception:
             pass
 

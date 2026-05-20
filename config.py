@@ -35,9 +35,26 @@ KRX_ID: Final[str] = os.getenv("KRX_ID", "")
 KRX_PW: Final[str] = os.getenv("KRX_PW", "")
 
 GROK_BASE_URL: Final[str] = os.getenv("GROK_BASE_URL", "https://api.x.ai/v1")
-GROK_MODEL: Final[str] = os.getenv("GROK_MODEL", "grok-3")
-GEMINI_PRO_MODEL: Final[str] = os.getenv("GEMINI_PRO_MODEL", "gemini-3.1-pro-preview")
-GEMINI_FLASH_MODEL: Final[str] = os.getenv("GEMINI_FLASH_MODEL", "gemini-2.5-flash")
+
+# AI model policy — single source: ai_models.py (02_AI_MODEL_POLICY.md)
+from ai_models import (  # noqa: E402
+    DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL,
+    DEEPSEEK_DRAFT_MODEL,
+    DEEPSEEK_VOTE_MODEL,
+    GEMINI_FLASH_MODEL,
+    GEMINI_PRO_MODEL,
+    GEMINI_RISK_MODEL,
+    GEMINI_SUMMARY_FALLBACK_MODEL,
+    GEMINI_SUMMARY_MODEL,
+    GROK_MODEL,
+    GROK_VOTE_MODEL,
+    KR_REPORT_STAGE_TIER,
+    ModelTier,
+    model_for_tier,
+    policy_snapshot,
+    tier_for_stage,
+)
 
 # ---- Data source switches ----
 DATA_SOURCES: Final[dict[str, dict[str, str | bool]]] = {
@@ -45,6 +62,11 @@ DATA_SOURCES: Final[dict[str, dict[str, str | bool]]] = {
     "pykrx": {"enabled": True, "required_env": "", "description": "KR market/flows"},
     "grok": {"enabled": bool(GROK_API_KEY), "required_env": "GROK_API_KEY", "description": "Realtime buzz"},
     "gemini": {"enabled": bool(GEMINI_API_KEY), "required_env": "GEMINI_API_KEY", "description": "AI synthesis"},
+    "deepseek": {
+        "enabled": bool(DEEPSEEK_API_KEY),
+        "required_env": "DEEPSEEK_API_KEY",
+        "description": "Draft/vote analysis",
+    },
     "slack": {
         "enabled": bool(SLACK_BOT_TOKEN and SLACK_CHANNEL_KR and SLACK_CHANNEL_US),
         "required_env": "SLACK_BOT_TOKEN+SLACK_CHANNEL_KR+SLACK_CHANNEL_US",

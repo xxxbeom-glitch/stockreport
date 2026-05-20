@@ -1,4 +1,4 @@
-"""Per-company Gemini brief for hot volume names."""
+"""Per-company draft report for hot volume names (draft-tier models)."""
 
 from __future__ import annotations
 
@@ -9,9 +9,11 @@ load_dotenv()
 import json
 from typing import Any
 
+import ai_models
 import config
-from utils.helpers import safe_json_parse
 from utils.retry import retry
+
+from .llm_router import generate_draft_json
 
 
 def _fallback(ticker: str, name: str) -> dict[str, Any]:
@@ -38,20 +40,15 @@ def generate_company_report(
     logger: Any = None,
     extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Generate a short Korean company report via Gemini."""
-    if not config.GEMINI_API_KEY:
+    """Generate a short Korean company report via draft-tier LLM (DeepSeek flash → Gemini fallback)."""
+    if not config.GEMINI_API_KEY and not ai_models.DEEPSEEK_API_KEY:
         result = _fallback(ticker, name)
         if logger:
-            logger.log(config.GEMINI_PRO_MODEL, "company_report", input_tokens=0, output_tokens=0)
+            logger.log(ai_models.DEEPSEEK_DRAFT_MODEL, "company_report", input_tokens=0, output_tokens=0)
         return result
 
     context = extra or {}
-    try:
-        import google.generativeai as genai  # type: ignore
-
-        genai.configure(api_key=config.GEMINI_API_KEY)
-        model = genai.GenerativeModel(config.GEMINI_PRO_MODEL)
-        prompt = f"""
+    prompt = f"""
 너는 주식 리서치 애널리스트야. 아래 종목에 대해 초보 투자자도 이해할 수 있게 한국어 JSON만 반환해.
 
 종목: {name} ({ticker}) / 시장: {market}
@@ -68,27 +65,16 @@ def generate_company_report(
   "target_comment": "단기 관점 코멘트"
 }}
 """
-        response = model.generate_content(prompt)
-        if logger and getattr(response, "usage_metadata", None):
-            logger.log(
-                model=config.GEMINI_PRO_MODEL,
-                agent="company_report",
-                input_tokens=int(getattr(response.usage_metadata, "prompt_token_count", 0) or 0),
-                output_tokens=int(getattr(response.usage_metadata, "candidates_token_count", 0) or 0),
-            )
-        text = getattr(response, "text", "") or ""
-        parsed = safe_json_parse(text)
-        if parsed:
-            parsed.setdefault("ticker", ticker)
-            parsed.setdefault("name", name)
-            parsed.setdefault("market", market)
-            parsed.setdefault("meta", {"mode": "gemini"})
-            return parsed
-    except Exception:
-        pass
+    parsed, llm_meta = generate_draft_json(prompt, agent="company_report", logger=logger)
+    if parsed:
+        parsed.setdefault("ticker", ticker)
+        parsed.setdefault("name", name)
+        parsed.setdefault("market", market)
+        parsed.setdefault("meta", {"mode": f"draft+{llm_meta.get('engine', 'llm')}", "llm": llm_meta})
+        return parsed
 
     result = _fallback(ticker, name)
     result["meta"] = {"mode": "fallback-on-error"}
     if logger:
-        logger.log(config.GEMINI_PRO_MODEL, "company_report", input_tokens=0, output_tokens=0)
+        logger.log(ai_models.DEEPSEEK_DRAFT_MODEL, "company_report", input_tokens=0, output_tokens=0)
     return result

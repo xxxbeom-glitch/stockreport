@@ -1,4 +1,6 @@
-/* kr_market — Figma 360px (kr_market-tokens.json / node 6:142) */
+/* us_market — kr_market 베이스 동일 (반응형 포함) + M7 탭 확장
+   주의: @import ../kr 는 us_market 폴더만 서빙할 때 404 → 단일 파일 유지 */
+
 :root {
   --page-bg: #f5f6f6;
   --card-bg: #ffffff;
@@ -19,8 +21,10 @@
   --badge-hold-bg: #353535;
   --badge-text: #ffffff;
   --shadow-card: 0 0 6px 0 #e4e8e8;
+  --tab-active-bg: #31537e;
+  --tab-inactive-bg: #e9ecef;
+  --tab-inactive-text: #9aa3ae;
 
-  /* spacingValues from tokens: 0,2,4,6,8,10,12,14,16,18,24,32 */
   --space-2: 0.167rem;
   --space-4: 0.333rem;
   --space-6: 0.5rem;
@@ -32,21 +36,17 @@
   --space-32: 2.667rem;
   --pad-page-x: var(--space-16);
   --pad-card-y: var(--space-24);
-  --pad-card-x: 1.5rem; /* 18px */
-  --pad-insight-y: 1.167rem; /* 14px */
+  --pad-card-x: 1.5rem;
+  --pad-insight-y: 1.167rem;
   --pad-insight-x: var(--space-12);
-  --row-h: 1.833rem; /* 22px */
-  --sector-card-w: 26.667rem; /* 320px @ 12px */
-  --sector-peek: var(--space-16); /* 다음 카드 노출 (~16px) */
-  --sector-slide-w: min(
-    calc(var(--sector-card-w) - var(--space-10)),
-    calc(100% - var(--sector-peek))
-  );
-  /* 마켓 주요 지표 테이블만 (Figma Frame 55/57, 셀 center) */
-  --metric-col-label: 7.5rem; /* 90px */
-  --metric-col-nums: 13.5rem; /* 162px */
-  --metric-col-value: 5.833rem; /* 70px */
-  --metric-col-chg: 4.5rem; /* 54px */
+  --row-h: 1.833rem;
+  --sector-card-w: 26.667rem;
+  --sector-peek: var(--space-8);
+  --sector-card-flex: calc(100% - var(--sector-peek) - var(--space-10));
+  --metric-col-label: 7.5rem;
+  --metric-col-nums: 13.5rem;
+  --metric-col-value: 5.833rem;
+  --metric-col-chg: 4.5rem;
 }
 
 *, *::before, *::after {
@@ -169,7 +169,6 @@ body {
   color: var(--text);
 }
 
-/* 키보드 포커스만 은은하게 (터치 pressed 하이라이트 없음) */
 .filter-select:focus-visible {
   outline: none;
   box-shadow: none;
@@ -238,7 +237,6 @@ body {
   color: var(--muted);
 }
 
-/* 마켓 주요 지표만: 162px 블록, 값 70px + 등락률 54px 각각 center */
 .metric-nums {
   display: flex;
   flex: 0 0 var(--metric-col-nums);
@@ -276,29 +274,6 @@ body {
   color: var(--down);
 }
 
-/* UI AI comments: fixed 2-line box (05_UI_COMMENT_RULES.md) */
-:root {
-  --ai-comment-font-size: 1rem;
-  --ai-comment-line-height: 1.5;
-  --ai-comment-lines: 2;
-  --ai-comment-block-height: calc(
-    var(--ai-comment-font-size) * var(--ai-comment-line-height) * var(--ai-comment-lines)
-  );
-}
-
-.ai-comment {
-  display: -webkit-box;
-  -webkit-line-clamp: var(--ai-comment-lines);
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  min-height: var(--ai-comment-block-height);
-  max-height: var(--ai-comment-block-height);
-  white-space: pre-line;
-}
-
 .insight-box,
 .company-box {
   margin: 0;
@@ -306,32 +281,20 @@ body {
   background: var(--insight-bg);
   border: 1px solid var(--insight-border);
   border-radius: var(--space-4);
-  font-size: var(--ai-comment-font-size);
+  font-size: 1rem;
   font-weight: 500;
-  line-height: var(--ai-comment-line-height);
+  line-height: 1.5;
   color: var(--insight-text);
-}
-
-.insight-box.ai-comment,
-.company-box.ai-comment {
-  box-sizing: border-box;
-}
-
-#sectors {
-  overflow: visible;
 }
 
 .sector-track {
   display: flex;
   gap: var(--space-10);
   overflow-x: auto;
-  overflow-y: visible;
-  /* 페이지 패딩 밖으로 트랙 확장 → 우측 peek 클리핑 방지 */
-  margin-inline: calc(-1 * var(--pad-page-x));
-  padding-inline: var(--pad-page-x);
-  padding-bottom: var(--space-4);
+  margin: 0;
+  padding: 0 0 var(--space-4);
   scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--pad-page-x);
+  scroll-padding-inline: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -340,21 +303,11 @@ body {
   display: none;
 }
 
-/* .card { width:100% } 보다 우선 — 옆 카드 peek 유지 */
-.sector-track > .card.sector-card {
-  flex: 0 0 var(--sector-slide-w);
-  width: var(--sector-slide-w);
-  min-width: 0;
-  max-width: var(--sector-slide-w);
+.sector-card {
+  flex: 0 0 min(calc(var(--sector-card-w) - var(--space-10)), var(--sector-card-flex));
+  width: min(calc(var(--sector-card-w) - var(--space-10)), var(--sector-card-flex));
   scroll-snap-align: start;
-  scroll-snap-stop: always;
   margin-bottom: 0;
-}
-
-.sector-track::after {
-  content: "";
-  flex: 0 0 var(--pad-page-x);
-  scroll-snap-align: end;
 }
 
 .sector-card .sector-top {
@@ -413,6 +366,69 @@ body {
   color: var(--text-body);
 }
 
+/* M7 투자의견 탭 */
+.m7-block .section-head {
+  margin-bottom: var(--space-16);
+}
+
+.m7-tab-track {
+  display: flex;
+  gap: var(--space-8);
+  overflow-x: auto;
+  margin: 0 calc(-1 * var(--pad-page-x));
+  padding: 0 var(--pad-page-x) var(--space-4);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.m7-tab-track::-webkit-scrollbar {
+  display: none;
+}
+
+.m7-tab {
+  flex: 0 0 auto;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0 1.333rem;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 1.083rem;
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--tab-inactive-bg);
+  color: var(--tab-inactive-text);
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.m7-tab:hover {
+  color: var(--text);
+}
+
+.m7-tab.is-active {
+  background: var(--tab-active-bg);
+  color: #ffffff;
+}
+
+.m7-tab:focus {
+  outline: none;
+}
+
+.m7-tab:focus-visible {
+  box-shadow: 0 0 0 2px var(--page-bg), 0 0 0 3px var(--tab-active-bg);
+}
+
+.m7-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 1.5rem;
+}
+
 .stock-list-vertical {
   display: flex;
   flex-direction: column;
@@ -460,6 +476,14 @@ body {
   background: #1429a0;
 }
 
+.stock-logo--nvidia {
+  background: #76b900;
+}
+
+.stock-logo--micron {
+  background: #0071ce;
+}
+
 .stock-logo--placeholder svg {
   width: 1.5rem;
   height: 1.5rem;
@@ -496,59 +520,12 @@ body {
   background: var(--badge-hold-bg);
 }
 
-.verdict-badge.watch {
-  background: var(--badge-buy-bg);
-  opacity: 0.85;
-}
-
-.ai-vote-list {
-  list-style: none;
-  margin: 0 0 var(--space-8);
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  max-height: calc(var(--ai-comment-line-height) * var(--ai-comment-font-size) * 3);
-  overflow: hidden;
-}
-
-.ai-vote-item {
-  font-size: 0.833rem;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--text-body);
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ai-vote-engine {
-  font-weight: 700;
-  color: var(--text);
-}
-
-.ai-vote-model {
-  margin-left: var(--space-4);
-  color: var(--insight-text);
-  font-size: 0.75rem;
-}
-
-.ai-vote-label {
-  margin-left: var(--space-6);
-}
-
 .opinion-text {
   margin: 0 0 var(--space-8);
-  font-size: var(--ai-comment-font-size);
+  font-size: 1rem;
   font-weight: 500;
-  line-height: var(--ai-comment-line-height);
+  line-height: 1.6;
   color: var(--text-body);
-}
-
-.opinion-text.ai-comment {
-  box-sizing: border-box;
 }
 
 .kv-list {

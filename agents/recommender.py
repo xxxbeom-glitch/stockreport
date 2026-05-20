@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import ai_models
 import config
 
 from .common import (
@@ -113,8 +114,8 @@ def get_recommendations(
         "meta": {"mode": "rules"},
     }
 
-    if config.GEMINI_API_KEY:
-        from .gemini_client import generate_gemini_json
+    if config.GEMINI_API_KEY or ai_models.DEEPSEEK_API_KEY:
+        from .llm_router import generate_vote_json
 
         prompt = f"""
 투자 추천 애널리스트로 아래 매수 후보의 buy_reason을 초보자용 3~4줄로 다듬어 JSON만 반환하세요.
@@ -122,14 +123,15 @@ def get_recommendations(
 
 스키마: {{"buy_recommendations": [{{"ticker":"","buy_reason":"3~4줄"}}]}}
 """
-        parsed = generate_gemini_json(prompt, agent="recommender", logger=logger)
+        parsed, llm_meta = generate_vote_json(prompt, agent="recommender", logger=logger)
         if parsed and isinstance(parsed.get("buy_recommendations"), list):
+            result["meta"]["llm"] = llm_meta
             by_ticker = {str(r.get("ticker")): r for r in parsed["buy_recommendations"] if r.get("ticker")}
             for row in top:
                 gem = by_ticker.get(str(row.get("ticker")))
                 if gem and gem.get("buy_reason"):
                     row["buy_reason"] = str(gem["buy_reason"])[:500]
-            result["meta"]["mode"] = "rules+gemini"
+            result["meta"]["mode"] = f"rules+{llm_meta.get('engine', 'llm')}"
 
     return result
 

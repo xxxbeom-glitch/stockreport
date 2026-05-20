@@ -47,7 +47,7 @@ def grok_with_x_search(
     max_output_tokens: int = 1200,
     model: str | None = None,
 ) -> tuple[str | None, dict[str, Any]]:
-    """Call Grok (default grok-3) with x_search for real-time X data."""
+    """Call Grok vote model (GROK_VOTE_MODEL) with x_search for real-time X data."""
     if not config.GROK_API_KEY:
         return None, {"mode": "disabled", "x_search_enabled": False, "model": model or config.GROK_MODEL}
 

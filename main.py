@@ -15,9 +15,9 @@ from typing import Any
 
 import config
 
-from agents import AGENT_PROFILES, generate_company_report, run_agent_pipeline
+from agents import generate_company_report, run_agent_pipeline
 from agents.scorer import SCORE_THRESHOLD
-from agents.stock_votes import resolve_stock_agent_vote
+from agents.label_voting import ai_votes_for_template, build_stock_label_votes
 from data.kr_market import get_stock_snapshot, get_top_volume_kr
 from data.us_market import get_top_volume_us
 from utils.formatters import foreign_net_eok
@@ -169,26 +169,9 @@ def _build_stock_row(
     if foreign_net_buy is not None:
         stock_ctx["foreign_net"] = foreign_net_buy
 
-    agent_votes: list[dict[str, Any]] = []
-    vote_labels: list[str] = []
-    for profile in AGENT_PROFILES:
-        key = profile["key"]
-        vote, reasons = resolve_stock_agent_vote(key, ticker, name, stock_ctx, pipeline)
-        vote_labels.append(vote)
-        agent_votes.append(
-            {
-                "name": profile["name"],
-                "title": profile["title"],
-                "emoji": profile["emoji"],
-                "vote": vote,
-                "reason": reasons,
-            }
-        )
-
-    verdict = _majority_verdict(vote_labels)
-    buy_n = sum(1 for v in vote_labels if v == "매수")
-    sell_n = sum(1 for v in vote_labels if v == "매도")
-    hold_n = len(vote_labels) - buy_n - sell_n
+    label_bundle = build_stock_label_votes(ticker, name, stock_ctx, pipeline)
+    agent_votes = ai_votes_for_template(label_bundle["ai_votes"])
+    verdict = label_bundle["final_label"]
 
     low_fmt = f"{low_52:,.0f}원" if low_52 else "N/A"
     high_fmt = f"{high_52:,.0f}원" if high_52 else "N/A"
@@ -204,7 +187,12 @@ def _build_stock_row(
         "position_52w": _position_52w(price, low_52, high_52),
         "position_pct": _position_pct(price, low_52, high_52),
         "verdict": verdict,
-        "vote_count": f"매수 {buy_n} · 홀드 {hold_n} · 매도 {sell_n}",
+        "label": label_bundle["final_label"],
+        "label_reason": label_bundle["label_reason"],
+        "label_reason_lines": label_bundle["label_reason_lines"],
+        "ai_votes": label_bundle["ai_votes"],
+        "verdict_class": label_bundle["verdict_class"],
+        "vote_count": label_bundle["vote_summary"],
         "foreign_net_eok": foreign_net_eok(foreign_net_buy),
         "agent_votes": agent_votes,
         "metrics": [
@@ -215,6 +203,11 @@ def _build_stock_row(
         ],
         "momentum_tags": _momentum_tags(ratio, change_pct),
         "guidance": opinions["risk"].get("do_not", "과도한 추격매수는 지양"),
+        "theme": str(d.get("theme", "")),
+        "sector_key": str(d.get("theme", "")),
+        "verdict_badge": label_bundle["final_label"],
+        "opinion": label_bundle["label_reason"],
+        "company_summary": "",
     }
 
 
@@ -575,6 +568,21 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / f"{datetime.now().strftime('%y%m%d')}_{report_type}.html"
     saved_path = generate_pdf(report_data, str(output_file))
+
+    if _uses_kr_watchlist(report_type):
+        try:
+            from template.kr_market.report_adapter import render_kr_market_page
+
+            kr_index = Path(__file__).resolve().parent / "template" / "kr_market" / "index.html"
+            kr_path = render_kr_market_page(
+                report_data,
+                kr_index,
+                market_data=market_data,
+                pipeline=pipeline,
+            )
+            print(f"[INFO] kr_market index: {kr_path}")
+        except Exception as exc:
+            print(f"[WARN] kr_market render skipped: {exc}")
 
     firebase_result = _safe_call_with_default(
         "save_report",

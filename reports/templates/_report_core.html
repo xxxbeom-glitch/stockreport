@@ -140,7 +140,7 @@
       <h3 class="stock-name">{{ stock.name }}</h3>
       <span class="stock-price">{{ stock.price }}</span>
       <span class="{{ 'up' if stock.is_up else 'down' }}">{{ stock.change }}</span>
-      <span class="badge {{ 'buy' if stock.verdict == '매수' else ('sell' if stock.verdict == '매도' else 'hold') }}">{{ stock.verdict }}</span>
+      <span class="badge {{ stock.verdict_class | default('hold') }}">{{ stock.label | default(stock.verdict) }}</span>
     </div>
     <div class="range-bar">
       <div class="range-fill" style="width: {{ stock.position_pct | default(50) }}%;"></div>
@@ -158,8 +158,8 @@
           <tr>
             <td>{{ ag.name }}</td>
             <td class="muted">{{ ag.title }}</td>
-            <td class="vote-{{ 'buy' if ag.vote == '매수' else ('sell' if ag.vote == '매도' else 'hold') }}">{{ ag.vote }}</td>
-            <td class="agent-comment">{% for r in ag.reason %}{% if r %}{{ r }}{% endif %}{% endfor %}</td>
+            <td class="vote-{{ ag.vote_class | default('hold') }}">{{ ag.label | default(ag.vote) }}</td>
+            <td class="agent-comment">{% if ag.model %}<span class="muted">{{ ag.model }}</span><br>{% endif %}{% for r in ag.reason %}{% if r %}{{ r }}{% if not loop.last %}<br>{% endif %}{% endif %}{% endfor %}</td>
           </tr>
           {% endfor %}
         </tbody>
