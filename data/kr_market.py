@@ -503,6 +503,13 @@ def _kr_volume_ratio(ticker: str) -> float | None:
         return None
 
 
+def get_kr_fundamentals(ticker: str) -> dict[str, Any]:
+    """PER/PBR/외국인보유율 (pykrx + KIS)."""
+    code = str(ticker).zfill(6)
+    per, pbr, foreign_ownership = _kr_per_pbr(code)
+    return {"per": per, "pbr": pbr, "foreign_ownership": foreign_ownership}
+
+
 def _kr_per_pbr(ticker: str) -> tuple[Any, Any, Any]:
     per, pbr, foreign_ownership = None, None, None
     if pykrx_stock is None:

@@ -77,9 +77,13 @@ def _exclude_reason(stock: dict[str, Any], phase: str, in_favorable: bool) -> st
 
 def _enrich_kr_stock(ticker: str, name: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
     """Load KIS/pykrx snapshot for a single KR ticker."""
-    snap = get_stock_snapshot(ticker.zfill(6), market="KOSPI")
+    from data.kr_market import get_kr_fundamentals
+
+    code = ticker.zfill(6)
+    snap = get_stock_snapshot(code, market="KOSPI")
+    fund = get_kr_fundamentals(code)
     row: dict[str, Any] = {
-        "ticker": ticker.zfill(6),
+        "ticker": code,
         "name": name,
         "market": "KR",
         "theme": (extra or {}).get("theme", ""),
@@ -90,6 +94,9 @@ def _enrich_kr_stock(ticker: str, name: str, extra: dict[str, Any] | None = None
         "foreign_net": snap.get("foreign_net_buy"),
         "volume_ratio": (extra or {}).get("volume_ratio"),
         "conclusion_strength": (extra or {}).get("conclusion_strength"),
+        "per": fund.get("per"),
+        "pbr": fund.get("pbr"),
+        "foreign_ownership": fund.get("foreign_ownership"),
     }
     if extra:
         row.update({k: v for k, v in extra.items() if k not in row or row[k] is None})
@@ -165,8 +172,11 @@ def _grok_supply_analysis(
     ]
 
     prompt = f"""
-너는 주식 수급 분석 전문가야. 반드시 X(트위터) 실시간 검색(x_search) 결과를 사용해 분석해.
-초보 투자자도 이해하는 쉬운 한국어로. 추측·과거 학습만으로 답하지 마.
+당신은 기관 및 외국인 자금 흐름과 시장 심리를 분석하는 애널리스트 James Park입니다.
+가격·52주·모멘텀은 다루지 말고 오직 수급(외국인·기관·체결강도·거래량)과 X 심리만 분석.
+X 데이터는 공식 계정, 신뢰도 높은 금융 매체 위주로만 해석.
+x_sentiment, supply_direction, volume_surge_reason 각각 40자 이내 1문장(한국어).
+반드시 X(트위터) 실시간 검색(x_search) 결과를 사용. 추측·과거 학습만으로 답하지 마.
 
 [시장 국면] {macro_result.get("market_phase")} — {macro_result.get("market_phase_reason", "")}
 [유입 섹터] {macro_result.get("favorable_sectors", [])[:5]}
@@ -190,9 +200,9 @@ JSON만 반환:
     "티커": {{
       "name": "종목명",
       "vote": "매수",
-      "x_sentiment": "X 분위기 2~3문장",
-      "supply_direction": "외국인/기관 수급 방향",
-      "volume_surge_reason": "거래량 급등 이유",
+      "x_sentiment": "X 수급 심리 40자 이내",
+      "supply_direction": "외국인·기관 방향 40자 이내",
+      "volume_surge_reason": "거래량 급등 이유 40자 이내",
       "reasons": ["이유1", "이유2"]
     }}
   }}
@@ -222,10 +232,12 @@ def _merge_grok_supply(rules: dict[str, Any], grok: dict[str, Any] | None) -> No
         stock = by_ticker.get(ticker) or by_ticker.get(ticker.zfill(6))
         if not stock:
             continue
+        from .common import truncate_comment
+
         stock["grok_vote"] = v.get("vote")
-        stock["x_sentiment"] = v.get("x_sentiment")
-        stock["supply_direction"] = v.get("supply_direction")
-        stock["volume_surge_reason"] = v.get("volume_surge_reason")
+        stock["x_sentiment"] = truncate_comment(v.get("x_sentiment"))
+        stock["supply_direction"] = truncate_comment(v.get("supply_direction"))
+        stock["volume_surge_reason"] = truncate_comment(v.get("volume_surge_reason"))
         if v.get("reasons"):
             stock["grok_reasons"] = v["reasons"]
 

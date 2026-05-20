@@ -2,493 +2,231 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>{{ report_title | default('Stock Report') }}</title>
+  <title>{{ report_title | default('마켓 브리핑') }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <style>
-    @font-face {
-      font-family: 'Pretendard';
-      src: url('../static/fonts/PretendardVariable.ttf') format('truetype');
-      font-weight: 45 920;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Pretendard';
-      src: url('../static/fonts/Pretendard-Regular.ttf') format('truetype');
-      font-weight: 400;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Pretendard';
-      src: url('../static/fonts/Pretendard-Medium.ttf') format('truetype');
-      font-weight: 500;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Pretendard';
-      src: url('../static/fonts/Pretendard-SemiBold.ttf') format('truetype');
-      font-weight: 600;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Pretendard';
-      src: url('../static/fonts/Pretendard-Bold.ttf') format('truetype');
-      font-weight: 700;
-      font-display: swap;
-    }
-
     :root {
       --bg: #ffffff;
-      --text: #1a1a1a;
-      --muted: #666666;
-      --line: #e5e5e5;
-      --up: #0052cc;
-      --down: #cc0000;
-      --accent: #0052cc;
-      --badge-bg: #f5f5f5;
-      --section-gap: 40px;
-      --pad-x: 40px;
+      --text: #111111;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #1d4ed8;
+      --up: #1d4ed8;
+      --down: #dc2626;
+      --pad: 16px;
+      --max-w: 390px;
     }
-
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
     body {
-      margin: 0;
+      margin: 0 auto;
+      max-width: var(--max-w);
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.55;
       color: var(--text);
       background: var(--bg);
     }
-
-    .report-shell {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 32px var(--pad-x) 64px;
-    }
-
-    /* ── Report header ── */
-    .report-header {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr 1.4fr;
-      gap: 24px;
-      align-items: end;
-      padding-bottom: 24px;
-      margin-bottom: 0;
+    .shell { padding-bottom: 48px; }
+    .page-head {
+      padding: 20px var(--pad) 12px;
       border-bottom: 1px solid var(--line);
     }
-    .report-name {
-      margin: 0;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .report-date {
-      margin: 6px 0 0;
-      font-size: 14px;
-      color: var(--text);
-    }
-    .report-phase {
-      margin: 0;
-      font-size: 32px;
+    .page-meta { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
+    .page-market { font-size: 13px; font-weight: 600; margin: 0 0 12px; }
+    .phase-title {
+      margin: 0 0 8px;
+      font-size: 22px;
       font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      text-align: center;
-      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
     }
-    .report-phase.phase_risk_off,
-    .report-phase.phase_bearish,
-    .report-phase.phase_weak { color: var(--down); }
-    .report-phase.phase_bullish,
-    .report-phase.phase_risk_on,
-    .report-phase.phase_strong { color: var(--up); }
-    .report-summary {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 500;
-      line-height: 1.5;
-      text-align: right;
-      color: var(--text);
-    }
-
-    /* ── Sticky tabs (text only) ── */
-    .report-tabs-wrap {
+    .phase-summary { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .tabs-wrap {
       position: sticky;
       top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
+      z-index: 50;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(6px);
       border-bottom: 1px solid var(--line);
-      margin: 0 calc(-1 * var(--pad-x));
-      padding: 0 var(--pad-x);
     }
-    .report-tabs {
+    .tabs {
       display: flex;
-      gap: 28px;
+      gap: 0;
       overflow-x: auto;
-      scrollbar-width: thin;
+      scrollbar-width: none;
+      padding: 0 8px;
     }
-    .tab-link {
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
       flex: 0 0 auto;
-      padding: 16px 0;
-      font-size: 14px;
+      padding: 12px 10px;
+      font-size: 13px;
       font-weight: 500;
       color: var(--muted);
       text-decoration: none;
       border-bottom: 2px solid transparent;
       white-space: nowrap;
     }
-    .tab-link:hover { color: var(--text); }
-    .tab-link.active {
-      color: var(--accent);
-      font-weight: 600;
-      border-bottom-color: var(--accent);
+    .tab.active { color: var(--accent); font-weight: 700; border-bottom-color: var(--accent); }
+    .section {
+      padding: 20px var(--pad);
+      border-bottom: 8px solid #f3f4f6;
+      scroll-margin-top: 48px;
     }
-
-    .report-section {
-      scroll-margin-top: 56px;
-      padding: var(--section-gap) 0;
-      border-bottom: 1px solid var(--line);
-    }
-    .report-section:last-child { border-bottom: none; }
-
-    .section-heading {
-      margin: 0 0 24px;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .subsection-heading {
-      margin: 0 0 12px;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
+    .section:last-child { border-bottom: none; }
+    .h1 { margin: 0 0 16px; font-size: 18px; font-weight: 700; }
+    .h2 { margin: 20px 0 10px; font-size: 14px; font-weight: 700; color: var(--text); }
+    .h2:first-child { margin-top: 0; }
+    .lead { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+    .sub { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
     .up { color: var(--up); }
     .down { color: var(--down); }
     .muted { color: var(--muted); }
-
-    /* ── Indices ── */
-    .idx-kr-grid {
+    .idx-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 32px 48px;
-      margin-bottom: 32px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
-    .idx-kr-block { padding-bottom: 8px; }
-    .idx-kr-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 8px;
+    .idx-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
     }
-    .idx-kr-value {
-      display: block;
-      font-size: 32px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-      font-variant-numeric: tabular-nums;
-    }
-    .idx-kr-change {
-      display: block;
-      margin-top: 6px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    /* ── Tables ── */
-    .table-scroll {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-bottom: 8px;
-    }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    .data-table th,
-    .data-table td {
-      padding: 10px 12px;
+    .idx-name { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .idx-val { font-size: 18px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .idx-chg { font-size: 13px; font-weight: 600; margin-top: 2px; }
+    .table-wrap { overflow-x: auto; margin: 8px 0 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td {
+      padding: 8px 6px;
       border-bottom: 1px solid var(--line);
       text-align: left;
       vertical-align: top;
     }
-    .data-table th {
+    th { font-size: 11px; font-weight: 600; color: var(--muted); }
+    .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .tag {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      background: var(--bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #f3f4f6;
     }
-    .data-table.compact th,
-    .data-table.compact td {
-      padding: 8px 10px;
+    .tag.in { color: var(--up); background: #eff6ff; }
+    .tag.out { color: var(--down); background: #fef2f2; }
+    .theme-name { font-size: 13px; font-weight: 700; margin: 16px 0 8px; }
+    .wl-row {
       font-size: 13px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      line-height: 1.45;
     }
-    .data-table .num {
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
+    .stock-card {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
     }
-    .data-table .chg {
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .data-table tr.row-top td,
-    .data-table tr.row-top th { font-weight: 700; }
-
-    /* ── Sector tags ── */
-    .sector-block { margin-top: 8px; }
-    .sector-row {
+    .stock-card:last-child { border-bottom: none; }
+    .stock-top {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
       gap: 8px;
       margin-bottom: 12px;
-      font-size: 14px;
     }
-    .sector-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      min-width: 36px;
-    }
-    .tag {
-      display: inline-block;
-      padding: 3px 10px;
-      font-size: 12px;
-      font-weight: 500;
-      background: var(--badge-bg);
-      color: var(--text);
-      border-radius: 2px;
-    }
-    .tag-in { color: var(--up); }
-    .tag-out { color: var(--down); }
-
-    /* ── Stock block ── */
-    .stock-block {
-      padding: 32px 0;
-      border-bottom: 1px solid var(--line);
-    }
-    .stock-block:last-child { border-bottom: none; padding-bottom: 0; }
-
-    .stock-headline {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 12px 20px;
-      margin-bottom: 20px;
-    }
-    .stock-title {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .stock-price {
-      font-size: 20px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-    .stock-change {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
+    .stock-name { font-size: 17px; font-weight: 700; margin: 0; }
+    .stock-price { font-size: 16px; font-weight: 700; }
     .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      background: var(--badge-bg);
-      color: var(--text);
-      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f3f4f6;
     }
-    .badge.buy { color: var(--up); }
-    .badge.sell { color: var(--down); }
-    .badge.hold { color: var(--muted); }
-
-    .range-section { margin: 16px 0 12px; }
-    .range-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
+    .badge.buy { color: var(--up); background: #eff6ff; }
+    .badge.sell { color: var(--down); background: #fef2f2; }
     .range-bar {
-      position: relative;
       height: 6px;
       background: var(--line);
       border-radius: 3px;
+      position: relative;
+      margin: 8px 0 4px;
     }
     .range-fill {
       position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
+      left: 0; top: 0; bottom: 0;
       background: var(--accent);
+      opacity: 0.25;
       border-radius: 3px;
-      opacity: 0.35;
     }
-    .range-marker {
+    .range-dot {
       position: absolute;
       top: 50%;
-      width: 12px;
-      height: 12px;
-      margin-left: -6px;
-      margin-top: -6px;
+      width: 10px; height: 10px;
+      margin: -5px 0 0 -5px;
       background: var(--accent);
-      border: 2px solid var(--bg);
+      border: 2px solid #fff;
       border-radius: 50%;
-      box-shadow: 0 0 0 1px var(--accent);
     }
-    .range-caption {
-      margin: 8px 0 0;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .stock-meta-line {
-      margin: 0 0 20px;
-      font-size: 14px;
-      color: var(--text);
-    }
-    .stock-meta-line strong { font-weight: 600; }
-
-    .vote-buy { color: var(--up); font-weight: 600; }
-    .vote-sell { color: var(--down); font-weight: 600; }
-    .vote-hold { color: var(--muted); font-weight: 600; }
-
-    /* ── Company block ── */
-    .company-block {
-      padding: 32px 0;
+    .range-cap { font-size: 11px; color: var(--muted); margin: 0 0 12px; }
+    .buy-card {
+      padding: 16px 0;
       border-bottom: 1px solid var(--line);
     }
-    .company-block:last-child { border-bottom: none; }
-    .company-head {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .company-title {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .company-market {
-      margin-left: 10px;
+    .buy-reason {
       font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
+      line-height: 1.6;
+      margin: 8px 0;
+      white-space: pre-line;
     }
-    .company-field {
-      margin: 0 0 12px;
-      font-size: 14px;
-      line-height: 1.65;
-    }
-    .company-field strong {
-      font-weight: 600;
-      color: var(--text);
-    }
-    .company-hot {
+    .stop-line { font-size: 12px; color: var(--down); font-weight: 600; margin: 0; }
+    .risk-box {
+      font-size: 16px;
       font-weight: 700;
-      color: var(--text);
-    }
-
-    /* ── Risk ── */
-    .risk-warning {
-      margin: 0 0 28px;
-      font-size: 20px;
-      font-weight: 700;
-      line-height: 1.45;
       color: var(--down);
+      line-height: 1.45;
+      margin: 0 0 16px;
     }
-    .action-list {
-      margin: 0;
-      padding-left: 1.25rem;
-      font-size: 14px;
-      color: var(--text);
-    }
-    .action-list li { margin-bottom: 10px; }
-    .glossary-table td:first-child {
-      font-weight: 600;
-      width: 28%;
-      white-space: nowrap;
-    }
-
-    .empty-note {
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0;
-    }
-
-    @media (max-width: 768px) {
-      :root { --pad-x: 20px; --section-gap: 28px; }
-      .report-shell { padding-top: 20px; }
-      .report-header {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-      .report-phase { text-align: left; font-size: 28px; }
-      .report-summary { text-align: left; font-size: 15px; }
-      .idx-kr-grid { grid-template-columns: 1fr; gap: 24px; }
-      .idx-kr-value { font-size: 28px; }
-      .report-tabs { gap: 20px; }
-    }
+    .disclaimer { font-size: 11px; color: var(--muted); line-height: 1.55; margin-top: 16px; }
+    .empty { font-size: 13px; color: var(--muted); }
+    .ai-comment { font-size: 12px; color: var(--muted); display: block; margin-top: 2px; }
+    .vote-buy { color: var(--up); font-weight: 700; }
+    .vote-sell { color: var(--down); font-weight: 700; }
+    .vote-hold { color: var(--muted); font-weight: 700; }
   </style>
 </head>
 <body>
-  <div class="report-shell">
+  <div class="shell" id="app">
     {% block content %}{% endblock %}
   </div>
   <script>
     (function () {
-      var tabs = document.querySelectorAll(".tab-link");
-      var sectionIds = ["section-market", "section-themes", "section-stocks"];
-      if (document.getElementById("section-company")) {
-        sectionIds.push("section-company");
-      }
-      sectionIds.push("section-risk");
-      if (!tabs.length) return;
-
+      var tabs = document.querySelectorAll('.tab');
+      var ids = ['tab-market','tab-themes','tab-stocks','tab-buys','tab-risk'];
       function setActive(id) {
-        tabs.forEach(function (tab) {
-          var on = tab.getAttribute("data-section") === id;
-          tab.classList.toggle("active", on);
-          tab.setAttribute("aria-selected", on ? "true" : "false");
+        tabs.forEach(function (t) {
+          var on = t.getAttribute('href') === '#' + id;
+          t.classList.toggle('active', on);
         });
       }
-
       tabs.forEach(function (tab) {
-        tab.addEventListener("click", function (e) {
+        tab.addEventListener('click', function (e) {
           e.preventDefault();
-          var el = document.getElementById(tab.getAttribute("data-section"));
-          if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-            setActive(tab.getAttribute("data-section"));
-          }
+          var el = document.getElementById(tab.getAttribute('href').slice(1));
+          if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); setActive(tab.getAttribute('href').slice(1)); }
         });
       });
-
-      function onScroll() {
-        var offset = 56;
-        var current = sectionIds[0];
-        sectionIds.forEach(function (id) {
+      window.addEventListener('scroll', function () {
+        var cur = ids[0];
+        ids.forEach(function (id) {
           var el = document.getElementById(id);
-          if (el && el.getBoundingClientRect().top <= offset) current = id;
+          if (el && el.getBoundingClientRect().top <= 52) cur = id;
         });
-        setActive(current);
-      }
-      window.addEventListener("scroll", onScroll, { passive: true });
-      onScroll();
+        setActive(cur);
+      }, { passive: true });
     })();
   </script>
 </body>

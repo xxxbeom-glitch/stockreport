@@ -8,12 +8,21 @@ from typing import Any
 import config
 
 from .common import (
+    compute_stop_loss,
     fmt_foreign_net_eok,
     fmt_krw,
     fmt_pct,
     safe_float,
     volume_emoji,
 )
+
+
+def _resolve_stop_loss(risk: dict[str, Any], stock: dict[str, Any]) -> str:
+    sl = str(risk.get("stop_loss") or "")
+    if sl and sl not in ("N/A", "n/a") and "원" in sl:
+        return sl
+    computed = compute_stop_loss(stock.get("price"), 0.94)
+    return computed if computed != "N/A" else "N/A"
 
 
 def get_recommendations(
@@ -34,7 +43,7 @@ def get_recommendations(
     candidates: list[dict[str, Any]] = []
     for stock in supply_result.get("filtered_stocks", []):
         ticker = str(stock.get("ticker", ""))
-        risk = risk_map.get(ticker, {})
+        risk = risk_map.get(ticker) or risk_map.get(ticker.zfill(6) if ticker.isdigit() else ticker) or {}
         if risk.get("final_verdict") != "매수":
             continue
 
@@ -81,7 +90,7 @@ def get_recommendations(
                 "total_score": total,
                 "buy_reason": _buy_reason(stock, m_row, f_row, risk),
                 "verdict_comment": risk.get("verdict_comment", "N/A"),
-                "stop_loss": risk.get("stop_loss", "N/A"),
+                "stop_loss": _resolve_stop_loss(risk, stock),
             }
         )
 

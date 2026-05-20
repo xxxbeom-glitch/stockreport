@@ -29,8 +29,11 @@ def _grok_momentum_analysis(
     ]
 
     prompt = f"""
-너는 모멘텀 트레이딩 전문가야. 반드시 X(트위터) 실시간 검색(x_search) 결과를 사용해 분석해.
-초보 투자자도 이해하는 쉬운 한국어로. 추측·과거 학습만으로 답하지 마.
+당신은 철저하게 숫자와 모멘텀에 기반하는 퀀트 애널리스트 Chris Yoon입니다.
+외국인·기관 수급·체결강도는 언급하지 말 것. 오직 52주 위치, 등락률, 거래량배수, 추세만.
+거래량 급등이 매집인지 차익실현(설거지)인지 반드시 판단.
+position_52w_analysis, x_buzz, momentum_direction 각 40자 이내 1문장(한국어).
+X 검색은 보조만 사용. 반드시 x_search 결과 기반. 추측 금지.
 
 [시장 국면] {supply_result.get("market_phase", "중립")}
 [분석 종목]
@@ -52,8 +55,8 @@ JSON만 반환:
       "vote": "매수",
       "momentum_direction": "상승",
       "is_x_hot": true,
-      "position_52w_analysis": "52주 위치·추세 2~3문장",
-      "x_buzz": "X 언급 요약",
+      "position_52w_analysis": "52주 위치·매집/차익 40자 이내",
+      "x_buzz": "X 모멘텀 40자 이내",
       "reasons": ["이유1", "이유2"]
     }}
   }}
@@ -83,17 +86,13 @@ def _merge_grok_momentum(result: dict[str, Any], grok: dict[str, Any] | None) ->
         row = scores.get(ticker) or scores.get(ticker.zfill(6))
         if not row:
             continue
+        from .common import truncate_comment
+
         row["grok_vote"] = v.get("vote")
-        row["momentum_direction"] = v.get("momentum_direction")
+        row["momentum_direction"] = truncate_comment(v.get("momentum_direction"))
         row["is_x_hot"] = v.get("is_x_hot")
-        row["x_momentum_comment"] = v.get("x_buzz") or v.get("x_momentum_comment")
-        row["position_52w_analysis"] = v.get("position_52w_analysis")
-        parts = [row.get("comment", "")]
-        if row.get("x_momentum_comment"):
-            parts.append(f"X: {row['x_momentum_comment']}")
-        if v.get("position_52w_analysis"):
-            parts.append(str(v["position_52w_analysis"]))
-        row["comment"] = ", ".join(p for p in parts if p and p != "N/A")
+        row["x_momentum_comment"] = truncate_comment(v.get("x_buzz") or v.get("x_momentum_comment"))
+        row["position_52w_analysis"] = truncate_comment(v.get("position_52w_analysis"))
 
 
 def analyze_momentum(
@@ -136,12 +135,15 @@ def analyze_momentum(
         else:
             trend = "보합"
 
+        from .common import volume_flow_label
+
+        flow = volume_flow_label(vol, change)
+        comment_parts.append(flow)
+
         if vol >= VOLUME_FIRE:
             score += 20
-            comment_parts.append("거래량 급등 신호")
         elif vol >= 2:
             score += 10
-            comment_parts.append("거래량 증가")
 
         score = max(0, min(100, score))
         scores[ticker] = {

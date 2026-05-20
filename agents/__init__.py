@@ -5,6 +5,7 @@ from .fundamental import analyze_fundamental
 from .macro import analyze_macro
 from .momentum import analyze_momentum
 from .pipeline_runner import run_agent_pipeline
+from .scorer import SCORE_THRESHOLD, calculate_score, score_breakdown
 from .profiles import AGENT_PROFILES
 from .recommender import get_recommendations
 from .risk import analyze_risk
@@ -15,6 +16,9 @@ from .watchlist_data import build_watchlist_data
 analyze_supply_demand = analyze_supply
 
 __all__ = [
+    "SCORE_THRESHOLD",
+    "calculate_score",
+    "score_breakdown",
     "run_agent_pipeline",
     "build_watchlist_data",
     "analyze_macro",

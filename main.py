@@ -16,6 +16,8 @@ from typing import Any
 import config
 
 from agents import AGENT_PROFILES, generate_company_report, run_agent_pipeline
+from agents.scorer import SCORE_THRESHOLD
+from agents.stock_votes import resolve_stock_agent_vote
 from data.kr_market import get_stock_snapshot, get_top_volume_kr
 from data.us_market import get_top_volume_us
 from utils.formatters import foreign_net_eok
@@ -89,32 +91,6 @@ def _position_pct(price: Any, low: Any, high: Any) -> int:
     return max(0, min(100, int((p - lo) / (hi - lo) * 100)))
 
 
-def _resolve_agent_vote(
-    opinion: dict[str, Any], name: str, ticker: str, pipeline: dict[str, Any] | None = None
-) -> tuple[str, list[str]]:
-    if pipeline and ticker:
-        risk_entry = (pipeline.get("risk") or {}).get("risk_assessments", {}).get(ticker)
-        if risk_entry:
-            vote = str(risk_entry.get("final_verdict", "홀드"))
-            comment = str(risk_entry.get("verdict_comment", ""))
-            return vote, [comment] if comment else ["의견 없음"]
-
-    verdicts = opinion.get("verdicts") or {}
-    entry: dict[str, Any] | None = None
-    for key in (name, ticker):
-        if key in verdicts and isinstance(verdicts[key], dict):
-            entry = verdicts[key]
-            break
-    if entry:
-        vote = str(entry.get("vote", "홀드"))
-        reasons = entry.get("reason") or [opinion.get("summary", "")]
-        if isinstance(reasons, str):
-            reasons = [reasons]
-        return vote, [str(r) for r in reasons if r][:3]
-    summary = str(opinion.get("summary", "")).strip()
-    return "홀드", [summary[:200]] if summary else ["의견 없음"]
-
-
 def _majority_verdict(votes: list[str]) -> str:
     counts: dict[str, int] = {}
     for vote in votes:
@@ -181,11 +157,23 @@ def _build_stock_row(
     if foreign_net_buy is None:
         foreign_net_buy = d.get("foreign_net_buy")
 
+    stock_ctx = dict(d)
+    if snapshot.get("price") is not None:
+        stock_ctx["price"] = snapshot["price"]
+    if snapshot.get("low_52") is not None:
+        stock_ctx["low_52"] = snapshot["low_52"]
+    if snapshot.get("high_52") is not None:
+        stock_ctx["high_52"] = snapshot["high_52"]
+    if snapshot.get("change_rate") is not None:
+        stock_ctx["change_rate"] = snapshot["change_rate"]
+    if foreign_net_buy is not None:
+        stock_ctx["foreign_net"] = foreign_net_buy
+
     agent_votes: list[dict[str, Any]] = []
     vote_labels: list[str] = []
     for profile in AGENT_PROFILES:
         key = profile["key"]
-        vote, reasons = _resolve_agent_vote(opinions.get(key, {}), name, ticker, pipeline)
+        vote, reasons = resolve_stock_agent_vote(key, ticker, name, stock_ctx, pipeline)
         vote_labels.append(vote)
         agent_votes.append(
             {
@@ -228,6 +216,100 @@ def _build_stock_row(
         "momentum_tags": _momentum_tags(ratio, change_pct),
         "guidance": opinions["risk"].get("do_not", "과도한 추격매수는 지양"),
     }
+
+
+def _uses_kr_watchlist(report_type: str) -> bool:
+    return report_type in {"us_close_kr_before", "kr_during", "kr_before", "kr_after"}
+
+
+def _header_market_line(report_type: str) -> str:
+    label = REPORT_TYPE_LABELS.get(report_type, report_type)
+    if report_type in ("us_close_kr_before", "kr_during", "kr_before", "kr_after"):
+        return f"한국시장 | {label}"
+    if report_type in ("kr_close_us_before", "us_during", "us_before", "us_after"):
+        return f"미국시장 | {label}"
+    return label
+
+
+def _format_watchlist_row(snap: dict[str, Any], fallback_name: str, *, kr: bool) -> dict[str, Any]:
+    change_rate = snap.get("change_rate")
+    if isinstance(change_rate, (int, float)):
+        change_fmt = f"{float(change_rate):+.2f}%"
+        is_up = change_rate >= 0
+    else:
+        change_fmt = _safe_str_change(snap.get("change"))
+        is_up = snap.get("is_up")
+
+    if kr:
+        price = snap.get("price")
+        price_fmt = f"{int(price):,}원" if isinstance(price, (int, float)) else "N/A"
+    else:
+        pk = snap.get("price_krw")
+        if isinstance(pk, (int, float)):
+            price_fmt = f"{int(pk):,}원"
+        else:
+            price_fmt = str(snap.get("price_fmt") or snap.get("price") or "N/A")
+
+    ratio = snap.get("volume_ratio")
+    try:
+        ratio_f = float(str(ratio).replace("배", "").replace("x", "").strip())
+    except (TypeError, ValueError):
+        ratio_f = 0.0
+    volume_ratio_fmt = f"{ratio_f:.1f}배" if ratio_f else "N/A"
+
+    return {
+        "name": str(snap.get("name") or fallback_name),
+        "price_fmt": price_fmt,
+        "change_fmt": change_fmt,
+        "is_up": is_up if is_up is not None else True,
+        "volume_ratio_fmt": volume_ratio_fmt,
+        "pre_score": snap.get("pre_score"),
+    }
+
+
+def _safe_str_change(value: Any) -> str:
+    if value is None:
+        return "N/A"
+    text = str(value).strip()
+    return text if text else "N/A"
+
+
+def _build_watchlist_by_theme(
+    pipeline: dict[str, Any] | None,
+    report_type: str,
+) -> dict[str, list[dict[str, Any]]]:
+    kr = _uses_kr_watchlist(report_type) or (
+        report_type.startswith("kr") and report_type not in {"kr_close_us_before"}
+    )
+    wl_stocks = ((pipeline or {}).get("watchlist_data") or {}).get("stocks", [])
+    by_key: dict[str, dict[str, Any]] = {}
+    for snap in wl_stocks:
+        ticker = str(snap.get("ticker", ""))
+        key = ticker.zfill(6) if kr else ticker.upper()
+        by_key[key] = snap
+        by_key[ticker] = snap
+
+    watchlist = config.KR_WATCHLIST if kr else config.US_WATCHLIST
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for theme, tickers in watchlist.items():
+        rows: list[dict[str, Any]] = []
+        for ticker, name in tickers.items():
+            key = ticker.zfill(6) if kr else ticker.upper()
+            snap = by_key.get(key) or by_key.get(ticker) or {}
+            rows.append(_format_watchlist_row(snap, name, kr=kr))
+        grouped[theme] = rows
+    return grouped
+
+
+def _fetch_volume_leaders_ranked(report_type: str) -> list[dict[str, Any]]:
+    try:
+        if _uses_kr_watchlist(report_type) or (
+            report_type.startswith("kr") and report_type != "kr_close_us_before"
+        ):
+            return get_top_volume_kr(5) or []
+        return get_top_volume_us(5) or []
+    except Exception:
+        return []
 
 
 def _build_company_reports(report_type: str, logger: TokenLogger) -> list[dict[str, Any]]:
@@ -334,6 +416,10 @@ def _build_report_data(
         if not discovered:
             discovered = market_data.get("discovered_stocks", [])
 
+    volume_leaders_ranked = _fetch_volume_leaders_ranked(report_type)
+    if not volume_leaders_ranked:
+        volume_leaders_ranked = discovered[:5]
+
     volume_leaders = [_build_volume_leader(d) for d in discovered[:5]]
     top_themes = [
         {
@@ -346,7 +432,15 @@ def _build_report_data(
         }
     ]
 
-    stock_analysis = [_build_stock_row(d, opinions, pipeline) for d in discovered[:5]]
+    agent_targets = list(((pipeline or {}).get("watchlist_data") or {}).get("agent_stocks") or [])
+    if not agent_targets:
+        wl_all = ((pipeline or {}).get("watchlist_data") or {}).get("stocks") or []
+        agent_targets = [
+            s for s in wl_all if int(s.get("pre_score") or 0) >= SCORE_THRESHOLD
+        ]
+    analysis_pool = agent_targets or discovered[:5]
+    stock_analysis = [_build_stock_row(d, opinions, pipeline) for d in analysis_pool]
+    watchlist_by_theme = _build_watchlist_by_theme(pipeline, report_type)
 
     risk = opinions.get("risk") or {}
     rec_msg = recommendations.get("message", "")
@@ -369,8 +463,14 @@ def _build_report_data(
     return {
         "report_type": report_type,
         "report_type_label": REPORT_TYPE_LABELS.get(report_type, report_type),
+        "header_market_line": _header_market_line(report_type),
         "report_title": f"Stock Report · {REPORT_TYPE_LABELS.get(report_type, report_type)}",
         "date": now.strftime("%Y-%m-%d"),
+        "score_threshold": ((pipeline or {}).get("watchlist_data") or {}).get(
+            "score_threshold", SCORE_THRESHOLD
+        ),
+        "volume_leaders_ranked": volume_leaders_ranked,
+        "watchlist_by_theme": watchlist_by_theme,
         "market_phase": macro.get("market_phase", "중립"),
         "market_phase_reason": macro.get("market_phase_reason", ""),
         "macro_comments": macro.get("macro_comments") or {},
@@ -449,9 +549,12 @@ def run_report(report_type: str = DEFAULT_REPORT_TYPE) -> dict[str, Any]:
         "risk": pipeline["risk"],
         "recommendations": pipeline["recommendations"],
     }
+    wl = pipeline.get("watchlist_data") or {}
+    pre = (opinions.get("supply") or {}).get("pre_filter") or {}
     print(
         f"[INFO] agent pipeline: phase={opinions['macro'].get('market_phase')} "
-        f"filtered={len(opinions['supply'].get('filtered_stocks', []))} "
+        f"pre_score>={pre.get('threshold', 70)}: {pre.get('passed_pre_score', '?')}/{pre.get('total_scanned', '?')} "
+        f"supply_filtered={len(opinions['supply'].get('filtered_stocks', []))} "
         f"buy={len(opinions['recommendations'].get('buy_recommendations', []))}"
     )
     company_reports = _build_company_reports(report_type, logger)

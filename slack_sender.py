@@ -1,4 +1,4 @@
-"""Slack market report sender (4-message thread via Slack Web API only)."""
+"""Slack market report sender (single message + briefing link button)."""
 
 from __future__ import annotations
 
@@ -41,6 +41,19 @@ INDICATOR_LABELS: dict[str, str] = {
 }
 
 WEEKDAY_KO = ("월", "화", "수", "목", "금", "토", "일")
+
+PHASE_LABELS: dict[str, str] = {
+    "risk_off": "위험회피",
+    "risk-off": "위험회피",
+    "bearish": "약세",
+    "weak": "약세",
+    "neutral": "중립",
+    "sideways": "중립",
+    "bullish": "강세",
+    "risk_on": "강세",
+    "risk-on": "강세",
+    "strong": "강세",
+}
 
 
 def resolve_slack_channel(report_type: str) -> str | None:
@@ -131,18 +144,91 @@ def _enrich_report_data(report_data: dict[str, Any], report_type: str) -> dict[s
     return data
 
 
+def _phase_display(phase: Any) -> str:
+    key = str(phase or "중립").strip().lower()
+    return PHASE_LABELS.get(key, str(phase or "중립"))
+
+
 def _header_line(report_type: str) -> tuple[str, str]:
     now = datetime.now()
     weekday = WEEKDAY_KO[now.weekday()]
     time_str = now.strftime("%H:%M")
     date_str = now.strftime("%Y-%m-%d")
     desc = REPORT_TYPE_DESC.get(report_type, report_type)
-    if _is_kr_report(report_type):
+    if report_type in ("us_close_kr_before", "kr_during", "kr_before", "kr_after"):
+        market_line = f"한국시장 | {desc}"
+    elif report_type in ("kr_close_us_before", "us_during", "us_before", "us_after"):
+        market_line = f"미국시장 | {desc}"
+    elif _is_kr_report(report_type):
         market_line = f"한국시장 | {desc}"
     else:
         market_line = f"미국시장 | {desc}"
     title = f"📅 마켓 브리핑 | {date_str} {weekday}요일 {time_str}"
     return title, market_line
+
+
+def _compact_index(label: str, row: dict[str, Any] | None) -> str:
+    row = row or {}
+    value = _safe_str(row.get("value"))
+    change = _safe_str(row.get("change"))
+    mark = _arrow(row.get("is_up"), change)
+    if change in ("N/A", ""):
+        return f"{label} {value}"
+    return f"{label} {value} {mark}{change}"
+
+
+def build_summary_message(report_data: dict[str, Any], report_type: str) -> str:
+    """Build a single Slack text summary (indices + phase)."""
+    title, market_line = _header_line(report_type)
+    phase = _phase_display(report_data.get("market_phase"))
+    summary = _safe_str(report_data.get("one_line_summary"))
+    indices = report_data.get("indices") or {}
+
+    line_kr = "  ".join(
+        [
+            _compact_index("KOSPI", indices.get("KOSPI")),
+            _compact_index("KOSDAQ", indices.get("KOSDAQ")),
+        ]
+    )
+    line_us = "  ".join(
+        [
+            _compact_index("S&P500", indices.get("S&P500") or indices.get("S&P 500")),
+            _compact_index("NASDAQ", indices.get("NASDAQ")),
+        ]
+    )
+
+    lines = [
+        title,
+        market_line,
+        "",
+        "오늘 시장은?",
+        f"{phase} — {summary}",
+        "",
+        line_kr,
+        line_us,
+    ]
+    return "\n".join(lines)
+
+
+def _briefing_blocks(text: str, briefing_url: str) -> list[dict[str, Any]]:
+    blocks: list[dict[str, Any]] = [
+        {"type": "section", "text": {"type": "mrkdwn", "text": text}},
+    ]
+    if briefing_url:
+        blocks.append(
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "브리핑 보기", "emoji": True},
+                        "url": briefing_url,
+                        "action_id": "open_briefing_html",
+                    }
+                ],
+            }
+        )
+    return blocks
 
 
 def _index_line(label: str, row: dict[str, Any] | None) -> str:
@@ -423,6 +509,7 @@ def post_message(
     channel: str,
     thread_ts: str | None = None,
     *,
+    blocks: list[dict[str, Any]] | None = None,
     retries: int = 1,
 ) -> dict[str, Any]:
     """Post one message via Slack chat.postMessage."""
@@ -433,6 +520,8 @@ def post_message(
         return {"ok": False, "error": "Slack channel missing", "skipped": True}
 
     body: dict[str, Any] = {"channel": channel, "text": text}
+    if blocks:
+        body["blocks"] = blocks
     if thread_ts:
         body["thread_ts"] = thread_ts
 
@@ -466,7 +555,7 @@ def send_market_report(
     report_type: str,
     pdf_url: str = "",
 ) -> dict[str, Any]:
-    """Send 4 Slack messages: msg1 to channel, msg2–4 in thread."""
+    """Send one Slack message with summary text and optional briefing button."""
     token = config.SLACK_BOT_TOKEN or os.getenv("SLACK_BOT_TOKEN", "")
     channel = resolve_slack_channel(report_type) or ""
     if not token:
@@ -489,41 +578,26 @@ def send_market_report(
         }
 
     data = _enrich_report_data(report_data, report_type)
-    if pdf_url:
-        data["pdf_url"] = pdf_url
+    briefing_url = pdf_url or str(data.get("pdf_url") or "")
+    if briefing_url:
+        data["pdf_url"] = briefing_url
 
-    builders = [
-        lambda: build_msg1(data, report_type),
-        lambda: build_msg2(data, report_type),
-        lambda: build_msg3(data, report_type),
-        lambda: build_msg4(data, report_type),
-    ]
+    text = build_summary_message(data, report_type)
+    blocks = _briefing_blocks(text, briefing_url)
+    fallback = text if not briefing_url else f"{text}\n\n브리핑: {briefing_url}"
 
+    result = post_message(fallback, channel, blocks=blocks, retries=1)
     errors: list[str] = []
-    sent_count = 0
-    thread_ts: str | None = None
-
-    for idx, build_fn in enumerate(builders, start=1):
-        text = build_fn()
-        result = post_message(
-            text,
-            channel,
-            thread_ts=None if idx == 1 else thread_ts,
-            retries=1,
-        )
-        if result.get("ok"):
-            sent_count += 1
-            if idx == 1:
-                thread_ts = str(result.get("ts") or "")
-        else:
-            errors.append(f"msg{idx}: {result.get('error', 'unknown')}")
+    if not result.get("ok"):
+        errors.append(str(result.get("error", "unknown")))
 
     return {
-        "ok": sent_count > 0,
-        "sent_count": sent_count,
-        "thread_ts": thread_ts,
+        "ok": bool(result.get("ok")),
+        "sent_count": 1 if result.get("ok") else 0,
+        "thread_ts": result.get("ts"),
         "channel": channel,
         "errors": errors,
+        "briefing_url": briefing_url or None,
     }
 
 
@@ -535,7 +609,7 @@ def send_report(
     pdf_url: str | None = None,
     send_at: int | None = None,
 ) -> dict[str, Any]:
-    """Send threaded market report via Slack Web API."""
+    """Send market report summary via Slack Web API."""
     source = payload or {}
     rtype = report_type or source.get("report_type") or "unknown"
     url = pdf_url or source.get("pdf_url") or source.get("url") or ""

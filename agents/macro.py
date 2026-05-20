@@ -168,7 +168,13 @@ def analyze_macro(
             from .gemini_client import generate_gemini_json
 
             prompt = f"""
-매크로 애널리스트로서 아래 실데이터만 사용해 JSON을 보완하세요. 없는 수치는 N/A, 추측 금지.
+당신은 20년 경력의 글로벌 매크로 애널리스트 Michael Chen입니다.
+감정적 표현 배제, 건조하고 객관적으로 작성.
+위험회피/중립/강세 중 하나로 시장 국면 정의.
+타겟 섹터에 미치는 영향 2문장 이내로 요약.
+인사말·서론 없이 JSON만 반환.
+
+아래 실데이터만 사용. 없는 수치는 N/A, 추측 금지.
 기존 market_phase는 유지하거나 동의할 때만 수정: {phase}
 
 [지수]{json.dumps(indices, ensure_ascii=False)[:2000]}

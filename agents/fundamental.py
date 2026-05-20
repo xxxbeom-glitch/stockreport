@@ -35,6 +35,16 @@ def analyze_fundamental(
         pbr = stock.get("pbr")
         dart = stock.get("dart_summary") or (_us_dart_summary(stock) if market == "US" else None)
 
+        if market == "KR" and (per is None or pbr is None):
+            try:
+                from data.kr_market import get_kr_fundamentals
+
+                fin = get_kr_fundamentals(ticker) or {}
+                per = per if per is not None else fin.get("per")
+                pbr = pbr if pbr is not None else fin.get("pbr")
+            except Exception:
+                pass
+
         if market == "US" and per is None and pbr is None:
             try:
                 from data.us_market import get_us_financials
@@ -74,7 +84,7 @@ def analyze_fundamental(
             score += 10
         elif per is None and pbr is None:
             valuation = "N/A"
-            comment_parts.append("PER/PBR 데이터 없음")
+            comment_parts.append("N/A")
 
         score = max(0, min(100, score))
         scores[ticker] = {
@@ -92,7 +102,12 @@ def analyze_fundamental(
         from .gemini_client import generate_gemini_json
 
         prompt = f"""
-펀더멘털 애널리스트로 아래 종목 PER/PBR·실적 데이터만 보고 JSON으로 보완하세요. 추측 금지.
+당신은 기업 재무 상태와 밸류에이션을 평가하는 애널리스트 이준혁입니다.
+주가 모멘텀과 무관하게 현재 가격이 장부 가치 대비 합리적인지만 평가.
+성장주는 PER 높아도 업종 특성 반영하여 합리적으로 해석.
+comment는 40자 이내 1문장. 인사말·서론 없이 JSON만.
+
+아래 PER/PBR·실적 데이터만 사용. 추측 금지.
 [종목]{json.dumps(list(scores.values()), ensure_ascii=False)[:3000]}
 
 스키마: {{"fundamental_scores": {{"티커": {{"comment":"한줄","valuation":"저평가/적정/고평가","fundamental_score":0-100}}}}}}

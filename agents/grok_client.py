@@ -14,6 +14,20 @@ from utils.helpers import safe_json_parse
 
 GROK_X_SEARCH_TOOL: list[dict[str, str]] = [{"type": "x_search"}]
 
+X_SEARCH_NOISE_RULES: str = """
+X(트위터) 데이터 분석 시 반드시 지켜야 할 규칙:
+1. 공식 계정 (언론사, 증권사, 기업 IR) 위주로 해석
+2. "단독", "확실함", "~카더라" 등 비공식 루머 무시
+3. 스팸성 계정, 반복 게시물 무시
+4. 같은 내용이 여러 신뢰 계정에서 언급될 때만 반영
+5. 불확실하면 "X 데이터 불충분" 으로 반환
+"""
+
+
+def with_x_search_rules(prompt: str) -> str:
+    """Prepend X noise-filtering rules to Grok prompts."""
+    return f"{X_SEARCH_NOISE_RULES.strip()}\n\n{prompt.lstrip()}"
+
 
 def _x_search_calls(response: Any) -> int:
     usage = getattr(response, "usage", None)
@@ -85,7 +99,7 @@ def grok_x_search_json(
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     """Call Grok with X search and parse JSON from the response."""
     text, meta = grok_with_x_search(
-        prompt,
+        with_x_search_rules(prompt),
         agent=agent,
         logger=logger,
         max_output_tokens=max_output_tokens,
