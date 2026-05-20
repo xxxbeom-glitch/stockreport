@@ -96,7 +96,6 @@
       ],
       "company_summary": "반도체 소재·세정 케미칼.\n단기 테마 수급은 유효",
       "company_summary_source": "ai",
-      "logo_url": null,
       "sector_order": 0,
       "stock_order": 0
     },
@@ -129,7 +128,6 @@
       ],
       "company_summary": "테스트·소켓 부품.\n단기 수급 재료는 유효",
       "company_summary_source": "ai",
-      "logo_url": null,
       "sector_order": 1,
       "stock_order": 0
     },
@@ -162,7 +160,6 @@
       ],
       "company_summary": "기업 개요 데이터 수집 중.",
       "company_summary_source": "fallback",
-      "logo_url": null,
       "sector_order": 2,
       "stock_order": 0
     },
@@ -195,7 +192,6 @@
       ],
       "company_summary": "기업 개요 데이터 수집 중.",
       "company_summary_source": "fallback",
-      "logo_url": null,
       "sector_order": 3,
       "stock_order": 0
     },
@@ -228,7 +224,6 @@
       ],
       "company_summary": "기업 개요 데이터 수집 중.",
       "company_summary_source": "fallback",
-      "logo_url": null,
       "sector_order": 4,
       "stock_order": 1
     },
@@ -261,7 +256,6 @@
       ],
       "company_summary": "기업 개요 데이터 수집 중.",
       "company_summary_source": "fallback",
-      "logo_url": null,
       "sector_order": 4,
       "stock_order": 5
     }

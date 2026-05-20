@@ -122,16 +122,6 @@
           {% if not loop.first %}hidden{% endif %}>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo{% if stock.logo_class %} stock-logo--{{ stock.logo_class }}{% elif not stock.logo_url %} stock-logo--placeholder{% endif %}" aria-hidden="true">
-                {% if stock.logo_url %}
-                <img src="{{ stock.logo_url }}" alt="">
-                {% elif not stock.logo_class %}
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 15V7.5L9 3.75L15 7.5V15" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <rect x="6.75" y="9.75" width="4.5" height="4.5" rx="0.3" stroke="#FFFFFF" stroke-width="1.2"/>
-                </svg>
-                {% endif %}
-              </div>
               <h3 class="stock-name">{{ stock.name }}</h3>
             </div>
             {% if stock.verdict_badge %}
@@ -181,16 +171,6 @@
         <article class="card stock-card" data-sector="{{ stock.sector_key | default('') }}">
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo{% if stock.logo_class %} stock-logo--{{ stock.logo_class }}{% elif not stock.logo_url %} stock-logo--placeholder{% endif %}" aria-hidden="true">
-                {% if stock.logo_url %}
-                <img src="{{ stock.logo_url }}" alt="">
-                {% elif not stock.logo_class %}
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 15V7.5L9 3.75L15 7.5V15" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <rect x="6.75" y="9.75" width="4.5" height="4.5" rx="0.3" stroke="#FFFFFF" stroke-width="1.2"/>
-                </svg>
-                {% endif %}
-              </div>
               <h3 class="stock-name">{{ stock.name }}</h3>
             </div>
             {% if stock.verdict_badge %}

@@ -289,7 +289,6 @@ def _map_stock(
         "metrics": metrics,
         "company_summary": company_text,
         "company_summary_source": company_src,
-        "logo_url": row.get("logo_url"),
         "sector_order": row.get("sector_order"),
         "stock_order": row.get("stock_order"),
     }

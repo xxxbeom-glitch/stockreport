@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>투자 인사이트 · us_market</title>
+  <title>투자 인사이트</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,6 +12,7 @@
   <div class="app">
     <header class="page-header">
       <h1 class="page-title">투자 인사이트</h1>
+      
       <p class="page-meta">
         <span>미국시장</span>
         <span class="meta-sep" aria-hidden="true"></span>
@@ -19,19 +20,22 @@
         <span class="meta-sep" aria-hidden="true"></span>
         <span>09:00 업데이트</span>
       </p>
+      
     </header>
 
     <section class="section-block" id="market">
       <div class="card">
         <h2 class="card-title">마켓 주요 지표</h2>
         <div class="metric-list">
+          
           <div class="metric-row">
-            <span class="metric-label">S&amp;P500</span>
+            <span class="metric-label">S&P500</span>
             <div class="metric-nums up" role="group" aria-label="S&P500 수치">
               <span class="metric-value">7,540.88</span>
               <span class="metric-chg">+2.66%</span>
             </div>
           </div>
+          
           <div class="metric-row">
             <span class="metric-label">Nasdaq</span>
             <div class="metric-nums down" role="group" aria-label="Nasdaq 수치">
@@ -39,6 +43,7 @@
               <span class="metric-chg">-3.33%</span>
             </div>
           </div>
+          
           <div class="metric-row">
             <span class="metric-label">Gold</span>
             <div class="metric-nums down" role="group" aria-label="Gold 수치">
@@ -46,6 +51,7 @@
               <span class="metric-chg">-11.33%</span>
             </div>
           </div>
+          
           <div class="metric-row">
             <span class="metric-label">Silver</span>
             <div class="metric-nums down" role="group" aria-label="Silver 수치">
@@ -53,24 +59,35 @@
               <span class="metric-chg">-11.33%</span>
             </div>
           </div>
+          
         </div>
+        
         <div class="insight-box">제미나이가 추론한 미국 장전, 장중, 장후에 대한 주요지표 시황 코멘트가 들어가는 영역입니다.</div>
+        
       </div>
     </section>
 
     <section class="section-block" id="sectors">
       <div class="section-head">
         <h2 class="section-title">섹터 유입 · 유출</h2>
+        
         <select id="sector-filter" class="filter-select" aria-label="섹터 필터">
+          
           <option value="전체섹터" selected>전체섹터</option>
+          
           <option value="반도체">반도체</option>
+          
           <option value="AI">AI</option>
+          
           <option value="클라우드">클라우드</option>
+          
         </select>
+        
       </div>
 
       <p id="sector-filter-empty" class="filter-empty" hidden>선택한 섹터에 해당하는 카드가 없습니다.</p>
       <div class="sector-track">
+        
         <article class="card sector-card" data-sector="반도체">
           <div class="sector-top">
             <h3 class="sector-name">반도체 소재</h3>
@@ -78,13 +95,19 @@
           </div>
           <div class="sector-body">
             <div class="sector-stocks-wrap">
+              
               <span class="tag-pill">주요 상승 종목</span>
+              
+              
               <p class="stock-list">엔비디아, 마이크론, 샌디스크, TSMC</p>
+              
             </div>
+            
             <div class="insight-box">제미나이가 추론한 미국 장전, 장중, 장후에 대한 주요지표 시황 코멘트</div>
+            
           </div>
         </article>
-
+        
         <article class="card sector-card" data-sector="AI">
           <div class="sector-top">
             <h3 class="sector-name">생성형 AI</h3>
@@ -92,13 +115,19 @@
           </div>
           <div class="sector-body">
             <div class="sector-stocks-wrap">
+              
               <span class="tag-pill">주요 상승 종목</span>
+              
+              
               <p class="stock-list">알파벳, 메타, 마이크로소프트</p>
+              
             </div>
+            
             <div class="insight-box">제미나이가 추론한 미국 장전, 장중, 장후에 대한 주요지표 시황 코멘트</div>
+            
           </div>
         </article>
-
+        
         <article class="card sector-card" data-sector="클라우드">
           <div class="sector-top">
             <h3 class="sector-name">클라우드</h3>
@@ -106,237 +135,583 @@
           </div>
           <div class="sector-body">
             <div class="sector-stocks-wrap">
+              
               <span class="tag-pill">주요 상승 종목</span>
+              
+              
               <p class="stock-list">아마존, 마이크로소프트</p>
+              
             </div>
+            
             <div class="insight-box">제미나이가 추론한 미국 장전, 장중, 장후에 대한 주요지표 시황 코멘트</div>
+            
           </div>
         </article>
+        
       </div>
     </section>
 
+    
     <section class="section-block m7-block" id="m7">
       <div class="section-head">
         <h2 class="section-title">M7 투자의견</h2>
       </div>
 
       <div class="m7-tab-track" role="tablist" aria-label="M7 종목 탭">
-        <button type="button" class="m7-tab is-active" role="tab" id="m7-tab-nvidia" data-m7-tab="nvidia" aria-selected="true" aria-controls="m7-panel-nvidia">엔비디아</button>
-        <button type="button" class="m7-tab" role="tab" id="m7-tab-alphabet" data-m7-tab="alphabet" aria-selected="false" aria-controls="m7-panel-alphabet" tabindex="-1">알파벳</button>
-        <button type="button" class="m7-tab" role="tab" id="m7-tab-amazon" data-m7-tab="amazon" aria-selected="false" aria-controls="m7-panel-amazon" tabindex="-1">아마존</button>
-        <button type="button" class="m7-tab" role="tab" id="m7-tab-apple" data-m7-tab="apple" aria-selected="false" aria-controls="m7-panel-apple" tabindex="-1">애플</button>
-        <button type="button" class="m7-tab" role="tab" id="m7-tab-msft" data-m7-tab="msft" aria-selected="false" aria-controls="m7-panel-msft" tabindex="-1">마이크로소프트</button>
-        <button type="button" class="m7-tab" role="tab" id="m7-tab-tesla" data-m7-tab="tesla" aria-selected="false" aria-controls="m7-panel-tesla" tabindex="-1">테슬라</button>
-        <button type="button" class="m7-tab" role="tab" id="m7-tab-meta" data-m7-tab="meta" aria-selected="false" aria-controls="m7-panel-meta" tabindex="-1">메타</button>
+        
+        <button type="button"
+          class="m7-tab is-active"
+          role="tab"
+          id="m7-tab-nvidia"
+          data-m7-tab="nvidia"
+          aria-selected="true"
+          aria-controls="m7-panel-nvidia"
+          >엔비디아</button>
+        
+        <button type="button"
+          class="m7-tab"
+          role="tab"
+          id="m7-tab-alphabet"
+          data-m7-tab="alphabet"
+          aria-selected="false"
+          aria-controls="m7-panel-alphabet"
+          tabindex="-1">알파벳</button>
+        
+        <button type="button"
+          class="m7-tab"
+          role="tab"
+          id="m7-tab-amazon"
+          data-m7-tab="amazon"
+          aria-selected="false"
+          aria-controls="m7-panel-amazon"
+          tabindex="-1">아마존</button>
+        
+        <button type="button"
+          class="m7-tab"
+          role="tab"
+          id="m7-tab-apple"
+          data-m7-tab="apple"
+          aria-selected="false"
+          aria-controls="m7-panel-apple"
+          tabindex="-1">애플</button>
+        
+        <button type="button"
+          class="m7-tab"
+          role="tab"
+          id="m7-tab-msft"
+          data-m7-tab="msft"
+          aria-selected="false"
+          aria-controls="m7-panel-msft"
+          tabindex="-1">마이크로소프트</button>
+        
+        <button type="button"
+          class="m7-tab"
+          role="tab"
+          id="m7-tab-tesla"
+          data-m7-tab="tesla"
+          aria-selected="false"
+          aria-controls="m7-panel-tesla"
+          tabindex="-1">테슬라</button>
+        
+        <button type="button"
+          class="m7-tab"
+          role="tab"
+          id="m7-tab-meta"
+          data-m7-tab="meta"
+          aria-selected="false"
+          aria-controls="m7-panel-meta"
+          tabindex="-1">메타</button>
+        
       </div>
 
       <div class="m7-panels">
-        <article class="card stock-card m7-panel" id="m7-panel-nvidia" data-m7-panel="nvidia" role="tabpanel" aria-labelledby="m7-tab-nvidia">
+        
+        <article class="card stock-card m7-panel"
+          id="m7-panel-nvidia"
+          data-m7-panel="nvidia"
+          role="tabpanel"
+          aria-labelledby="m7-tab-nvidia"
+          >
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--nvidia" aria-hidden="true"></div>
               <h3 class="stock-name">엔비디아</h3>
             </div>
+            
             <span class="verdict-badge buy">안사면 후회함</span>
+            
           </div>
-          <p class="opinion-text">제미나이가 추론한 이 기업에 대한 최종 투자의견에 대해 이유를 적는 공간입니다.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>168,000원</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>600,000원</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>65배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>210,000원</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>5조 3천억원</dd></div>
-          </dl>
-          <div class="company-box">제미나이가 정리한 이 기업의 사업과 얽혀있는 기업 등 간단한 기업 정보를 나타내는 공간입니다.</div>
-        </article>
 
-        <article class="card stock-card m7-panel is-panel-hidden" id="m7-panel-alphabet" data-m7-panel="alphabet" role="tabpanel" aria-labelledby="m7-tab-alphabet" hidden>
+          
+          <p class="opinion-text">제미나이가 추론한 이 기업에 대한 최종 투자의견에 대해 이유를 적는 공간입니다.</p>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>168,000원</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>600,000원</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>65배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>210,000원</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>5조 3천억원</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">제미나이가 정리한 이 기업의 사업과 얽혀있는 기업 등 간단한 기업 정보를 나타내는 공간입니다.</div>
+          
+        </article>
+        
+        <article class="card stock-card m7-panel is-panel-hidden"
+          id="m7-panel-alphabet"
+          data-m7-panel="alphabet"
+          role="tabpanel"
+          aria-labelledby="m7-tab-alphabet"
+          hidden>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
               <h3 class="stock-name">알파벳</h3>
             </div>
+            
             <span class="verdict-badge buy">안사면 후회함</span>
+            
           </div>
-          <p class="opinion-text">(더미) 알파벳 AI·검색 광고 모멘텀 의견 placeholder.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$178.20</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$210.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>24배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$191.75</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>2.2조 달러</dd></div>
-          </dl>
-          <div class="company-box">(더미) 알파벳 기업 정보 placeholder.</div>
-        </article>
 
-        <article class="card stock-card m7-panel is-panel-hidden" id="m7-panel-amazon" data-m7-panel="amazon" role="tabpanel" aria-labelledby="m7-tab-amazon" hidden>
+          
+          <p class="opinion-text">(더미) 알파벳 AI·검색 광고 모멘텀 의견 placeholder.</p>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$178.20</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$210.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>24배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$191.75</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>2.2조 달러</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">(더미) 알파벳 기업 정보 placeholder.</div>
+          
+        </article>
+        
+        <article class="card stock-card m7-panel is-panel-hidden"
+          id="m7-panel-amazon"
+          data-m7-panel="amazon"
+          role="tabpanel"
+          aria-labelledby="m7-tab-amazon"
+          hidden>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
               <h3 class="stock-name">아마존</h3>
             </div>
+            
             <span class="verdict-badge hold">지금 사기엔 좀...</span>
+            
           </div>
-          <p class="opinion-text">(더미) 아마존 클라우드·이커머스 밸류 의견 placeholder.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$198.50</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$230.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>42배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$205.30</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>2.1조 달러</dd></div>
-          </dl>
-          <div class="company-box">(더미) 아마존 기업 정보 placeholder.</div>
-        </article>
 
-        <article class="card stock-card m7-panel is-panel-hidden" id="m7-panel-apple" data-m7-panel="apple" role="tabpanel" aria-labelledby="m7-tab-apple" hidden>
+          
+          <p class="opinion-text">(더미) 아마존 클라우드·이커머스 밸류 의견 placeholder.</p>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$198.50</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$230.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>42배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$205.30</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>2.1조 달러</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">(더미) 아마존 기업 정보 placeholder.</div>
+          
+        </article>
+        
+        <article class="card stock-card m7-panel is-panel-hidden"
+          id="m7-panel-apple"
+          data-m7-panel="apple"
+          role="tabpanel"
+          aria-labelledby="m7-tab-apple"
+          hidden>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
               <h3 class="stock-name">애플</h3>
             </div>
+            
             <span class="verdict-badge hold">지금 사기엔 좀...</span>
+            
           </div>
-          <p class="opinion-text">(더미) 애플 하드웨어·서비스 믹스 의견 placeholder.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$198.11</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$220.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>29배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$220.20</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>3.0조 달러</dd></div>
-          </dl>
-          <div class="company-box">(더미) 애플 기업 정보 placeholder.</div>
-        </article>
 
-        <article class="card stock-card m7-panel is-panel-hidden" id="m7-panel-msft" data-m7-panel="msft" role="tabpanel" aria-labelledby="m7-tab-msft" hidden>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$198.11</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$220.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>29배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$220.20</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>3.0조 달러</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">(더미) 애플 기업 정보 placeholder.</div>
+          
+        </article>
+        
+        <article class="card stock-card m7-panel is-panel-hidden"
+          id="m7-panel-msft"
+          data-m7-panel="msft"
+          role="tabpanel"
+          aria-labelledby="m7-tab-msft"
+          hidden>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
               <h3 class="stock-name">마이크로소프트</h3>
             </div>
+            
             <span class="verdict-badge buy">안사면 후회함</span>
+            
           </div>
-          <p class="opinion-text">(더미) 마이크로소프트 Azure·Copilot 성장 의견 placeholder.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$425.30</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$480.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>35배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$430.82</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>3.2조 달러</dd></div>
-          </dl>
-          <div class="company-box">(더미) 마이크로소프트 기업 정보 placeholder.</div>
-        </article>
 
-        <article class="card stock-card m7-panel is-panel-hidden" id="m7-panel-tesla" data-m7-panel="tesla" role="tabpanel" aria-labelledby="m7-tab-tesla" hidden>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$425.30</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$480.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>35배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$430.82</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>3.2조 달러</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">(더미) 마이크로소프트 기업 정보 placeholder.</div>
+          
+        </article>
+        
+        <article class="card stock-card m7-panel is-panel-hidden"
+          id="m7-panel-tesla"
+          data-m7-panel="tesla"
+          role="tabpanel"
+          aria-labelledby="m7-tab-tesla"
+          hidden>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
               <h3 class="stock-name">테슬라</h3>
             </div>
+            
             <span class="verdict-badge hold">지금 사기엔 좀...</span>
+            
           </div>
-          <p class="opinion-text">(더미) 테슬라 EV·로보택시 밸류에이션 의견 placeholder.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$178.50</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$200.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>58배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$299.29</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>5,700억 달러</dd></div>
-          </dl>
-          <div class="company-box">(더미) 테슬라 기업 정보 placeholder.</div>
-        </article>
 
-        <article class="card stock-card m7-panel is-panel-hidden" id="m7-panel-meta" data-m7-panel="meta" role="tabpanel" aria-labelledby="m7-tab-meta" hidden>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$178.50</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$200.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>58배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$299.29</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>5,700억 달러</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">(더미) 테슬라 기업 정보 placeholder.</div>
+          
+        </article>
+        
+        <article class="card stock-card m7-panel is-panel-hidden"
+          id="m7-panel-meta"
+          data-m7-panel="meta"
+          role="tabpanel"
+          aria-labelledby="m7-tab-meta"
+          hidden>
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
               <h3 class="stock-name">메타</h3>
             </div>
+            
             <span class="verdict-badge buy">안사면 후회함</span>
+            
           </div>
-          <p class="opinion-text">(더미) 메타 광고·AI 인프라 투자 의견 placeholder.</p>
+
+          
+
           <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$512.40</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$580.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>26배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$542.81</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>1.3조 달러</dd></div>
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$512.40</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$580.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>26배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$542.81</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>1.3조 달러</dd>
+            </div>
+            
           </dl>
+
+          
           <div class="company-box">(더미) 메타 기업 정보 placeholder.</div>
+          
         </article>
+        
       </div>
     </section>
+    
 
     <section class="section-block" id="stocks">
       <div class="section-head">
         <h2 class="section-title">관심 종목 투자의견</h2>
+        
         <select id="stock-filter" class="filter-select" aria-label="종목 섹터 필터">
+          
           <option value="전체섹터" selected>전체섹터</option>
+          
           <option value="반도체">반도체</option>
+          
           <option value="AI">AI</option>
+          
           <option value="클라우드">클라우드</option>
+          
         </select>
+        
       </div>
 
       <p id="stock-filter-empty" class="filter-empty" hidden>선택한 섹터에 해당하는 종목이 없습니다.</p>
       <div class="stock-list-vertical">
+        
         <article class="card stock-card" data-sector="반도체">
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--nvidia" aria-hidden="true"></div>
               <h3 class="stock-name">엔비디아</h3>
             </div>
+            
             <span class="verdict-badge buy">안사면 후회함</span>
+            
           </div>
-          <p class="opinion-text">제미나이가 추론한 이 기업에 대한 최종 투자의견에 대해 이유를 적는 공간입니다.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>168,000원</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>600,000원</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>65배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>210,000원</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>5조 3천억원</dd></div>
-          </dl>
-          <div class="company-box">제미나이가 정리한 이 기업의 사업과 얽혀있는 기업 등 간단한 기업 정보를 나타내는 공간입니다.</div>
-        </article>
 
+          
+          <p class="opinion-text">제미나이가 추론한 이 기업에 대한 최종 투자의견에 대해 이유를 적는 공간입니다.</p>
+          
+
+          <dl class="kv-list">
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>168,000원</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>600,000원</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>65배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>210,000원</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>5조 3천억원</dd>
+            </div>
+            
+          </dl>
+
+          
+          <div class="company-box">제미나이가 정리한 이 기업의 사업과 얽혀있는 기업 등 간단한 기업 정보를 나타내는 공간입니다.</div>
+          
+        </article>
+        
         <article class="card stock-card" data-sector="반도체">
           <div class="stock-head">
             <div class="stock-identity">
-              <div class="stock-logo stock-logo--micron" aria-hidden="true"></div>
               <h3 class="stock-name">마이크론 테크놀로지</h3>
             </div>
+            
             <span class="verdict-badge hold">지금 사기엔 좀...</span>
+            
           </div>
-          <p class="opinion-text">(더미) 메모리 업사이클·HBM 수혜 의견 placeholder.</p>
-          <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$98.20</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$120.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>18배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$109.50</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>1,100억 달러</dd></div>
-          </dl>
-          <div class="company-box">(더미) 마이크론 기업 정보 placeholder.</div>
-        </article>
 
-        <article class="card stock-card" data-sector="AI">
-          <div class="stock-head">
-            <div class="stock-identity">
-              <div class="stock-logo stock-logo--placeholder" aria-hidden="true"></div>
-              <h3 class="stock-name">알파벳</h3>
-            </div>
-            <span class="verdict-badge buy">안사면 후회함</span>
-          </div>
-          <p class="opinion-text">(더미) 관심 종목 — 알파벳 의견 placeholder.</p>
+          
+
           <dl class="kv-list">
-            <div class="kv-row"><dt>현재가</dt><dd>$178.20</dd></div>
-            <div class="kv-row"><dt>목표가</dt><dd>$210.00</dd></div>
-            <div class="kv-row"><dt>PER</dt><dd>24배</dd></div>
-            <div class="kv-row"><dt>52주 최고가</dt><dd>$191.75</dd></div>
-            <div class="kv-row"><dt>시가총액</dt><dd>2.2조 달러</dd></div>
+            
+            <div class="kv-row">
+              <dt>현재가</dt>
+              <dd>$98.20</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>목표가</dt>
+              <dd>$120.00</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>PER</dt>
+              <dd>18배</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>52주 최고가</dt>
+              <dd>$109.50</dd>
+            </div>
+            
+            <div class="kv-row">
+              <dt>시가총액</dt>
+              <dd>1,100억 달러</dd>
+            </div>
+            
           </dl>
-          <div class="company-box">(더미) 알파벳 기업 정보 placeholder.</div>
+
+          
+          <div class="company-box">(더미) 마이크론 기업 정보 placeholder.</div>
+          
         </article>
+        
       </div>
     </section>
+
+    
   </div>
   <script src="filters.js"></script>
 </body>

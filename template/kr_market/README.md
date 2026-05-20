@@ -52,7 +52,6 @@ python template/kr_market/render.py
 
 | 항목 | 설명 |
 |------|------|
-| 종목 로고 URL | `logo_url` (없으면 `logo_text` 2글자 표시) |
 | 목표가 출처 | 애널리스트 목표가 / 내부 산식 중 무엇인지 |
 | 배지 문구 규칙 | 매수·홀드·매도별 고정 문구 목록 |
 | Figma 에셋 | 아이콘·로고 SVG/PNG export 경로 |
