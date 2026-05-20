@@ -1,8 +1,7 @@
 name: 미장 개장 브리핑 (19:00 KST)
 
 on:
-  schedule:
-    - cron: "50 9 * * 2-6"
+  # schedule disabled — re-enable when ready (was: 50 9 * * 2-6 → 19:00 KST)
   workflow_dispatch:
 
 jobs:

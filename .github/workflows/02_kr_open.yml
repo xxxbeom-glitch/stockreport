@@ -1,8 +1,7 @@
 name: 국장 개장 브리핑 (09:00 KST)
 
 on:
-  schedule:
-    - cron: "50 23 * * 1-5"
+  # schedule disabled — re-enable when ready (was: 50 23 * * 1-5 → 09:00 KST)
   workflow_dispatch:
 
 jobs:
