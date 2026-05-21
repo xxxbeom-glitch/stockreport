@@ -32,3 +32,21 @@ def judge_sector_mood(stocks: list[dict[str, Any]], slot: str) -> dict[str, str]
         else:
             mood[label] = "neutral"
     return mood
+
+
+def judge_single_sector_mood(
+    stocks: list[dict[str, Any]],
+    sector_name: str,
+) -> str:
+    """단일 섹터 분위기 (병렬 스캔용)."""
+    if not stocks:
+        return "neutral"
+    complete = [r for r in stocks if r.get("data_complete")]
+    group = complete or stocks
+    avg_vol = sum(float(r.get("volume_ratio") or 0) for r in group) / len(group)
+    avg_foreign = sum(float(r.get("foreign_net_eok") or 0) for r in group) / len(group)
+    if avg_vol >= 1.2 and avg_foreign > 0:
+        return "strong"
+    if avg_vol < 0.9 or avg_foreign < -30:
+        return "weak"
+    return "neutral"

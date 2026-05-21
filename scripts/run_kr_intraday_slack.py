@@ -160,6 +160,7 @@ def main() -> int:
                     "message_count": len(result.messages),
                     "sector_mood": result.sector_mood,
                     "messages": result.messages,
+                    "sector_scan_notes": result.sector_scan_notes,
                 },
                 ensure_ascii=False,
                 indent=2,

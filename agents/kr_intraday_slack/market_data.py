@@ -124,3 +124,41 @@ def collect_watchlist_market_data(
             fail,
         )
     return rows
+
+
+def collect_sector_market_data(
+    entries: list[dict[str, Any]],
+    slot: str,
+    *,
+    live: bool = False,
+) -> list[dict[str, Any]]:
+    """섹터 소속 종목만 시세 수집 (병렬 섹터 스캔용)."""
+    rows: list[dict[str, Any]] = []
+    ok = 0
+    fail = 0
+    sector_name = entries[0].get("sector_name", "") if entries else ""
+
+    for entry in entries:
+        ticker = str(entry.get("ticker", "")).zfill(6)
+        if not ticker:
+            logger.warning("[%s] watchlist 티커 없음 — 스킵", entry.get("name"))
+            continue
+        if live:
+            row = _normalize_live_row(fetch_live_watchlist_row(entry))
+            if row.get("data_complete"):
+                ok += 1
+            else:
+                fail += 1
+            rows.append(row)
+        else:
+            rows.append(_dummy_row(entry, slot))
+
+    if live and sector_name:
+        logger.info(
+            "[%s] live 수집 sector stocks=%d ok=%d fail=%d",
+            sector_name,
+            len(rows),
+            ok,
+            fail,
+        )
+    return rows

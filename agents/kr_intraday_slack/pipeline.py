@@ -1,4 +1,4 @@
-"""장중 관심종목 스캔 파이프라인 (03~07 통합 + 멀티 모델 LLM)."""
+"""장중 관심종목 스캔 파이프라인 (섹터 병렬 + 배치 LLM)."""
 
 from __future__ import annotations
 
@@ -8,16 +8,14 @@ from typing import Any
 
 from .ai_judge import run_ai_judgments
 from .constants import SCAN_SLOTS
+from .gemini_polish import polish_sector_summary_message
 from .grok_social import enrich_rows_with_grok
 from .llm_client import aux_models_status, is_ai_configured
-from .market_data import collect_watchlist_market_data
-from .sector_mood import judge_sector_mood
+from .message_tone import compose_sector_stock_block
+from .sector_scan import merge_sector_scan_results, run_sector_scan_parallel
 from .send_filter import filter_for_slack_send
 from .send_log import append_log_record
-from .gemini_polish import polish_sector_summary_message
-from .message_tone import compose_sector_stock_block
 from .slack_message import build_sector_slack_summary
-from .watchlist_pick import pick_watchlist_candidates
 
 logger = logging.getLogger("kr_intraday.pipeline")
 
@@ -37,6 +35,7 @@ class IntradayScanResult:
     ai_errors: list[str] = field(default_factory=list)
     aux_models: dict[str, Any] = field(default_factory=dict)
     grok_notes: list[str] = field(default_factory=list)
+    sector_scan_notes: list[str] = field(default_factory=list)
 
     @property
     def should_send_slack(self) -> bool:
@@ -75,8 +74,9 @@ def run_intraday_scan(
 ) -> IntradayScanResult:
     """
     시간대별 관심종목 스캔.
-    슬랙 메시지는 DeepSeek ai_send_slack=true + 허용 decision 일 때만 생성.
-    Grok/Gemini는 optional — 키 없거나 실패 시 skip, 더미 대체 없음.
+    1) 5개 섹터 병렬: 시세 수집 + 1차 후보
+    2) merge → DeepSeek 배치 1회 (최대 7종목)
+    3) SendFilter → 섹터 요약 Slack 1건
     """
     if slot not in SCAN_SLOTS:
         raise ValueError(f"Unknown slot: {slot}. Use one of {list(SCAN_SLOTS)}")
@@ -85,15 +85,22 @@ def run_intraday_scan(
     ai_enabled = is_ai_configured()
     aux = aux_models_status()
     logger.info(
-        "[KR INTRADAY] models primary=%s grok=%s gemini=%s",
+        "[KR INTRADAY] models primary=%s grok=%s gemini=%s parallel_sectors=5",
         aux["primary"]["configured"],
         aux["grok"]["configured"],
         aux["gemini"]["configured"],
     )
 
-    stocks = collect_watchlist_market_data(slot, live=live, tickers=tickers)
-    mood = judge_sector_mood(stocks, slot)
-    picks = pick_watchlist_candidates(stocks, mood, slot=slot)
+    sector_results = run_sector_scan_parallel(
+        slot=slot,
+        live=live,
+        tickers=tickers,
+    )
+    merged = merge_sector_scan_results(sector_results, slot=slot)
+    stocks = merged.stocks
+    mood = merged.sector_mood
+    picks = merged.candidates
+    sector_notes = merged.notes
 
     messages: list[str] = []
     send_rows: list[dict[str, Any]] = []
@@ -182,6 +189,7 @@ def run_intraday_scan(
         ai_errors=ai_errors,
         aux_models=aux,
         grok_notes=grok_notes,
+        sector_scan_notes=sector_notes,
     )
 
     if not messages:
@@ -199,6 +207,7 @@ def run_intraday_scan(
                 "sent": False,
                 "skip_reason": reason,
                 "aux_models": aux,
+                "sector_scan_notes": sector_notes,
             }
         )
         logger.info("[KR INTRADAY] 슬랙 메시지 없음: %s", reason)

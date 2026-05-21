@@ -711,6 +711,44 @@ python scripts/run_kr_intraday_slack.py --slot 0930
 (섹터 구분선 반복 ×5)
 ```
 
+## 2026-05-21 작업 기록 — 섹터별 병렬 스캔 파이프라인
+
+### 목표
+
+- 관심 **5섹터** 기준 시세 수집·1차 후보 선별을 **병렬** 처리해 실행 시간 단축.
+- DeepSeek은 섹터 결과 **merge 후 배치 1회**(최대 7종목) 유지.
+- 섹터 1개 실패 시 전체 중단 없이 로그만 남기고 나머지 섹터 계속.
+
+### 흐름
+
+```text
+run_sector_scan_parallel (5 workers)
+  └─ scan_one_sector ×5
+       ├─ collect_sector_market_data
+       ├─ judge_single_sector_mood
+       └─ pick_sector_candidates (섹터당 최대 2)
+merge_sector_scan_results → candidates[:7]
+run_ai_judgments (DeepSeek 1회)
+enrich_rows_with_grok (ai_send_slack=true, 병렬 최대 3)
+SendFilter → compose_sector_summary_message → Gemini polish 1회 → Slack 1회
+```
+
+### 추가·수정 파일
+
+| 파일 | 내용 |
+|------|------|
+| `agents/kr_intraday_slack/sector_scan.py` | **신규** — `run_sector_scan_parallel`, `merge_sector_scan_results` |
+| `agents/kr_intraday_slack/market_data.py` | `collect_sector_market_data` |
+| `agents/kr_intraday_slack/watchlist_pick.py` | `pick_sector_candidates`, `_score_row` |
+| `agents/kr_intraday_slack/sector_mood.py` | `judge_single_sector_mood` |
+| `agents/kr_intraday_slack/grok_social.py` | Grok 병렬 enrich |
+| `agents/kr_intraday_slack/pipeline.py` | 섹터 병렬 스캔 경로, `sector_scan_notes` |
+
+### 유지 사항
+
+- Slack: 5섹터 헤더 항상 표시, SendFilter·`max_messages`·실전 톤 동일.
+- 발송 0건이면 postMessage 없음 (기존과 동일).
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

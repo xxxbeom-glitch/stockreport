@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from .constants import SCAN_SLOTS
@@ -107,26 +108,45 @@ def enrich_rows_with_grok(
         logger.info("[KR INTRADAY] %s", notes[-1])
         return rows, notes
 
-    out: list[dict[str, Any]] = []
-    for row in rows:
+    indexed = list(enumerate(rows))
+    targets = [
+        (i, row)
+        for i, row in indexed
+        if not only_send_slack or row.get("ai_send_slack")
+    ]
+    out_map: dict[int, dict[str, Any]] = {i: dict(row) for i, row in indexed}
+
+    if not targets:
+        return [out_map[i] for i in range(len(rows))], notes
+
+    max_workers = min(3, len(targets))
+
+    def _enrich_one(item: tuple[int, dict[str, Any]]) -> tuple[int, dict[str, Any], str | None]:
+        idx, row = item
         merged = dict(row)
-        if only_send_slack and not row.get("ai_send_slack"):
-            out.append(merged)
-            continue
         ctx, err = fetch_grok_context(row, sector_mood, slot=slot)
         if err:
-            notes.append(f"[{row.get('name')}] Grok: {err}")
             merged["grok_status"] = "skipped"
             merged["grok_skip_reason"] = err
-        elif ctx:
+            return idx, merged, err
+        if ctx:
             merged["grok_status"] = "ok"
             merged["grok_mention_summary"] = ctx.get("mention_summary", "")
             merged["grok_why_now"] = ctx.get("why_now", "")
             merged["grok_sector_issue"] = ctx.get("sector_issue", "")
             merged["grok_x_sentiment"] = ctx.get("x_sentiment", "")
             merged["grok_context"] = ctx
-        out.append(merged)
+        return idx, merged, None
 
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(_enrich_one, t) for t in targets]
+        for future in as_completed(futures):
+            idx, merged, err = future.result()
+            if err:
+                notes.append(f"[{merged.get('name')}] Grok: {err}")
+            out_map[idx] = merged
+
+    out = [out_map[i] for i in range(len(rows))]
     ok = sum(1 for r in out if r.get("grok_status") == "ok")
-    logger.info("[KR INTRADAY] Grok enrich ok=%d/%d", ok, len([r for r in rows if not only_send_slack or r.get("ai_send_slack")]))
+    logger.info("[KR INTRADAY] Grok parallel enrich ok=%d targets=%d", ok, len(targets))
     return out, notes
