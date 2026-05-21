@@ -4,7 +4,9 @@
 
 | Workflow | 용도 |
 |----------|------|
-| **kr_intraday_slack.yml** | 장중 관심종목 알림 (KST 09:30 / 10:50 / 13:50 / 14:50, `--live --send`) |
+| **kr_intraday_slack.yml** | 장중 관심종목 알림 (KST 09:30 / 10:50 / 13:50 / 14:50, `--live --send`). cron은 **UTC 0-4** (KST 월~금 장중) |
+
+최초 배포 후 **workflow_dispatch 1회** 수동 실행을 권장합니다 (스케줄 run 0건 이슈 대비).
 
 ## 비활성화 (예전 리포트 브리핑)
 

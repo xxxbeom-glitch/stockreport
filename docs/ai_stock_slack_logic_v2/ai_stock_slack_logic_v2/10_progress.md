@@ -11,8 +11,46 @@
 
 ## 다음 작업 (선택)
 
-- Actions 첫 스케줄 실행 후 Slack 채널·발송 건수 확인
-- Gemini `AI_SUMMARY_MODEL` 정합, `google.genai` 마이그레이션
+- Actions **workflow_dispatch** 1회 수동 실행으로 스케줄 활성화 확인
+- 수정된 cron(0-4 UTC) 적용 후 다음 슬롯(10:50/13:50/14:50 KST) 자동 실행 확인
+
+---
+
+## 2026-05-21 작업 기록 — 09:30 Slack 미수신 원인 점검
+
+### 점검 결과 (7항목)
+
+| # | 항목 | 결과 |
+|---|------|------|
+| 1 | workflow `--live --send` | ✅ 코드에 포함 (`2691467` 이후) |
+| 2 | cron KST 09:30/10:50/13:50/14:50 | ⚠️ 기존 `1-5`는 **UTC 월~금** — KST 월요일 09:30(UTC 일요일 00:30)은 **미실행**. 목~금 KST는 해당. **→ `0-4` UTC로 수정** |
+| 3 | 최근 push | ✅ `af232c5` 07:23 KST, `2691467` 07:32 KST (09:30 이전 반영됨) |
+| 4 | Actions 실행 로그 | ❌ **`kr_intraday_slack.yml` workflow runs = 0** (스케줄·수동 모두 없음) |
+| 5 | message_count=0 | 해당 없음 — **실행 자체가 없음** |
+| 6 | Slack 발송 실패 | 해당 없음 |
+| 7 | `data/logs/kr_slack/2026-05-21.jsonl` | ✅ 있으나 **로컬 테스트** (07:11~07:26) — CI 기록 아님 |
+
+### 주요 원인
+
+**GitHub Actions가 한 번도 실행되지 않았음** (`total_count: 0`).
+
+- 로컬에서 `--live --send`로 보낸 메시지(07:xx)와 혼동 가능
+- CI 러너는 종료 시 `data/logs`가 사라져 jsonl이 repo에 남지 않음
+- 스케줄 워크플로가 repo에 올라간 뒤에도 **첫 scheduled run이 아직 없었을 가능성** (설정·활성화·UTC 요일 불일치)
+
+### 수정 (`.github/workflows/kr_intraday_slack.yml`)
+
+- cron `1-5` → **`0-4` (UTC)** 로 KST 월~금 장중 슬롯 정합
+- `workflow_dispatch` + slot `auto`, preflight secrets, `scan.log` artifact 업로드
+- schedule/dispatch 모두 **`--live --send` 고정**
+
+### 운영자 즉시 조치
+
+1. GitHub → Actions → **KR Intraday Slack Scan** → **Run workflow** (slot `0930`, live/send true) — 1회 수동 실행
+2. Repo **Settings → Actions → General** 에서 Actions 허용 여부 확인
+3. 다음 자동 슬롯(10:50 KST) 전후 실행 이력 확인
+
+---
 - HD현대미포(010620) 시세/티커 정합
 
 ---
