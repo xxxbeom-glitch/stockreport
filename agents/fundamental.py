@@ -36,6 +36,14 @@ def analyze_fundamental(
         pbr = stock.get("pbr")
         dart = stock.get("dart_summary") or (_us_dart_summary(stock) if market == "US" else None)
 
+        if market == "KR" and not dart:
+            try:
+                from data.dart_client import fetch_disclosure_summary
+
+                dart = fetch_disclosure_summary(ticker)
+            except Exception:
+                pass
+
         if market == "KR" and (per is None or pbr is None):
             try:
                 from data.kr_market import get_kr_fundamentals

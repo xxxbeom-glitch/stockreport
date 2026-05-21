@@ -1,4 +1,6 @@
-"""SendFilterAgent — 최종 슬랙 발송 대상.
+"""SendFilterAgent — 단타 실전 알림만 최종 발송.
+
+게이트: ai_send_slack · 허용 decision · 진입 후보 구간 · 경고 명확 · 추격 제외 · 애매 제외.
 
 노출 규칙 (섹터별 요약 메시지):
 - 섹터당 1개 고정이 아니다. 한 섹터에 최대 MAX_STOCKS_PER_SECTOR(2)개까지 상세 카드.
@@ -23,7 +25,7 @@ from .constants import (
     SLACK_SEND_FORBIDDEN,
     normalize_decision,
 )
-from .entry_price import has_valid_entry_range
+from .entry_price import has_valid_entry_range, has_valid_warning, is_chasing_price
 from .send_log import entry_range_changed_significantly, last_sent_entry_range, was_sent_today
 
 
@@ -155,6 +157,31 @@ def filter_for_slack_send(
                 {
                     **base_log,
                     "skip_reason": "진입 후보 구간 없음 — 발송 제외",
+                }
+            )
+            continue
+
+        warning_text = str(
+            row.get("ai_cancel_condition") or row.get("ai_warning") or ""
+        ).strip()
+        if require_ai and not has_valid_warning(warning_text):
+            skipped.append(
+                {
+                    **base_log,
+                    "skip_reason": "경고 조건 없음·불명확 — 발송 제외",
+                }
+            )
+            continue
+
+        if require_ai and (
+            is_chasing_price(row)
+            or row.get("entry_type") == "avoid"
+            or status == "추격매수 위험"
+        ):
+            skipped.append(
+                {
+                    **base_log,
+                    "skip_reason": "추격매수 위험 — 발송 제외",
                 }
             )
             continue

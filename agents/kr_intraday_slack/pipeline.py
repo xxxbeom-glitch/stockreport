@@ -1,4 +1,4 @@
-"""장중 관심종목 스캔 파이프라인 (섹터 병렬 + 배치 LLM)."""
+"""장중 관심종목 스캔 — 단타 판단 보조 Slack 파이프라인 (섹터 병렬 + 배치 LLM)."""
 
 from __future__ import annotations
 
@@ -7,15 +7,19 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .ai_judge import run_ai_judgments
+from .entry_price import enrich_intraday_entry
 from .constants import SCAN_SLOTS
-from .gemini_polish import polish_sector_summary_message
+from .gemini_polish import polish_slack_message
 from .grok_social import enrich_rows_with_grok
 from .llm_client import aux_models_status, is_ai_configured
-from .message_tone import compose_sector_stock_block
+from .message_tone import (
+    compose_new_candidate_stock_block,
+    select_pass_today_rows,
+)
 from .sector_scan import merge_sector_scan_results, run_sector_scan_parallel
 from .send_filter import filter_for_slack_send
 from .send_log import append_log_record
-from .slack_message import build_sector_slack_summary
+from .slack_message import build_intraday_slack_thread_bundle
 
 logger = logging.getLogger("kr_intraday.pipeline")
 
@@ -29,6 +33,8 @@ class IntradayScanResult:
     candidates: list[dict[str, Any]] = field(default_factory=list)
     evaluated: list[dict[str, Any]] = field(default_factory=list)
     messages: list[str] = field(default_factory=list)
+    main_message: str = ""
+    thread_messages: list[dict[str, Any]] = field(default_factory=list)
     send_rows: list[dict[str, Any]] = field(default_factory=list)
     skipped: list[dict[str, Any]] = field(default_factory=list)
     ai_enabled: bool = False
@@ -39,7 +45,7 @@ class IntradayScanResult:
 
     @property
     def should_send_slack(self) -> bool:
-        return bool(self.messages)
+        return bool(self.main_message)
 
 
 def _log_row(row: dict[str, Any], *, slot: str) -> None:
@@ -71,12 +77,13 @@ def run_intraday_scan(
     live: bool = False,
     tickers: list[str] | None = None,
     max_messages: int | None = None,
+    send_empty_summary: bool = False,
 ) -> IntradayScanResult:
     """
     시간대별 관심종목 스캔.
     1) 5개 섹터 병렬: 시세 수집 + 1차 후보
     2) merge → DeepSeek 배치 1회 (최대 7종목)
-    3) SendFilter → 섹터 요약 Slack 1건
+    3) SendFilter → 종목별 Gemini polish → 메인 요약 + 섹터별 쓰레드
     """
     if slot not in SCAN_SLOTS:
         raise ValueError(f"Unknown slot: {slot}. Use one of {list(SCAN_SLOTS)}")
@@ -109,6 +116,8 @@ def run_intraday_scan(
     sector_notes = merged.notes
 
     messages: list[str] = []
+    main_message = ""
+    thread_messages: list[dict[str, Any]] = []
     send_rows: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     evaluated: list[dict[str, Any]] = []
@@ -122,6 +131,7 @@ def run_intraday_scan(
         ai_errors.append("규칙 1차 후보 0건 — LLM 미호출")
         logger.info("[KR INTRADAY] %s", ai_errors[0])
     else:
+        picks = [enrich_intraday_entry(p, slot=slot) for p in picks]
         evaluated, ai_errors = run_ai_judgments(picks, mood, slot=slot)
         if ai_errors and not evaluated:
             logger.error("[KR INTRADAY] LLM 판단 실패: %s", "; ".join(ai_errors))
@@ -155,31 +165,69 @@ def run_intraday_scan(
             for fs in filter_skip:
                 _log_row(fs, slot=slot)
 
-            summary_draft = build_sector_slack_summary(
-                to_send, slot=slot, scanned=len(stocks)
-            )
-            if not summary_draft:
-                ai_errors.append("섹터 요약 메시지 생성 실패")
-                logger.error("[KR INTRADAY] %s", ai_errors[-1])
-            else:
-                final, gem_meta = polish_sector_summary_message(
-                    summary_draft,
-                    to_send,
-                    slot=slot,
-                    scanned=len(stocks),
-                )
-                for row in to_send:
-                    block = compose_sector_stock_block(row) or ""
-                    out_row = {
+            polished_rows: list[dict[str, Any]] = []
+            for row in to_send:
+                draft = compose_new_candidate_stock_block(row) or ""
+                if not draft:
+                    skipped.append(
+                        {
+                            "ticker": row.get("ticker"),
+                            "name": row.get("name"),
+                            "sent": False,
+                            "skip_reason": "종목 블록 생성 실패",
+                        }
+                    )
+                    continue
+                final_block, gem_meta = polish_slack_message(draft, row)
+                polished_rows.append(
+                    {
                         **row,
-                        "slack_stock_block": block,
-                        "slack_message_draft": summary_draft,
-                        "slack_message": final,
+                        "slack_stock_block": final_block,
+                        "slack_message_draft": draft,
                         "gemini_polish": gem_meta,
                     }
-                    send_rows.append(out_row)
-                    _log_row(out_row, slot=slot)
-                messages.append(final)
+                )
+
+            pass_rows: list[dict[str, Any]] = []
+            for row in select_pass_today_rows(evaluated, polished_rows):
+                block = compose_new_candidate_stock_block(row, pass_today=True)
+                if block:
+                    pass_rows.append({**row, "slack_stock_block": block})
+
+            bundle = None
+            if polished_rows or pass_rows:
+                bundle = build_intraday_slack_thread_bundle(
+                    polished_rows,
+                    slot=slot,
+                    allow_empty=False,
+                    pass_rows=pass_rows,
+                    evaluated=evaluated,
+                )
+            elif send_empty_summary:
+                bundle = build_intraday_slack_thread_bundle(
+                    [],
+                    slot=slot,
+                    allow_empty=True,
+                    evaluated=evaluated,
+                )
+
+            if bundle is not None:
+                if not bundle.get("main"):
+                    ai_errors.append("슬랙 메인·쓰레드 메시지 생성 실패")
+                    logger.error("[KR INTRADAY] %s", ai_errors[-1])
+                else:
+                    main_message = bundle["main"]
+                    thread_messages = list(bundle["threads"])
+                    messages.append(main_message)
+                    for th in thread_messages:
+                        messages.append(th["text"])
+                    for row in polished_rows:
+                        out_row = {
+                            **row,
+                            "slack_message": main_message,
+                        }
+                        send_rows.append(out_row)
+                        _log_row(out_row, slot=slot)
 
     result = IntradayScanResult(
         slot=slot,
@@ -189,6 +237,8 @@ def run_intraday_scan(
         candidates=picks,
         evaluated=evaluated,
         messages=messages,
+        main_message=main_message,
+        thread_messages=thread_messages,
         send_rows=send_rows,
         skipped=skipped,
         ai_enabled=ai_enabled,
@@ -198,7 +248,7 @@ def run_intraday_scan(
         sector_scan_notes=sector_notes,
     )
 
-    if not messages:
+    if not main_message:
         reason = (
             "; ".join(ai_errors)
             if ai_errors

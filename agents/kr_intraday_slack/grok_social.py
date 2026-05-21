@@ -1,4 +1,4 @@
-"""Grok 보조 — 뉴스/X/시장 분위기 (optional, 발송 결정 변경 없음)."""
+"""Grok Social Agent — '왜 지금 언급되는지' 1~2문장 보조 (발송 판단 변경 없음)."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from .constants import SCAN_SLOTS
+from .purpose import APP_PURPOSE, COMMON_PRINCIPLES, GROK_PURPOSE
 from .llm_client import is_grok_configured, social_config
 
 logger = logging.getLogger("kr_intraday.grok")
@@ -15,30 +16,26 @@ logger = logging.getLogger("kr_intraday.grok")
 
 def _grok_prompt(row: dict[str, Any], sector_mood: dict[str, str], *, slot: str) -> str:
     clock, label = SCAN_SLOTS.get(slot, (slot, slot))
-    return f"""한국 주식 장중 보조 분석 (X/뉴스 맥락만, 매수 추천 금지).
+    return f"""{APP_PURPOSE}
+
+{GROK_PURPOSE}
 
 시간: {clock} ({label})
 섹터 분위기: {json.dumps(sector_mood, ensure_ascii=False)}
 
-종목: {row.get("name")} ({row.get("ticker")})
-섹터: {row.get("sector_name")}
-주요사업: {row.get("business")}
+종목: {row.get("name")} ({row.get("ticker")}) / {row.get("sector_name")}
 현재가: {row.get("current_price_fmt")}
-DeepSeek 1차 판단(참고, 변경하지 말 것): {row.get("ai_decision")} / send_slack={row.get("ai_send_slack")}
+DeepSeek(변경 금지): {row.get("ai_decision")} send_slack={row.get("ai_send_slack")}
 
-이 종목이 지금 왜 언급되는지, X·뉴스·시장 분위기를 보조 요약하세요.
-슬랙 발송 여부는 결정하지 마세요.
+"왜 지금 이 종목이 언급되는지"만 1~2완성문장으로 보조하세요. send_slack·decision 변경 금지.
 
-문장 규칙:
-- 각 필드는 완성된 문장만 (마침표로 끝)
-- 줄임표(..., …)·글자 수로 자른 미완성 문장 금지
-- 필드당 최대 2문장, 짧고 명확하게
+금지: 긴 뉴스 요약, 기업 IR 설명, 출처 없는 과장, "시장 기대감이 큼" 같은 모호 문장, 줄임표(.../…)
 
-JSON만 응답:
+JSON만:
 {{
-  "mention_summary": "완성 문장 1~2개",
-  "why_now": "지금 주목되는 이유 완성 문장 1~2개",
-  "sector_issue": "섹터·이슈 완성 문장 1개",
+  "mention_summary": "완성 문장 최대 2개",
+  "why_now": "지금 주목 이유 완성 문장 1~2개",
+  "sector_issue": "섹터 수급·거래 맥락 1문장(해설 아님)",
   "x_sentiment": "positive|neutral|negative|unknown"
 }}"""
 

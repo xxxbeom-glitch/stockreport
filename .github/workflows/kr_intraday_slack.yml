@@ -1,20 +1,20 @@
 # KR 관심종목 장중 슬랙 (자동·수동 실운영)
-# - schedule: KST 09:30 / 10:50 / 13:50 / 14:50 (월~금) — 항상 --live --send
+# - schedule: KST 10:30 / 13:50 (월~금) — 항상 --live --send
 # - workflow_dispatch: 실운영 수동 실행 (기본 live=true, send=true)
 #
 # Secrets: Repository secrets (Settings → Secrets and variables → Actions)
 # Environment secrets 사용 시 job.environment 주석 해제
 #   → .github/workflows/README.md 참고
 #
-# cron UTC 0-4 = KST 월~금 장중
+# cron UTC (KST = UTC+9, 월~금 장중):
+#   01:30 UTC = 10:30 KST
+#   04:50 UTC = 13:50 KST
 name: KR Intraday Slack Scan
 
 on:
   schedule:
-    - cron: "30 0 * * 0-4"
-    - cron: "50 1 * * 0-4"
+    - cron: "30 1 * * 0-4"
     - cron: "50 4 * * 0-4"
-    - cron: "50 5 * * 0-4"
   workflow_dispatch:
     inputs:
       slot:
@@ -22,10 +22,8 @@ on:
         type: choice
         options:
           - auto
-          - "0930"
-          - "1050"
+          - "1030"
           - "1350"
-          - "1450"
         default: auto
       live:
         description: "KIS/pykrx 라이브 수집 (false=더미/로컬 시세)"
@@ -90,31 +88,23 @@ jobs:
             if [ "$SLOT" = "auto" ]; then
               HM=$(TZ=Asia/Seoul date +%H:%M)
               case "$HM" in
-                09:3*|09:4*) SLOT=0930 ;;
-                10:5*) SLOT=1050 ;;
+                10:3*) SLOT=1030 ;;
                 13:5*) SLOT=1350 ;;
-                14:5*) SLOT=1450 ;;
-                *) SLOT=0930 ;;
+                *) SLOT=1030 ;;
               esac
             fi
           else
             case "${{ github.event.schedule }}" in
-              "30 0 * * 0-4") SLOT=0930 ;;
-              "50 1 * * 0-4") SLOT=1050 ;;
+              "30 1 * * 0-4") SLOT=1030 ;;
               "50 4 * * 0-4") SLOT=1350 ;;
-              "50 5 * * 0-4") SLOT=1450 ;;
-              "30 0 * * 1-5") SLOT=0930 ;;
-              "50 1 * * 1-5") SLOT=1050 ;;
+              "30 1 * * 1-5") SLOT=1030 ;;
               "50 4 * * 1-5") SLOT=1350 ;;
-              "50 5 * * 1-5") SLOT=1450 ;;
               *)
                 HM=$(TZ=Asia/Seoul date +%H:%M)
                 case "$HM" in
-                  09:3*|09:4*) SLOT=0930 ;;
-                  10:5*) SLOT=1050 ;;
+                  10:3*) SLOT=1030 ;;
                   13:5*) SLOT=1350 ;;
-                  14:5*) SLOT=1450 ;;
-                  *) SLOT=0930 ;;
+                  *) SLOT=1030 ;;
                 esac
                 ;;
             esac

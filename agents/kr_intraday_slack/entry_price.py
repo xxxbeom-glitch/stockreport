@@ -1,4 +1,4 @@
-"""EntryPriceAgent — 진입 후보 구간(예약가 범위) 계산."""
+"""EntryPriceAgent — 단타용 진입 후보 구간·경고(회피 기준) 계산."""
 
 from __future__ import annotations
 
@@ -16,6 +16,10 @@ AI_NARROW_HIGH_RATIO = 0.99
 
 DEFAULT_LOW_RATIO = 0.95
 DEFAULT_HIGH_RATIO = 0.99
+CHASING_NEAR_HIGH_RATIO = 0.985
+
+_VAGUE_WARNING = ("기대감이 큼", "시장 기대", "확실", "급등 확실", "모호", "불확실")
+_WARNING_ACTION = ("이탈", "넘기", "급감", "보류", "이하", "줄면", "약해")
 
 
 def _fmt_won(value: int) -> str:
@@ -41,6 +45,31 @@ def _price_step(current: int) -> int:
 def _snap(price: float, current: int) -> int:
     step = _price_step(current)
     return max(step, int(round(price / step) * step))
+
+
+def is_chasing_price(row: dict[str, Any]) -> bool:
+    current = float(row.get("current_price") or 0)
+    day_high = float(row.get("day_high") or 0)
+    if current <= 0 or day_high <= 0:
+        return False
+    return current / day_high >= CHASING_NEAR_HIGH_RATIO
+
+
+def build_warning_condition(entry_low: int) -> str:
+    """진입 구간 하단보다 아래 무효화 기준."""
+    if entry_low <= 0:
+        return "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
+    warn = max(int(entry_low * 0.97), entry_low - 500)
+    return f"{warn:,}원 이탈 또는 거래 급감 시 오늘은 넘기기"
+
+
+def has_valid_warning(text: str | None) -> bool:
+    w = (text or "").strip()
+    if len(w) < 10:
+        return False
+    if any(m in w for m in _VAGUE_WARNING) and not any(a in w for a in _WARNING_ACTION):
+        return False
+    return any(a in w for a in _WARNING_ACTION)
 
 
 def has_valid_entry_range(
@@ -142,6 +171,53 @@ def normalize_ai_entry_range(
     return lo, hi, status
 
 
+def enrich_intraday_entry(row: dict[str, Any], *, slot: str) -> dict[str, Any]:
+    """
+    1차 후보·LLM 입력 전 — 진입 구간·경고·entry_type 보강 (단타 판단용).
+    """
+    del slot
+    current = int(row.get("current_price") or 0)
+    chasing = is_chasing_price(row)
+
+    entry_range = str(row.get("entry_range") or "").strip()
+    entry_low = row.get("entry_low")
+    entry_high = row.get("entry_high")
+
+    if not has_valid_entry_range(entry_range, entry_low=entry_low, entry_high=entry_high):
+        entry_range, entry_low, entry_high, source = build_entry_range_fallback(row)
+    else:
+        source = str(row.get("entry_range_source") or "rule_candidate")
+
+    try:
+        lo = int(entry_low or 0)
+        hi = int(entry_high or 0)
+    except (TypeError, ValueError):
+        lo, hi = 0, 0
+
+    if chasing:
+        entry_type = "avoid"
+    elif has_valid_entry_range(entry_range, entry_low=lo, entry_high=hi):
+        entry_type = "pullback"
+    else:
+        entry_type = "watch_only"
+
+    warning = str(row.get("rule_warning_condition") or "").strip()
+    if not has_valid_warning(warning) and lo > 0:
+        warning = build_warning_condition(lo)
+
+    return {
+        **row,
+        "entry_range": entry_range,
+        "entry_low": lo or None,
+        "entry_high": hi or None,
+        "entry_range_source": source,
+        "is_chasing": chasing,
+        "entry_type": entry_type,
+        "rule_warning_condition": warning,
+        "warning_price": max(int(lo * 0.97), lo - 500) if lo > 0 else None,
+    }
+
+
 def evaluate_entry(row: dict[str, Any], *, slot: str) -> dict[str, Any]:
     """종목별 판단 상태 및 예약가 범위 (레거시·단일 패스)."""
     current = int(row.get("current_price") or 0)
@@ -150,7 +226,7 @@ def evaluate_entry(row: dict[str, Any], *, slot: str) -> dict[str, Any]:
 
     entry_range, entry_low, entry_high, _source = build_entry_range_fallback(row)
 
-    is_chasing = float(row.get("current_price") or 0) / float(row.get("day_high") or 1) >= 0.99
+    is_chasing = is_chasing_price(row)
     vol = float(row.get("volume_ratio") or 0)
     foreign = float(row.get("foreign_net_eok") or 0)
     score = float(row.get("_pick_score") or 0)
@@ -166,10 +242,11 @@ def evaluate_entry(row: dict[str, Any], *, slot: str) -> dict[str, Any]:
     elif score >= 4.5:
         status = "예약가 후보"
     elif score >= 3.5:
-        status = "관찰 강화" if slot in ("1350", "1450") else "눌림 확인"
+        status = "관찰 강화" if slot == "1350" else "눌림 확인"
     else:
         status = "판단 애매"
 
+    warning = build_warning_condition(entry_low) if entry_low else ""
     return {
         **row,
         "status": status,
@@ -177,4 +254,6 @@ def evaluate_entry(row: dict[str, Any], *, slot: str) -> dict[str, Any]:
         "entry_range": entry_range,
         "entry_low": entry_low,
         "entry_high": entry_high,
+        "entry_type": "avoid" if is_chasing else "pullback",
+        "rule_warning_condition": warning,
     }

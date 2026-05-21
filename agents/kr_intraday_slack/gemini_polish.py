@@ -1,4 +1,4 @@
-"""Gemini 보조 — 슬랙 메시지 mrkdwn 말투 다듬기 (optional)."""
+"""Gemini Polish Agent — Slack 10초 가독 말투 다듬기 (optional)."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from .constants import FORBIDDEN_PHRASES, slack_display_label
+from .purpose import APP_PURPOSE, COMMON_PRINCIPLES, GEMINI_POLISH_PURPOSE
 from .llm_client import is_gemini_configured, summary_config
 from .constants import SCAN_SLOTS
 from .message_tone import (
@@ -14,10 +15,12 @@ from .message_tone import (
     compose_slack_message,
     contains_slack_body_forbidden,
     contains_slack_ellipsis,
+    has_new_candidate_stock_shape,
     has_required_slack_shape,
     has_sector_summary_shape,
     is_message_too_long,
     is_message_too_stiff,
+    is_new_candidate_stock_too_long,
     is_sector_summary_too_long,
     sanitize_slack_mrkdwn,
 )
@@ -41,32 +44,30 @@ def _polish_prompt(draft: str, row: dict[str, Any], *, retry_short: bool = False
         extra = """
 이전 결과가 너무 길거나 딱딱했습니다. 8~10줄 이내, 짧은 문장만. mrkdwn 구조는 유지."""
 
-    return f"""한국 주식 장중 슬랙 알림입니다. Slack mrkdwn으로 말투만 다듬어 주세요.
+    return f"""{APP_PURPOSE}
+
+{GEMINI_POLISH_PURPOSE}
+
+{COMMON_PRINCIPLES}
 {extra}
 
-출력 구조 (순서·굵은 라벨 유지):
-📌 *{row.get("name")}*
+10초 안에 읽히게 말투만 다듬으세요. Slack 구조·줄 수 유지 (최대 5줄):
 
-*현재가* (숫자 그대로)
-*진입 후보 구간* (숫자 범위 필수, 변경·생략 금지)
-
-설명 2~4문장 (완성 문장만, 줄임표 .../… 금지)
-눌림/관찰 1문장.
-
-• *1주 기준*
-(한 줄, 진입 후보 구간에서만 진입 검토)
-
-• *경고*
-(한 줄, 매수가 아님 — 가격 이탈·거래 급감 시 오늘은 넘기기)
+• {row.get("name")}
+현재가: (숫자 그대로, 원 단위 유지)
+볼 구간: (숫자 범위 필수, 변경·생략 금지)
+이유: (완성 문장 1~2개, 너무 짧지 않게)
+주의: (완성 문장 1개)
 
 규칙:
-- "예약가 후보" 대신 "*진입 후보 구간*" (매수 타이밍을 노릴 가격대)
-- "경고"는 매수가가 아니라 진입 구간 무효·회피 기준
-- "취소 조건" 단어·라벨 사용 금지 → 반드시 "• *경고*" 사용
+- "매수", "추천", "진입" 표현 금지
+- "관찰 구간" → "볼 구간", "신규 후보" → "새 후보"
+- RS·모멘텀·저항·수급 같은 어려운 말 피하기 (외국인 매수·거래대금·신고가·실적·공시·뉴스는 가능)
+- "취소 조건" 단어 금지
 - "테스트", "드라이런", "검증" 금지
-- 리포트체 금지 ("활발", "데이터 불충분", 숫자 나열)
+- 리포트체·숫자 나열 금지
 - 가격·종목명·구간 숫자는 변경 금지
-- 글자 수로 자르지 말 것. 너무 길면 짧은 완성 문장으로 재작성
+- 줄임표(.../…) 금지, 글자 수로 자르지 말 것
 - JSON 없이 메시지 본문만
 
 초안:
@@ -76,12 +77,11 @@ def _polish_prompt(draft: str, row: dict[str, Any], *, retry_short: bool = False
 
 
 def _retry_shorten_prompt(draft: str, row: dict[str, Any], reason: str) -> str:
-    return f"""아래 슬랙 mrkdwn 메시지를 더 짧게 다시 써 주세요. ({reason})
+    return f"""아래 슬랙 메시지를 더 짧게 다시 써 주세요. ({reason})
 
-- 구조 유지 (📌 제목 / *현재가* / *진입 후보 구간* / • *1주 기준* / • *경고*), 줄임표 금지
-- "취소 조건" 금지, "경고"만 사용
-- "테스트", "드라이런", "검증" 금지
-- 가격 숫자 유지
+- 구조 유지 (• 종목명 / 현재가 / 볼 구간 / 이유 / 주의), 최대 5줄
+- "매수", "추천", "진입" 금지
+- 줄임표 금지, 가격 숫자 유지
 
 ---
 {draft}
@@ -106,7 +106,10 @@ def _accept_or_none(text: str, draft: str, row: dict[str, Any]) -> str | None:
         return None
     if not has_required_slack_shape(cleaned):
         return None
-    if is_message_too_long(cleaned):
+    if has_new_candidate_stock_shape(cleaned):
+        if is_new_candidate_stock_too_long(cleaned):
+            return None
+    elif is_message_too_long(cleaned):
         return None
     return cleaned
 
@@ -197,7 +200,13 @@ def polish_slack_message(
 
 def _sector_summary_polish_prompt(draft: str, *, slot: str) -> str:
     clock = SCAN_SLOTS.get(slot, (slot, ""))[0]
-    return f"""한국 주식 장중 슬랙 *섹터별 요약* 메시지입니다. 말투만 다듬어 주세요.
+    return f"""{APP_PURPOSE}
+
+{GEMINI_POLISH_PURPOSE}
+
+{COMMON_PRINCIPLES}
+
+장중 슬랙 *섹터별 요약* — 10초 가독, 말투만 다듬기.
 
 반드시 유지할 구조:
 - 📊 *장중 관심종목 스캔* 헤더

@@ -1,15 +1,13 @@
-"""KR 장중 슬랙 스캔 상수 (docs/ai_stock_slack_logic_v2)."""
+"""KR 장중 슬랙 스캔 상수 — 단타·짧은 매매 판단 보조 (docs/ai_stock_slack_logic_v2)."""
 
 from __future__ import annotations
 
 from typing import Final
 
-# 05_schedule.md — KST
+# 05_schedule.md — KST (자동 발송: 10:30, 13:50)
 SCAN_SLOTS: Final[dict[str, tuple[str, str]]] = {
-    "0930": ("09:30", "장초반 1차 스캔"),
-    "1050": ("10:50", "오전 흐름 유지 확인"),
-    "1350": ("13:50", "오후 재유입 확인"),
-    "1450": ("14:50", "마감 전 최종 확인"),
+    "1030": ("10:30", "장 초반 흐름 확인 후 1차 진입 후보"),
+    "1350": ("13:50", "오후 수급 변화·신규 후보 재점검"),
 }
 
 # 슬랙 발송 허용 decision (실전용 라벨)
@@ -60,10 +58,13 @@ MAX_STOCKS_PER_SECTOR: Final[int] = 2
 
 # 02_message_goal.md — 금지 표현 (매수 권유·운영/검증 메타)
 FORBIDDEN_PHRASES: Final[tuple[str, ...]] = (
+    "무조건",
     "무조건 매수",
     "지금 사세요",
+    "매수하세요",
     "이 가격에 사세요",
     "급등 따라",
+    "급등 확실",
     "확실한 매수",
     "테스트 발송",
     "드라이런",
@@ -86,3 +87,18 @@ SLACK_BODY_FORBIDDEN: Final[tuple[str, ...]] = (
 SLACK_STOCK_SEPARATOR: Final[str] = "――――――――――"
 
 SECTOR_MOOD_VALUES: Final[tuple[str, ...]] = ("strong", "neutral", "weak")
+
+# Slack 「오늘 새로 볼 종목」 섹션 — decision → 티어
+TIER_WATCH_NOW: Final[frozenset[str]] = frozenset(
+    {
+        "진입 검토",
+        "수급 반전 감지",
+    }
+)
+TIER_WAIT: Final[frozenset[str]] = frozenset(
+    {
+        "눌림 확인",
+        "관찰 강화",
+        "예약가 후보",
+    }
+)

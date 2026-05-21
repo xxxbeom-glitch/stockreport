@@ -1,4 +1,4 @@
-"""WatchlistPick → LLM 판단 → SlackMessage (AI 필수)."""
+"""DeepSeek Judge — 단타 실전 send_slack 최종 판단 (AI 필수)."""
 
 from __future__ import annotations
 
@@ -16,8 +16,11 @@ from .entry_price import (
     build_entry_range_fallback,
     format_entry_range,
     has_valid_entry_range,
+    has_valid_warning,
+    is_chasing_price,
     normalize_ai_entry_range,
 )
+from .purpose import APP_PURPOSE, COMMON_PRINCIPLES, DEEPSEEK_JUDGE_PURPOSE
 from .llm_client import call_llm_json, is_ai_configured
 from .slack_message import build_slack_message_from_ai
 
@@ -172,7 +175,16 @@ def _stock_payload(row: dict[str, Any]) -> dict[str, Any]:
         "high_52w_fmt": row.get("high_52w_fmt"),
         "pullback_from_high_pct": row.get("pullback_from_high_pct"),
         "rule_score": row.get("_pick_score"),
+        "entry_range": row.get("entry_range"),
+        "entry_low": row.get("entry_low"),
+        "entry_high": row.get("entry_high"),
+        "entry_type": row.get("entry_type"),
+        "rule_warning": row.get("rule_warning_condition"),
     }
+
+
+def _extract_warning(item: dict[str, Any]) -> str:
+    return str(item.get("warning") or item.get("cancel_condition") or "").strip()
 
 
 def build_intraday_prompt(
@@ -186,44 +198,51 @@ def build_intraday_prompt(
     forbidden = ", ".join(sorted(SLACK_SEND_FORBIDDEN))
     stocks_json = json.dumps([_stock_payload(r) for r in candidates], ensure_ascii=False, indent=2)
 
-    return f"""장중 스캔 시간: {clock} ({label})
+    return f"""{APP_PURPOSE}
 
-섹터 분위기 (strong/neutral/weak):
+{COMMON_PRINCIPLES}
+
+{DEEPSEEK_JUDGE_PURPOSE}
+
+장중 스캔 시간: {clock} ({label})
+
+섹터 분위기 (오늘 돈이 들어오는지 — strong/neutral/weak):
 {json.dumps(sector_mood, ensure_ascii=False)}
 
-아래는 규칙 기반 1차 후보 {len(candidates)}개입니다. 각 종목에 대해 슬랙 발송 여부를 판단하세요.
-볼 만한 종목만 send_slack=true 로 설정하세요. 애매하거나 부정적이면 send_slack=false.
+규칙 1차 후보 {len(candidates)}개. 단타 실전성으로 send_slack을 결정하세요.
+- 지금 볼 만한가 / 어디서 눌림 볼지 / 언제 넘길지만 짧게
+- 추격·구간 없음·경고 모호·애매 → send_slack=false
 
 발송 허용 decision: {allowed}
 발송 금지 decision: {forbidden}
 
-후보 종목 데이터:
+후보 데이터 (entry_range·rule_warning은 규칙 참고값):
 {stocks_json}
 
-반드시 아래 JSON 스키마로만 응답:
+반드시 JSON만 응답:
 {{
   "decisions": [
     {{
-      "symbol": "종목명(한글)",
+      "symbol": "종목명",
       "ticker": "6자리",
+      "sector": "섹터명",
       "decision": "진입 검토",
       "send_slack": true,
-      "entry_price_range": {{ "low": 31600, "high": 31900 }},
-      "reason": "왜 지금 볼 만한지 1문장(쉬운 말투, 거래대금·억 단위 숫자 나열 금지)",
-      "entry_view": "진입 후보 구간(매수 타이밍 노릴 가격대) 눌림·1주 기준 1문장",
-      "cancel_condition": "경고 1문장(매수가 아님·진입 구간 무효·가격 이탈 또는 거래 급감 시 오늘은 넘기기, '취소 조건' 단어 금지)"
+      "entry_price_range": {{ "low": 119000, "high": 122000 }},
+      "reason": "왜 지금 볼 만한지 1문장",
+      "entry_view": "어느 구간에서 1주 기준으로 볼지 1문장",
+      "warning": "가격 이탈 또는 거래 급감 시 오늘은 넘기기 1문장(매수가 아님)"
     }}
   ]
 }}
 
-decisions 배열 길이는 후보 수와 같아야 합니다. 각 symbol/ticker는 후보와 일치해야 합니다.
-entry_price_range의 low/high는 후보 current_price와 동일한 원(₩) 단위 정수입니다.
-high는 current_price를 넘지 않게 하고, 보통 현재가의 70%~100% 구간(눌림 목표)으로 잡습니다.
-
-슬랙 문구 톤: 리포트체·로그체 금지. "활발", "증대", "데이터 불충분", 숫자 나열 문장 금지.
-쉬운 말로 "왜 볼 만한지 / 진입 후보 구간(1주 기준 노릴 가격대) / 경고(매수가 아님·이탈·거래 급감 시 오늘은 넘기기)"만 씁니다.
-reason·entry_view·cancel_condition은 완성 문장만, 줄임표(...) 금지.
-슬랙 본문에는 '취소 조건' 대신 '경고' 표현을 쓰도록 cancel_condition 문장을 작성합니다."""
+규칙:
+- decisions 길이 = 후보 수, symbol/ticker 일치
+- entry_price_range: 원(₩) 정수, high ≤ current_price, 보통 현재가 70%~100% 눌림 구간
+- send_slack=true 이면 reason·entry_view·warning·entry_price_range 모두 필수
+- warning은 진입 후보 구간보다 아래 무효 기준(예: 57,000원 이탈 또는 거래 급감 시 오늘은 넘기기)
+- 기업 소개·장황한 뉴스 요약 금지, 숫자 나열·줄임표(...) 금지
+- "취소 조건" 단어 금지 — warning 필드만 사용"""
 
 
 def _validate_decision(item: dict[str, Any], candidate: dict[str, Any]) -> str | None:
@@ -246,9 +265,16 @@ def _validate_decision(item: dict[str, Any], candidate: dict[str, Any]) -> str |
     if send_slack is True and decision not in SLACK_SEND_ALLOWED:
         return f"send_slack=true 이지만 허용 decision 아님: {decision}"
     if send_slack is True:
-        for field in ("reason", "entry_view", "cancel_condition"):
+        for field in ("reason", "entry_view"):
             if not str(item.get(field, "")).strip():
                 return f"필수 문구 누락: {field}"
+        warning = _extract_warning(item)
+        if not warning:
+            return "필수 문구 누락: warning"
+        if not has_valid_warning(warning):
+            return "경고 문구가 불명확함"
+        if is_chasing_price(candidate) or candidate.get("entry_type") == "avoid":
+            return "추격매수 위험 — 발송 불가"
     return None
 
 
@@ -256,12 +282,21 @@ def _merge_decision(candidate: dict[str, Any], item: dict[str, Any]) -> dict[str
     decision = normalize_decision(str(item.get("decision", "")).strip())
     send_slack = bool(item.get("send_slack")) and decision in SLACK_SEND_ALLOWED
     entry_range, entry_low, entry_high, source = _resolve_entry_range(candidate, item)
+    warning = _extract_warning(item) or str(candidate.get("rule_warning_condition") or "").strip()
 
     if send_slack and not has_valid_entry_range(
         entry_range, entry_low=entry_low, entry_high=entry_high
     ):
         send_slack = False
         skip = "진입 후보 구간 계산 불가"
+    elif send_slack and not has_valid_warning(warning):
+        send_slack = False
+        skip = "경고 조건 불명확 — 발송 제외"
+    elif send_slack and (
+        is_chasing_price(candidate) or candidate.get("entry_type") == "avoid"
+    ):
+        send_slack = False
+        skip = "추격매수 위험 — 발송 제외"
     else:
         skip = ""
 
@@ -272,7 +307,8 @@ def _merge_decision(candidate: dict[str, Any], item: dict[str, Any]) -> dict[str
         "ai_send_slack": send_slack,
         "ai_reason": str(item.get("reason", "")).strip(),
         "ai_entry_view": str(item.get("entry_view", "")).strip(),
-        "ai_cancel_condition": str(item.get("cancel_condition", "")).strip(),
+        "ai_cancel_condition": warning,
+        "ai_warning": warning,
         "entry_range": entry_range,
         "entry_low": entry_low,
         "entry_high": entry_high,

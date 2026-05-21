@@ -1,4 +1,4 @@
-"""MarketDataAgent — 관심종목 25개 장중 스냅샷 (더미 / KIS·pykrx 라이브)."""
+"""MarketDataAgent — 단타 판단용 장중 스냅샷 (현재가·고저·수급·거래대금 우선)."""
 
 from __future__ import annotations
 

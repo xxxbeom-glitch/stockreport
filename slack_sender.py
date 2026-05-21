@@ -709,33 +709,35 @@ def build_kr_watchlist_report_slack_text(
     return "\n".join(lines)
 
 
-def send_kr_intraday_slack(
-    result: Any,
+def log_thread_send_result(
     *,
-    report_type: str = "kr_during",
-) -> dict[str, Any]:
-    """
-    장중 관심종목 스캔 결과 슬랙 발송 (조건 충족 시에만).
-    result: agents.kr_intraday_slack.IntradayScanResult
-    """
+    slot: str,
+    channel: str,
+    main_message_ts: str | None,
+    thread_count: int,
+    sector_thread_status: list[dict[str, Any]],
+    send_rows: list[dict[str, Any]],
+    main_text: str,
+    ok: bool,
+    errors: list[str] | None = None,
+) -> None:
+    """슬랙 쓰레드 발송 메타 + 종목별 로그."""
     from agents.kr_intraday_slack.send_log import append_log_record
 
-    messages = list(getattr(result, "messages", None) or [])
-    send_rows = list(getattr(result, "send_rows", None) or [])
-    slot = str(getattr(result, "slot", ""))
-    if not messages:
-        return {"ok": True, "skipped": True, "reason": "no_messages", "count": 0}
-
-    channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
-        "SLACK_CHANNEL_KR", ""
+    append_log_record(
+        {
+            "slot": slot,
+            "ticker": "",
+            "name": "",
+            "status": "thread_bundle",
+            "sent": ok,
+            "main_message_ts": main_message_ts,
+            "thread_count": thread_count,
+            "sector_thread_status": sector_thread_status,
+            "main_message_preview": (main_text or "")[:200],
+            "skip_reason": None if ok else "; ".join(errors or []),
+        }
     )
-    summary = messages[0]
-    posted = post_message(summary, channel, retries=1)
-    ok = bool(posted.get("ok"))
-    errors: list[str] = []
-    if not ok:
-        errors.append(str(posted.get("error", "unknown")))
-
     for row in send_rows:
         append_log_record(
             {
@@ -746,19 +748,150 @@ def send_kr_intraday_slack(
                 "current_price": row.get("current_price_fmt"),
                 "entry_range": row.get("entry_range"),
                 "sent": ok,
-                "sector_summary": summary,
+                "main_message_ts": main_message_ts,
+                "thread_count": thread_count,
+                "sector_thread_status": sector_thread_status,
                 "slack_stock_block": row.get("slack_stock_block"),
-                "skip_reason": None if ok else posted.get("error"),
+                "skip_reason": None if ok else "; ".join(errors or []),
                 "grok_context": row.get("grok_context"),
                 "gemini_polish": row.get("gemini_polish"),
                 "slack_message_draft": row.get("slack_message_draft"),
             }
         )
+
+
+def send_slack_threaded_messages(
+    main_text: str,
+    thread_messages: list[str],
+    *,
+    channel: str,
+    retries: int = 1,
+) -> dict[str, Any]:
+    """메인 1건 + 쓰레드 N건 순차 발송."""
+    if not channel:
+        return {"ok": False, "error": "Slack channel missing", "skipped": True}
+
+    posted_main = post_message(main_text, channel, retries=retries)
+    if not posted_main.get("ok"):
+        return {
+            "ok": False,
+            "main_message_ts": None,
+            "thread_count": len(thread_messages),
+            "thread_posted": 0,
+            "sector_thread_status": [],
+            "errors": [str(posted_main.get("error", "main_post_failed"))],
+        }
+
+    main_ts = posted_main.get("ts")
+    sector_thread_status: list[dict[str, Any]] = []
+    thread_errors: list[str] = []
+    posted_threads = 0
+
+    for idx, text in enumerate(thread_messages):
+        if not text or not str(text).strip():
+            sector_thread_status.append(
+                {"index": idx, "ok": False, "error": "empty_thread"}
+            )
+            continue
+        posted = post_message(text, channel, thread_ts=main_ts, retries=retries)
+        entry: dict[str, Any] = {
+            "index": idx,
+            "ok": bool(posted.get("ok")),
+            "ts": posted.get("ts"),
+        }
+        if not posted.get("ok"):
+            entry["error"] = str(posted.get("error", "unknown"))
+            thread_errors.append(entry["error"])
+        else:
+            posted_threads += 1
+        sector_thread_status.append(entry)
+
+    ok = bool(posted_main.get("ok")) and (
+        not thread_messages or posted_threads == len(thread_messages)
+    )
+    return {
+        "ok": ok,
+        "main_message_ts": main_ts,
+        "thread_count": len(thread_messages),
+        "thread_posted": posted_threads,
+        "sector_thread_status": sector_thread_status,
+        "errors": thread_errors,
+        "channel": channel,
+        "posts": 1 + posted_threads,
+    }
+
+
+def send_kr_intraday_slack(
+    result: Any,
+    *,
+    report_type: str = "kr_during",
+) -> dict[str, Any]:
+    """
+    장중 관심종목 스캔 — 메인 요약 + 섹터별 쓰레드 발송.
+    result: agents.kr_intraday_slack.IntradayScanResult
+    """
+    main_text = str(getattr(result, "main_message", "") or "").strip()
+    thread_payload = list(getattr(result, "thread_messages", None) or [])
+    send_rows = list(getattr(result, "send_rows", None) or [])
+    slot = str(getattr(result, "slot", ""))
+
+    if not main_text:
+        legacy = list(getattr(result, "messages", None) or [])
+        if legacy:
+            main_text = legacy[0]
+            thread_payload = [{"text": t} for t in legacy[1:]]
+
+    if not main_text:
+        return {"ok": True, "skipped": True, "reason": "no_main_message", "count": 0}
+
+    thread_texts = [
+        str(th.get("text", th) if isinstance(th, dict) else th).strip()
+        for th in thread_payload
+    ]
+    thread_texts = [t for t in thread_texts if t]
+
+    channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
+        "SLACK_CHANNEL_KR", ""
+    )
+    posted = send_slack_threaded_messages(
+        main_text, thread_texts, channel=channel or "", retries=1
+    )
+    ok = bool(posted.get("ok"))
+    errors = list(posted.get("errors") or [])
+    if not ok and not errors:
+        errors.append("thread_send_failed")
+
+    raw_status = list(posted.get("sector_thread_status") or [])
+    sector_status: list[dict[str, Any]] = []
+    for i, th in enumerate(thread_payload):
+        base = raw_status[i] if i < len(raw_status) else {"index": i, "ok": False}
+        meta = dict(base)
+        if isinstance(th, dict):
+            meta["sector"] = th.get("sector", "")
+            meta["stock_count"] = th.get("stock_count", 0)
+        sector_status.append(meta)
+
+    log_thread_send_result(
+        slot=slot,
+        channel=channel or "",
+        main_message_ts=posted.get("main_message_ts"),
+        thread_count=int(posted.get("thread_count") or len(thread_texts)),
+        sector_thread_status=sector_status,
+        send_rows=send_rows,
+        main_text=main_text,
+        ok=ok,
+        errors=errors,
+    )
+
     return {
         "ok": ok,
         "channel": channel,
         "count": len(send_rows) if ok else 0,
-        "posts": 1 if ok else 0,
+        "posts": posted.get("posts", 0),
+        "main_message_ts": posted.get("main_message_ts"),
+        "thread_count": posted.get("thread_count"),
+        "thread_posted": posted.get("thread_posted"),
+        "sector_thread_status": sector_status,
         "errors": errors,
     }
 

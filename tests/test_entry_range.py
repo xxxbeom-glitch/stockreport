@@ -20,8 +20,8 @@ def _dongjin_candidate() -> dict:
         "current_price": 61_500,
         "current_price_fmt": "61,500원",
         "day_low": 59_800,
+        "day_high": 65_000,
         "prev_close": 60_200,
-        "ai_cancel_condition": "57,000원 이탈 또는 거래 급감 시 오늘은 넘기기",
     }
 
 
@@ -60,7 +60,7 @@ class EntryRangeTest(unittest.TestCase):
             "entry_price_range": {"low": 6_150, "high": 61_000},
             "reason": "반도체 소재 쪽에서 다시 관심이 붙는 흐름입니다.",
             "entry_view": "눌림 구간 확인.",
-            "cancel_condition": "57,000원 이탈 또는 거래 급감 시 오늘은 넘기기",
+            "warning": "57,000원 이탈 또는 거래 급감 시 오늘은 넘기기",
         }
         merged = _merge_decision(cand, item)
         self.assertTrue(merged.get("ai_send_slack"))
@@ -79,7 +79,7 @@ class EntryRangeTest(unittest.TestCase):
             "entry_price_range": {"low": 0, "high": 0},
             "reason": "x",
             "entry_view": "y",
-            "cancel_condition": "z",
+            "warning": "가격 이탈 또는 거래 급감 시 오늘은 넘기기",
         }
         merged = _merge_decision(cand, item)
         self.assertFalse(merged.get("ai_send_slack"))

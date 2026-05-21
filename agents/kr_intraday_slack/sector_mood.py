@@ -1,4 +1,4 @@
-"""SectorMoodAgent — 관심 5섹터 분위기."""
+"""SectorMoodAgent — 오늘 돈이 들어오는 섹터인지 (strong/neutral/weak, 설명용 아님)."""
 
 from __future__ import annotations
 

@@ -4,7 +4,7 @@
 
 | 파일 | Workflow | 용도 |
 |------|----------|------|
-| **kr_intraday_slack.yml** | KR Intraday Slack Scan | 장중 관심종목 알림 (KST 09:30/10:50/13:50/14:50, `--live --send`) |
+| **kr_intraday_slack.yml** | KR Intraday Slack Scan | 장중 관심종목 알림 (KST **10:30** / **13:50** 자동, `--live --send`) |
 
 ## CI / 검증 (Slack 발송 없음)
 
@@ -64,7 +64,7 @@ Actions → **KR Intraday Slack Scan** → **Run workflow**
 
 | Input | 기본값 | 설명 |
 |-------|--------|------|
-| `slot` | `auto` | `auto` \| `0930` \| `1050` \| `1350` \| `1450` |
+| `slot` | `auto` | `auto` \| `1030` \| `1350` (12시 이전 auto → 1030, 이후 → 1350) |
 | `live` | `true` | `false` 시 더미/로컬 시세 |
 | `send` | `true` | `false` 시 `--dry-run` (Slack 미발송) |
 | `max_messages` | `3` | SendFilter 상한 |

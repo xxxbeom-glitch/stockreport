@@ -156,6 +156,14 @@ def build_watchlist_data(market_data: dict[str, Any] | None = None) -> dict[str,
             row["conclusion_strength"] = strength.get("strength") if strength else None
             fund = _kr_fundamentals(ticker)
             row.update(fund)
+            try:
+                from data.dart_client import fetch_disclosure_summary
+
+                dart_summary = fetch_disclosure_summary(ticker)
+                if dart_summary:
+                    row["dart_summary"] = dart_summary
+            except Exception:
+                pass
             if row.get("price") and config.KR_MAX_PRICE is not None:
                 if safe_float(row["price"]) > config.KR_MAX_PRICE:
                     continue

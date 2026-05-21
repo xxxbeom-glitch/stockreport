@@ -1,8 +1,15 @@
-"""WatchlistPickAgent — 25개 중 1차 후보 선별."""
+"""WatchlistPickAgent — 단타용 장중 1차 후보 선별 (진입 가능성 있는 종목만)."""
 
 from __future__ import annotations
 
 from typing import Any
+
+from .entry_price import is_chasing_price
+
+# 장중 고점 대비 — 이보다 가까우면 추격 위험으로 제외
+_CHASE_EXCLUDE_RATIO = 0.985
+_MIN_SCORE_DEFAULT = 3.0
+_MIN_SCORE_WEAK_SECTOR = 4.5
 
 
 def _score_row(
@@ -18,7 +25,13 @@ def _score_row(
     day_high = float(row.get("day_high") or current)
     if current <= 0 or day_high <= 0:
         return None
-    if current / day_high >= 0.985:
+    if is_chasing_price(row) or current / day_high >= _CHASE_EXCLUDE_RATIO:
+        return None
+
+    vol_floor = 0.85 if mood == "weak" else 0.75
+    if vol < vol_floor:
+        return None
+    if mood == "weak" and foreign < -20:
         return None
 
     score = 0.0
@@ -34,9 +47,12 @@ def _score_row(
         score += 2.0
     elif mood == "neutral":
         score += 0.5
+    elif mood == "weak":
+        score -= 0.5
     if float(row.get("pullback_from_high_pct") or 0) >= 0.03:
         score += 0.5
-    if score < 3.0:
+    min_score = _MIN_SCORE_WEAK_SECTOR if mood == "weak" else _MIN_SCORE_DEFAULT
+    if score < min_score:
         return None
     return score
 

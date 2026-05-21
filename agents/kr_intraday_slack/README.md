@@ -1,12 +1,15 @@
-# KR 장중 슬랙 스캔
+# KR 장중 슬랙 스캔 (단타·짧은 매매 판단 보조)
+
+장기 리포트가 아니라, 장중 1주 단위 진입 타이밍을 빠르게 점검하는 Slack 보조 신호 파이프라인입니다.
 
 설계 문서: `docs/ai_stock_slack_logic_v2/ai_stock_slack_logic_v2/`
+공통 목적: `agents/kr_intraday_slack/purpose.py`
 
 ## 실행
 
 ```bash
 # 더미
-python scripts/run_kr_intraday_slack.py --slot 0930
+python scripts/run_kr_intraday_slack.py --slot 1030
 
 # 라이브 1종목 테스트
 python scripts/test_live_watchlist_data.py --ticker 089030
@@ -15,12 +18,12 @@ python scripts/test_live_watchlist_data.py --ticker 089030
 python scripts/test_live_watchlist_data.py --all
 
 # 라이브 드라이런
-python scripts/run_kr_intraday_slack.py --slot 0930 --live
+python scripts/run_kr_intraday_slack.py --slot 1030 --live
 
 # 운영 발송 (로컬)
-python scripts/run_kr_intraday_slack.py --slot 1050 --live --send
+python scripts/run_kr_intraday_slack.py --slot 1350 --live --send
 
-# GitHub Actions: `.github/workflows/kr_intraday_slack.yml` — KST 09:30/10:50/13:50/14:50 자동 --live --send
+# GitHub Actions: `.github/workflows/kr_intraday_slack.yml` — KST 10:30 / 13:50 자동 --live --send
 ```
 
 ## AI (멀티 모델)
@@ -67,13 +70,15 @@ GEMINI_API_KEY=
 - `--send` 없으면 슬랙 미발송; Grok/Gemini도 키 없으면 skip
 
 ```bash
-python scripts/run_kr_intraday_slack.py --slot 0930 --live
-python scripts/run_kr_intraday_slack.py --slot 0930 --live --send
+python scripts/run_kr_intraday_slack.py --slot 1030 --live
+python scripts/run_kr_intraday_slack.py --slot 1030 --live --send
 ```
 
 ## 파이프라인
 
-`MarketDataAgent` → `SectorMoodAgent` → `WatchlistPickAgent` → `EntryPriceAgent` → `SendFilterAgent` → `SlackMessageAgent`
+`MarketDataAgent` → `SectorMoodAgent` → `WatchlistPickAgent` → `enrich_intraday_entry` → `DeepSeek Judge` → `Grok`(발송 승인 종목만) → `Gemini Polish` → `SendFilterAgent` → 섹터 요약 Slack 1건
+
+발송 게이트: `send_slack=true` · 허용 decision · **진입 후보 구간** · **경고 명확** · 추격·애매 제외 · `max_messages`(기본 3) · 섹터당 최대 2
 
 ## 로그
 

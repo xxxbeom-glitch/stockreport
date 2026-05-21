@@ -35,18 +35,14 @@ SLOT_CHOICES = list(SCAN_SLOTS.keys()) + ["auto"]
 
 
 def resolve_intraday_slot(slot_arg: str) -> str:
-    """KST 시각 또는 auto → 0930|1050|1350|1450."""
+    """KST 시각 또는 auto → 1030|1350."""
     if slot_arg != "auto":
         return slot_arg
     kst = datetime.now(timezone(timedelta(hours=9)))
     hm = kst.strftime("%H:%M")
-    if hm < "10:20":
-        return "0930"
-    if hm < "12:20":
-        return "1050"
-    if hm < "14:20":
-        return "1350"
-    return "1450"
+    if hm < "12:00":
+        return "1030"
+    return "1350"
 
 
 def main() -> int:
@@ -58,7 +54,7 @@ def main() -> int:
         "--slot",
         required=True,
         choices=SLOT_CHOICES,
-        help="0930|1050|1350|1450|auto (auto=KST 시각 기준)",
+        help="1030|1350|auto (auto=KST 시각 기준: ~12시 이전 1030, 이후 1350)",
     )
     parser.add_argument(
         "--dry-run",
@@ -89,6 +85,11 @@ def main() -> int:
         dest="tickers",
         metavar="CODE",
         help="특정 티커만 스캔 (예: --ticker 222800). 여러 번 지정 가능",
+    )
+    parser.add_argument(
+        "--send-empty-summary",
+        action="store_true",
+        help="진입 후보 0건이어도 메인+섹터 쓰레드 발송 (수동 확인용)",
     )
     args = parser.parse_args()
 
@@ -155,6 +156,7 @@ def _run(args: argparse.Namespace) -> int:
         live=args.live,
         tickers=tickers,
         max_messages=args.max_messages,
+        send_empty_summary=args.send_empty_summary,
     )
     ensure_stdio()
 
@@ -177,8 +179,11 @@ def _run(args: argparse.Namespace) -> int:
                     "rule_candidates": len(result.candidates),
                     "ai_evaluated": len(result.evaluated),
                     "message_count": len(result.messages),
+                    "main_message": result.main_message,
+                    "thread_count": len(result.thread_messages),
                     "sector_mood": result.sector_mood,
                     "messages": result.messages,
+                    "thread_messages": result.thread_messages,
                     "sector_scan_notes": result.sector_scan_notes,
                 },
                 ensure_ascii=False,
@@ -190,7 +195,7 @@ def _run(args: argparse.Namespace) -> int:
         safe_print(f"  scanned: {result.scanned}")
         safe_print(f"  rule_candidates: {len(result.candidates)}")
         safe_print(f"  ai_evaluated: {len(result.evaluated)}")
-        safe_print(f"  messages: {len(result.messages)}")
+        safe_print(f"  messages: {len(result.messages)} (main + {len(result.thread_messages)} threads)")
         if result.ai_errors:
             safe_print(f"  ai_errors: {result.ai_errors}")
         if result.grok_notes:
@@ -202,13 +207,16 @@ def _run(args: argparse.Namespace) -> int:
         )
         if result.send_rows:
             safe_print(f"  gemini_polished: {gem_ok}/{len(result.send_rows)}")
-        for msg in result.messages:
-            safe_print("---")
-            safe_print(msg)
+        if result.main_message:
+            safe_print("--- MAIN ---")
+            safe_print(result.main_message)
+        for th in result.thread_messages:
+            safe_print(f"--- THREAD: {th.get('sector', '')} ---")
+            safe_print(th.get("text", ""))
 
     if args.dry_run:
         safe_print(
-            f"[KR INTRADAY] dry_run: 메시지 {len(result.messages)}건 생성, Slack 미발송"
+            f"[KR INTRADAY] dry_run: main + {len(result.thread_messages)} threads, Slack 미발송"
         )
         return 0
 
@@ -216,8 +224,11 @@ def _run(args: argparse.Namespace) -> int:
         if not result.ai_enabled:
             safe_print("[KR INTRADAY] AI 미설정 — 슬랙 미발송", file=sys.__stderr__)
             return 1
-        if not result.messages:
+        if not result.main_message:
             safe_print("[KR INTRADAY] 발송 대상 0건 — 슬랙 미발송 (정상)")
+            safe_print(
+                "[KR INTRADAY] 0건이어도 메인을내려면 --send-empty-summary 와 함께 실행"
+            )
             return 0
         from slack_sender import send_kr_intraday_slack
 
@@ -230,7 +241,7 @@ def _run(args: argparse.Namespace) -> int:
             return 1
     else:
         safe_print(
-            f"[KR INTRADAY] preview: 메시지 {len(result.messages)}건 "
+            f"[KR INTRADAY] preview: main + {len(result.thread_messages)} threads "
             "(--send 없음, Slack 미발송)"
         )
 

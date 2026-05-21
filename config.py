@@ -43,6 +43,9 @@ EBEST_APP_KEY: Final[str] = os.getenv("EBEST_APP_KEY", "")
 EBEST_APP_SECRET: Final[str] = os.getenv("EBEST_APP_SECRET", "")
 KRX_ID: Final[str] = os.getenv("KRX_ID", "")
 KRX_PW: Final[str] = os.getenv("KRX_PW", "")
+DART_API_KEY: Final[str] = os.getenv("DART_API_KEY", "")
+NAVER_CLIENT_ID: Final[str] = os.getenv("NAVER_CLIENT_ID", "")
+NAVER_CLIENT_SECRET: Final[str] = os.getenv("NAVER_CLIENT_SECRET", "")
 
 GROK_BASE_URL: Final[str] = os.getenv("GROK_BASE_URL", "https://api.x.ai/v1")
 
@@ -89,6 +92,16 @@ DATA_SOURCES: Final[dict[str, dict[str, str | bool]]] = {
     },
     "kis": {"enabled": bool(KIS_APP_KEY and KIS_APP_SECRET), "required_env": "KIS_APP_KEY/KIS_APP_SECRET", "description": "Realtime KR"},
     "ebest": {"enabled": bool(EBEST_APP_KEY and EBEST_APP_SECRET), "required_env": "EBEST_APP_KEY/EBEST_APP_SECRET", "description": "Future fundamentals"},
+    "dart": {
+        "enabled": bool(DART_API_KEY),
+        "required_env": "DART_API_KEY",
+        "description": "KR disclosure (Open DART)",
+    },
+    "naver_news": {
+        "enabled": bool(NAVER_CLIENT_ID and NAVER_CLIENT_SECRET),
+        "required_env": "NAVER_CLIENT_ID+NAVER_CLIENT_SECRET",
+        "description": "Naver search news",
+    },
 }
 
 # ---- US sector ETF universe (SPDR 11 + AI specialized) ----
