@@ -6,6 +6,7 @@ from typing import Any
 
 from .constants import (
     MAX_MESSAGES_PER_SCAN,
+    MAX_STOCKS_PER_SECTOR,
     SLACK_SEND_ALLOWED,
     SLACK_SEND_FORBIDDEN,
     normalize_decision,
@@ -27,6 +28,7 @@ def filter_for_slack_send(
     to_send: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     limit = max_messages if max_messages is not None else MAX_MESSAGES_PER_SCAN
+    sector_counts: dict[str, int] = {}
 
     for row in evaluated:
         status = normalize_decision(
@@ -66,7 +68,18 @@ def filter_for_slack_send(
                 skipped.append({**base_log, "skip_reason": "당일 이미 발송됨"})
                 continue
 
+        sector = str(row.get("sector_name") or "").strip() or "기타"
+        if sector_counts.get(sector, 0) >= MAX_STOCKS_PER_SECTOR:
+            skipped.append(
+                {
+                    **base_log,
+                    "skip_reason": f"섹터당 최대 {MAX_STOCKS_PER_SECTOR}종목 초과 ({sector})",
+                }
+            )
+            continue
+
         to_send.append({**row, "status": status, "ai_decision": status})
+        sector_counts[sector] = sector_counts.get(sector, 0) + 1
         if len(to_send) >= limit:
             break
 

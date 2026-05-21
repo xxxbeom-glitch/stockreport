@@ -56,6 +56,7 @@ SLACK_SEND_FORBIDDEN: Final[frozenset[str]] = frozenset(
 )
 
 MAX_MESSAGES_PER_SCAN: Final[int] = 3
+MAX_STOCKS_PER_SECTOR: Final[int] = 2
 
 # 02_message_goal.md — 금지 표현 (매수 권유·운영/검증 메타)
 FORBIDDEN_PHRASES: Final[tuple[str, ...]] = (
@@ -76,8 +77,12 @@ SLACK_BODY_FORBIDDEN: Final[tuple[str, ...]] = (
     "테스트",
     "드라이런",
     "검증",
+    "취소 조건",
     "dry-run",
     "dry run",
 )
+
+# 여러 종목을 한 번에 postMessage 할 때 종목 블록 사이 구분선
+SLACK_STOCK_SEPARATOR: Final[str] = "――――――――――"
 
 SECTOR_MOOD_VALUES: Final[tuple[str, ...]] = ("strong", "neutral", "weak")

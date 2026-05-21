@@ -8,14 +8,15 @@ from typing import Any
 
 from .ai_judge import run_ai_judgments
 from .constants import SCAN_SLOTS
-from .gemini_polish import polish_slack_message
 from .grok_social import enrich_rows_with_grok
 from .llm_client import aux_models_status, is_ai_configured
 from .market_data import collect_watchlist_market_data
 from .sector_mood import judge_sector_mood
 from .send_filter import filter_for_slack_send
 from .send_log import append_log_record
-from .slack_message import build_slack_message_from_ai
+from .gemini_polish import polish_sector_summary_message
+from .message_tone import compose_sector_stock_block
+from .slack_message import build_sector_slack_summary
 from .watchlist_pick import pick_watchlist_candidates
 
 logger = logging.getLogger("kr_intraday.pipeline")
@@ -141,29 +142,31 @@ def run_intraday_scan(
             for fs in filter_skip:
                 _log_row(fs, slot=slot)
 
-            for row in to_send:
-                draft = build_slack_message_from_ai(row)
-                if not draft:
-                    skip_entry = {
-                        "ticker": row.get("ticker"),
-                        "name": row.get("name"),
-                        "sent": False,
-                        "skip_reason": "AI 메시지 본문 생성 실패",
+            summary_draft = build_sector_slack_summary(
+                to_send, slot=slot, scanned=len(stocks)
+            )
+            if not summary_draft:
+                ai_errors.append("섹터 요약 메시지 생성 실패")
+                logger.error("[KR INTRADAY] %s", ai_errors[-1])
+            else:
+                final, gem_meta = polish_sector_summary_message(
+                    summary_draft,
+                    to_send,
+                    slot=slot,
+                    scanned=len(stocks),
+                )
+                for row in to_send:
+                    block = compose_sector_stock_block(row) or ""
+                    out_row = {
+                        **row,
+                        "slack_stock_block": block,
+                        "slack_message_draft": summary_draft,
+                        "slack_message": final,
+                        "gemini_polish": gem_meta,
                     }
-                    skipped.append(skip_entry)
-                    _log_row({**row, **skip_entry}, slot=slot)
-                    continue
-
-                final, gem_meta = polish_slack_message(draft, row)
-                out_row = {
-                    **row,
-                    "slack_message_draft": draft,
-                    "slack_message": final,
-                    "gemini_polish": gem_meta,
-                }
+                    send_rows.append(out_row)
+                    _log_row(out_row, slot=slot)
                 messages.append(final)
-                send_rows.append(out_row)
-                _log_row(out_row, slot=slot)
 
     result = IntradayScanResult(
         slot=slot,

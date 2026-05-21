@@ -640,6 +640,77 @@ python scripts/run_kr_intraday_slack.py --slot 0930
 5. 메시지 본문 생성 성공 + 금지 표현 없음
 6. **0건이면 Slack API 호출 없음**
 
+## 2026-05-21 작업 기록 — Slack 메시지 mrkdwn 가독성 개선 및 경고 표현 변경
+
+### 변경 요약
+
+- Slack 본문을 **mrkdwn** 구조로 재작성 (📌 제목, `*현재가*` / `*예약가 후보*` 굵은 라벨, `• *1주 기준*` / `• *경고*` bullet).
+- **「취소 조건」→「경고」** (본문·Gemini polish·금지어 목록). JSON 필드명 `cancel_condition` 은 유지(내용만 경고 문장).
+- 여러 종목 발송 시 **한 번의 postMessage** + 종목 사이 `――――――――――` 구분선 (`join_intraday_slack_messages`).
+
+### 수정 파일
+
+| 파일 | 내용 |
+|------|------|
+| `agents/kr_intraday_slack/message_tone.py` | mrkdwn `compose_slack_message`, `sanitize_slack_mrkdwn`, `join_intraday_slack_messages` |
+| `agents/kr_intraday_slack/slack_message.py` | 발송 전 sanitize |
+| `agents/kr_intraday_slack/gemini_polish.py` | mrkdwn 프롬프트, 취소 조건 치환, 실패 시 재조립 |
+| `agents/kr_intraday_slack/ai_judge.py` | `cancel_condition` 프롬프트(경고 문장) |
+| `agents/kr_intraday_slack/constants.py` | `취소 조건` 본문 금지, `SLACK_STOCK_SEPARATOR` |
+| `slack_sender.py` | 다종목 합쳐 1회 발송 |
+
+### 메시지 형식 (예)
+
+```
+📌 *[진입 검토] 심텍*
+
+*현재가* 124,700원
+*예약가 후보* 106,000원 ~ 110,000원
+
+…판단 1~2문장…
+
+• *1주 기준*
+106,000원 ~ 110,000원 구간에서만 진입 검토
+
+• *경고*
+109,000원 이탈 또는 거래 급감 시 오늘은 넘기기
+```
+
+예약가 후보 없으면 `*예약가 후보* -` + 관찰/눌림 중심 문장.
+
+## 2026-05-21 작업 기록 — Slack 메시지 섹터별 요약 구조 적용
+
+### 변경 요약
+
+- 종목별 메시지 이어 붙이기 → **섹터별 요약 1건** (`compose_sector_summary_message`).
+- 관심 **5개 섹터 항상 표시** (종목 없으면 `진입 검토 종목 없음`).
+- SendFilter 통과 종목만 섹터 카드에 표시 (`max_messages` 전체 상한 + **섹터당 최대 2종목**).
+- Slack **postMessage 1회** (섹터 요약 본문).
+
+### 수정 파일
+
+| 파일 | 내용 |
+|------|------|
+| `agents/kr_intraday_slack/message_tone.py` | `group_rows_by_sector`, `compose_sector_stock_block`, `compose_sector_summary_message` |
+| `agents/kr_intraday_slack/slack_message.py` | `build_sector_slack_summary` |
+| `agents/kr_intraday_slack/pipeline.py` | 섹터 요약 1건 생성 → Gemini sector polish |
+| `agents/kr_intraday_slack/gemini_polish.py` | `polish_sector_summary_message` (구조 유지) |
+| `agents/kr_intraday_slack/send_filter.py` | `MAX_STOCKS_PER_SECTOR=2` |
+| `agents/kr_intraday_slack/constants.py` | `MAX_STOCKS_PER_SECTOR` |
+| `slack_sender.py` | 요약 메시지 1회 발송, 로그 `sector_summary` |
+
+### 메시지 골격
+
+```
+📊 *장중 관심종목 스캔*
+기준 슬롯 / 스캔 대상 25개
+――――――――――
+*{섹터명}*
+진입 검토 종목 N개 | 없음
+📌 *종목* + 현재가·예약가·판단·경고
+(섹터 구분선 반복 ×5)
+```
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

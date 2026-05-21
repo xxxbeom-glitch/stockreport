@@ -729,15 +729,14 @@ def send_kr_intraday_slack(
     channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
         "SLACK_CHANNEL_KR", ""
     )
+    summary = messages[0]
+    posted = post_message(summary, channel, retries=1)
+    ok = bool(posted.get("ok"))
     errors: list[str] = []
-    sent = 0
-    for row, text in zip(send_rows, messages):
-        posted = post_message(text, channel, retries=1)
-        ok = bool(posted.get("ok"))
-        if ok:
-            sent += 1
-        else:
-            errors.append(str(posted.get("error", "unknown")))
+    if not ok:
+        errors.append(str(posted.get("error", "unknown")))
+
+    for row in send_rows:
         append_log_record(
             {
                 "slot": slot,
@@ -747,7 +746,8 @@ def send_kr_intraday_slack(
                 "current_price": row.get("current_price_fmt"),
                 "entry_range": row.get("entry_range"),
                 "sent": ok,
-                "message": text,
+                "sector_summary": summary,
+                "slack_stock_block": row.get("slack_stock_block"),
                 "skip_reason": None if ok else posted.get("error"),
                 "grok_context": row.get("grok_context"),
                 "gemini_polish": row.get("gemini_polish"),
@@ -755,9 +755,10 @@ def send_kr_intraday_slack(
             }
         )
     return {
-        "ok": sent > 0 and not errors,
+        "ok": ok,
         "channel": channel,
-        "count": sent,
+        "count": len(send_rows) if ok else 0,
+        "posts": 1 if ok else 0,
         "errors": errors,
     }
 

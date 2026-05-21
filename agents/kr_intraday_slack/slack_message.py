@@ -1,13 +1,14 @@
-"""SlackMessageAgent — 장중 슬랙 알림 (자연스러운 말투)."""
+"""SlackMessageAgent — 섹터별 요약 슬랙 알림."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from .constants import FORBIDDEN_PHRASES, SLACK_SEND_ALLOWED, normalize_decision
+from .constants import FORBIDDEN_PHRASES, SCAN_SLOTS, SLACK_SEND_ALLOWED, normalize_decision
 from .message_tone import (
-    compose_slack_message,
+    compose_sector_summary_message,
     contains_slack_body_forbidden,
+    sanitize_slack_mrkdwn,
     soften_text,
 )
 
@@ -19,16 +20,41 @@ def _contains_forbidden(text: str) -> bool:
     return any(p in text or p in lower for p in FORBIDDEN_PHRASES)
 
 
-def build_slack_message_from_ai(row: dict[str, Any]) -> str | None:
-    """LLM 판단 → 슬랙 메시지 (발송 허용 + ai_send_slack=True)."""
-    text = compose_slack_message(row)
-    if not text or _contains_forbidden(text):
+def build_sector_slack_summary(
+    send_rows: list[dict[str, Any]],
+    *,
+    slot: str,
+    scanned: int,
+) -> str | None:
+    """SendFilter 통과 종목 → 섹터별 요약 메시지 1건."""
+    if not send_rows:
+        return None
+    clock = SCAN_SLOTS.get(slot, (slot, ""))[0]
+    text = compose_sector_summary_message(
+        slot_clock=clock,
+        scanned=scanned,
+        send_rows=send_rows,
+    )
+    if not text:
+        return None
+    text = sanitize_slack_mrkdwn(text)
+    if _contains_forbidden(text):
         return None
     return text
 
 
+def build_slack_message_from_ai(row: dict[str, Any]) -> str | None:
+    """하위 호환 — 종목 카드만 (섹터 요약은 build_sector_slack_summary)."""
+    from .message_tone import compose_sector_stock_block
+
+    block = compose_sector_stock_block(row)
+    if not block or _contains_forbidden(block):
+        return None
+    return block
+
+
 def build_slack_message(row: dict[str, Any]) -> str | None:
-    """규칙 기반 더미 경로 — 동일 말투 템플릿."""
+    """규칙 기반 더미 경로."""
     decision = normalize_decision(str(row.get("status", "")))
     if decision not in SLACK_SEND_ALLOWED:
         return None
