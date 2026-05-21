@@ -27,7 +27,7 @@ def build_sector_slack_summary(
     slot: str,
     scanned: int,
 ) -> str | None:
-    """SendFilter 통과 종목 → 섹터별 요약 메시지 1건."""
+    """SendFilter 통과 종목 → 섹터별 요약 1건 (전체 max_messages, 섹터당 최대 2)."""
     if not send_rows:
         return None
     clock = SCAN_SLOTS.get(slot, (slot, ""))[0]

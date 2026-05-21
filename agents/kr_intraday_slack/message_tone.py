@@ -370,7 +370,10 @@ def compose_sector_summary_message(
     send_rows: list[dict[str, Any]],
 ) -> str | None:
     """
-    5개 관심 섹터 요약 1건 (SendFilter 통과 종목만 상세, 나머지 섹터는 '없음').
+    5개 관심 섹터 요약 1건.
+
+    send_rows: SendFilter 통과 종목만 (전체 max_messages, 섹터당 최대 2, 1개 고정 아님).
+    해당 섹터에 종목이 없으면 「진입 검토 종목 없음」.
     """
     if not send_rows:
         return None

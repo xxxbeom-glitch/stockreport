@@ -842,6 +842,28 @@ SendFilter → compose_sector_summary_message → Gemini polish 1회 → Slack 1
 109,000원 이탈 또는 거래 급감 시 오늘은 넘기기
 ```
 
+## 2026-05-21 작업 기록 — Slack 섹터 요약 종목 노출 상한 명확화
+
+### 규칙 (코드·문서 동기화)
+
+| 상한 | 값 | 비고 |
+|------|-----|------|
+| 전체 상세 종목 | `max_messages` (기본 3) | SendFilter |
+| 섹터당 상세 | 최대 2 | `MAX_STOCKS_PER_SECTOR` |
+| 섹터당 1개 고정 | **없음** | 한 섹터에 2개 가능 (전체 상한 내) |
+| 빈 섹터 | 「진입 검토 종목 없음」 | 5섹터 헤더 항상 표시 |
+
+### 예 (`max_messages=3`)
+
+- 반도체 부품 2 + 방산·우주 1
+- 반도체 소재·부품·장비 각 1
+
+### 구현
+
+- `send_filter.py`: 모듈 docstring, `sort_rows_by_pick_score`, `select_within_send_limits`, `sort_send_rows_for_summary` — **점수 순 선정** 후 섹터 표시 순 정렬 (LLM 응답 순서에 덜 의존)
+- `tests/test_send_filter.py`: 상한·정렬 단위 테스트
+- `message_tone.py` / `slack_message.py` / `README.md` docstring 보강
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

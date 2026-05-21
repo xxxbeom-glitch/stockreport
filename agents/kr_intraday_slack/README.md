@@ -37,6 +37,7 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 - 규칙 1차 후보(최대 7) → DeepSeek JSON 배치 → `ai_send_slack=true` 만 메시지 후보
 - LLM 실패/파싱 실패 시 **더미 판단 없음**, 슬랙 미발송
 - 슬랙 발송 최종 조건: DeepSeek `ai_send_slack` + 허용 decision + SendFilter
+- SendFilter 노출: **전체 `max_messages`(기본 3)** · **섹터당 최대 2** (섹터당 1개 고정 아님)
 
 ### Grok — 뉴스/X 보조 (optional)
 
