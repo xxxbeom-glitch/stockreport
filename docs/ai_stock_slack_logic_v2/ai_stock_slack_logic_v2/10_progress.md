@@ -12,7 +12,31 @@
 ## 다음 작업 (선택)
 
 - Actions **workflow_dispatch** 1회 수동 실행으로 스케줄 활성화 확인
-- 수정된 cron(0-4 UTC) 적용 후 다음 슬롯(10:50/13:50/14:50 KST) 자동 실행 확인
+- 수정된 cron(0-4 UTC) 적용 후 다음 슬롯 자동 실행 확인
+
+---
+
+## 2026-05-21 작업 기록 — GitHub Actions workflow 정리
+
+### 삭제한 파일
+
+- `.github/workflows/01_us_close.yml` ([DISABLED] 미장 마감 브리핑)
+- `.github/workflows/02_kr_open.yml` ([DISABLED] 국장 개장 브리핑)
+- `.github/workflows/03_kr_close.yml` ([DISABLED] 국장 마감 브리핑)
+- `.github/workflows/04_us_open.yml` ([DISABLED] 미장 개장 브리핑)
+
+### 남은 workflow (3개)
+
+| 파일 | 이름 | 용도 |
+|------|------|------|
+| `kr_intraday_slack.yml` | **KR Intraday Slack Scan** | 장중 슬랙 자동 발송 (`--live --send` 유지, 미수정) |
+| `kr_market_verify.yml` | KR Market Watchlist Verify | 관심종목 렌더 검증 (Slack 없음) |
+| `test_html.yml` | HTML 디자인 테스트 | 템플릿 검증 |
+
+### 확인
+
+- `KR Intraday Slack Scan`: `--live --send` 유지 확인 (변경 없음)
+- 멀티 모델 파이프라인·`scripts/run_kr_intraday_slack.py`: 유지
 
 ---
 
@@ -238,8 +262,10 @@ slack send: {'ok': True, 'channel': 'C0B4X9JBK5X', 'count': 2, 'errors': []}
 | 슬랙 v2 | `data/kr_slack_alerts.py`, `agents/kr_intraday_slack/*` |
 | 발송 | `slack_sender.py` (`send_kr_intraday_slack`) |
 | 실행 | `scripts/run_kr_intraday_slack.py` |
-| CI | `.github/workflows/kr_intraday_slack.yml` |
+| CI | `.github/workflows/kr_intraday_slack.yml` (유일한 Slack 자동 발송) |
 | 진행 | `09_task_queue.md`, `10_progress.md` |
+
+※ 예전 `01~04` 브리핑 workflow는 2026-05-21 삭제됨.
 
 ### 작업 내용 (문서별)
 

@@ -1,27 +1,22 @@
-# GitHub Actions — Slack 발송 정책
+# GitHub Actions
 
-## 자동 Slack 발송 (운영)
+## 운영 (Slack 자동 발송)
 
-| Workflow | 용도 |
-|----------|------|
-| **kr_intraday_slack.yml** | 장중 관심종목 알림 (KST 09:30 / 10:50 / 13:50 / 14:50, `--live --send`). cron은 **UTC 0-4** (KST 월~금 장중) |
+| 파일 | Workflow | 용도 |
+|------|----------|------|
+| **kr_intraday_slack.yml** | KR Intraday Slack Scan | 장중 관심종목 알림 (KST 09:30/10:50/13:50/14:50, `--live --send`) |
 
-최초 배포 후 **workflow_dispatch 1회** 수동 실행을 권장합니다 (스케줄 run 0건 이슈 대비).
+## CI / 검증 (Slack 발송 없음)
 
-## 비활성화 (예전 리포트 브리핑)
+| 파일 | Workflow | 용도 |
+|------|----------|------|
+| kr_market_verify.yml | KR Market Watchlist Verify | push/PR 시 kr_market 렌더·Firebase 검증 |
+| test_html.yml | HTML 디자인 테스트 | 템플릿 HTML 검증 |
 
-| Workflow | 상태 |
-|----------|------|
-| 01_us_close.yml | DISABLED — `main.py us_close_kr_before` Slack 미운영 |
-| 02_kr_open.yml | DISABLED — `main.py kr_during` Slack 미운영 |
-| 03_kr_close.yml | DISABLED — `main.py kr_close_us_before` Slack 미운영 |
-| 04_us_open.yml | DISABLED — `main.py us_during` Slack 미운영 |
+## 삭제됨 (2026-05-21)
 
-## CI (Slack 없음)
+예전 장시작/장마감 브리핑 자동 발송 workflow — repo에서 제거:
 
-| Workflow | 용도 |
-|----------|------|
-| kr_market_verify.yml | push/PR 시 kr_market 렌더 검증만 (Firebase 업로드, **Slack 미발송**) |
-| test_html.yml | HTML 테스트 |
+- `01_us_close.yml`, `02_kr_open.yml`, `03_kr_close.yml`, `04_us_open.yml`
 
-리포트 HTML/데이터 생성은 로컬 `main.py`로 가능. Slack은 `STOCKREPORT_ALLOW_LEGACY_REPORT_SLACK=1` 일 때만 예전 경로 허용.
+리포트 생성은 로컬 `main.py` 가능. Slack 자동 발송은 `kr_intraday_slack.yml` 만 사용.
