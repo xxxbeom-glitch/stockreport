@@ -20,7 +20,10 @@ from agents.kr_intraday_slack.llm_client import (  # noqa: E402
 )
 from agents.weekly_watchlist_update import run_weekly_watchlist_update  # noqa: E402
 from data.kr_watchlist import load_kr_watchlist_raw, validate_watchlist_spec  # noqa: E402
-from utils.safe_mode import print_safe_mode_banner  # noqa: E402
+from utils.safe_mode import (  # noqa: E402
+    can_send_watchlist_review_slack,
+    print_watchlist_review_status,
+)
 
 
 def main() -> int:
@@ -39,12 +42,12 @@ def main() -> int:
         "--send",
         action="store_true",
         dest="send_slack",
-        help="Slack 요약 발송 (SAFE_MODE 해제·SLACK_AUTO_SEND=true 필요)",
+        help="주간 재판단 Slack 발송 (WATCHLIST_REVIEW_AUTO_SEND=true 필요)",
     )
     parser.add_argument(
         "--apply-watchlist",
         action="store_true",
-        help="제안서를 kr_watchlist.json에 반영 (기본 비활성, SAFE_MODE 해제 필요)",
+        help="제안서를 kr_watchlist.json에 반영 (WATCHLIST_AUTO_APPLY=true 필요)",
     )
     parser.add_argument(
         "--no-llm",
@@ -94,9 +97,13 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    print_safe_mode_banner(emit=safe_print)
+    print_watchlist_review_status(emit=safe_print)
 
-    send = args.send_slack and not args.no_send
+    send = (
+        args.send_slack
+        and not args.no_send
+        and can_send_watchlist_review_slack(explicit_cli=bool(args.send_slack))
+    )
     spec_errs = validate_watchlist_spec()
     if spec_errs:
         safe_print("[WEEKLY] watchlist 검증 실패:", spec_errs)

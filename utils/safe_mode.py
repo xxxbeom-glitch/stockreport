@@ -1,16 +1,20 @@
-"""운영 안전 모드 — watchlist·Slack·후보 자동 반영 일시 중지 (플래그로 재활성화)."""
+"""운영 플래그 — 매일 투자 후보(DAILY_PICK) vs 관심종목 재판단(WATCHLIST_REVIEW) 분리."""
 
 from __future__ import annotations
 
 import os
 from typing import Callable
 
-# 기본값: 전부 비활성 (환경변수 true/1/yes 로만 켬)
+# ── 매일 투자 후보 (장중 Slack) ──
+DAILY_PICK_AUTO_SEND_DEFAULT = True
+
+# ── 관심종목 재판단/재구성 (주간) ──
+WATCHLIST_REVIEW_AUTO_SEND_DEFAULT = False
 WATCHLIST_AUTO_APPLY_DEFAULT = False
-SLACK_AUTO_SEND_DEFAULT = False
 CANDIDATE_AUTO_REPLACE_DEFAULT = False
 
-# SAFE_MODE=true 이면 위 세 플래그도 강제 OFF
+# 하위 호환 (주간 재판단용 — 신규 코드는 WATCHLIST_REVIEW_AUTO_SEND 사용)
+SLACK_AUTO_SEND_DEFAULT = WATCHLIST_REVIEW_AUTO_SEND_DEFAULT
 SAFE_MODE_ENV = "SAFE_MODE"
 
 
@@ -22,68 +26,100 @@ def _env_bool(name: str, default: bool) -> bool:
 
 
 def is_safe_mode() -> bool:
-    """전역 안전 모드(기본 on) — true면 자동 apply/send/replace 차단."""
+    """
+    레거시: 관심종목 재판단 자동화만 제한할 때 true.
+    DAILY_PICK 발송에는 사용하지 않음.
+    """
     raw = os.getenv(SAFE_MODE_ENV)
     if raw is None or raw.strip() == "":
-        return True
+        return False
     return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def daily_pick_auto_send_enabled() -> bool:
+    """장중·일일 '오늘 볼 만한 종목' Slack 스케줄 발송."""
+    return _env_bool("DAILY_PICK_AUTO_SEND", DAILY_PICK_AUTO_SEND_DEFAULT)
+
+
+def watchlist_review_auto_send_enabled() -> bool:
+    """주간 관심종목 재평가 Slack 자동 발송."""
+    return _env_bool("WATCHLIST_REVIEW_AUTO_SEND", WATCHLIST_REVIEW_AUTO_SEND_DEFAULT)
 
 
 def watchlist_auto_apply_enabled() -> bool:
     return _env_bool("WATCHLIST_AUTO_APPLY", WATCHLIST_AUTO_APPLY_DEFAULT)
 
 
-def slack_auto_send_enabled() -> bool:
-    return _env_bool("SLACK_AUTO_SEND", SLACK_AUTO_SEND_DEFAULT)
-
-
 def candidate_auto_replace_enabled() -> bool:
     return _env_bool("CANDIDATE_AUTO_REPLACE", CANDIDATE_AUTO_REPLACE_DEFAULT)
 
 
-def can_apply_watchlist(*, explicit_cli: bool = False) -> bool:
+def slack_auto_send_enabled() -> bool:
+    """레거시 alias → WATCHLIST_REVIEW_AUTO_SEND."""
+    return watchlist_review_auto_send_enabled()
+
+
+def can_send_daily_pick_slack(
+    *,
+    explicit_cli: bool = False,
+    scheduled: bool = False,
+) -> bool:
     """
-    기본 False. --apply-watchlist 시에만 반영 시도.
-    SAFE_MODE(기본 on)에서는 WATCHLIST_AUTO_APPLY=true 일 때만 허용.
+    매일 투자 후보 메시지 Slack 발송.
+    스케줄·--send 모두 DAILY_PICK_AUTO_SEND 로만 제어 (SAFE_MODE 무관).
     """
+    if not (explicit_cli or scheduled):
+        return False
+    return daily_pick_auto_send_enabled()
+
+
+def can_send_watchlist_review_slack(*, explicit_cli: bool = False) -> bool:
+    """주간 재판단 Slack — 명시 --send-slack + WATCHLIST_REVIEW_AUTO_SEND."""
     if not explicit_cli:
         return False
-    if is_safe_mode():
-        return watchlist_auto_apply_enabled()
-    return True
+    return watchlist_review_auto_send_enabled()
 
 
 def can_send_slack(*, explicit_cli: bool = False) -> bool:
-    """
-    기본 False. --send-slack / --send 명시 시에만 발송.
-    SAFE_MODE에서는 SLACK_AUTO_SEND=true 일 때만 허용.
-    """
+    """레거시: 주간 재판단 Slack 게이트."""
+    return can_send_watchlist_review_slack(explicit_cli=explicit_cli)
+
+
+def can_apply_watchlist(*, explicit_cli: bool = False) -> bool:
+    """--apply-watchlist + WATCHLIST_AUTO_APPLY=true 일 때만 kr_watchlist.json 반영."""
     if not explicit_cli:
         return False
-    if is_safe_mode():
-        return slack_auto_send_enabled()
-    return True
+    return watchlist_auto_apply_enabled()
 
 
 def can_replace_candidates(*, explicit_cli: bool = False) -> bool:
-    """신규 후보 → watchlist 자동 교체 (기본 금지)."""
     if not explicit_cli:
         return False
-    if is_safe_mode():
-        return candidate_auto_replace_enabled()
-    return True
+    return candidate_auto_replace_enabled()
 
 
-def print_safe_mode_banner(
-    emit: Callable[[str], None] | None = None,
-) -> None:
-    """실행 시작 시 안전 모드 상태 로그."""
+def print_daily_pick_status(emit: Callable[[str], None] | None = None) -> None:
     out = emit or print
-    if is_safe_mode():
-        out("[SAFE_MODE] SAFE_MODE=true — 자동 apply/send/replace 차단")
-    if not watchlist_auto_apply_enabled():
-        out("[SAFE_MODE] watchlist auto apply disabled")
-    if not slack_auto_send_enabled():
-        out("[SAFE_MODE] slack auto send disabled")
+    if daily_pick_auto_send_enabled():
+        out("[DAILY_PICK] auto send enabled")
+    else:
+        out("[DAILY_PICK] auto send disabled")
+
+
+def print_watchlist_review_status(emit: Callable[[str], None] | None = None) -> None:
+    out = emit or print
+    if watchlist_review_auto_send_enabled():
+        out("[WATCHLIST_REVIEW] auto send enabled")
+    else:
+        out("[WATCHLIST_REVIEW] auto send disabled")
+    if watchlist_auto_apply_enabled():
+        out("[WATCHLIST_REVIEW] auto apply enabled")
+    else:
+        out("[WATCHLIST_REVIEW] auto apply disabled")
     if not candidate_auto_replace_enabled():
-        out("[SAFE_MODE] candidate auto replace disabled")
+        out("[WATCHLIST_REVIEW] candidate auto replace disabled")
+
+
+def print_safe_mode_banner(emit: Callable[[str], None] | None = None) -> None:
+    """레거시 — 주간 재판단 상태만 (장중은 print_daily_pick_status 사용)."""
+    print_watchlist_review_status(emit=emit)

@@ -1,4 +1,4 @@
-"""watchlist 제안서 → kr_watchlist.json 반영 (SAFE_MODE 게이트)."""
+"""watchlist 제안서 → kr_watchlist.json 반영 (WATCHLIST_AUTO_APPLY 게이트)."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ def apply_watchlist_from_proposal(
 ) -> dict[str, Any]:
     """
     제안 JSON을 kr_watchlist.json에 반영.
-    apply=False 또는 SAFE_MODE 시 파일 미수정.
+    apply=False 또는 WATCHLIST_AUTO_APPLY=false 시 파일 미수정.
     """
     from utils.safe_mode import can_apply_watchlist
 
@@ -35,11 +35,11 @@ def apply_watchlist_from_proposal(
         }
 
     if not can_apply_watchlist(explicit_cli=True):
-        logger.warning("watchlist apply blocked by SAFE_MODE")
+        logger.warning("watchlist apply blocked (WATCHLIST_AUTO_APPLY=false)")
         return {
             "ok": True,
             "applied": False,
-            "reason": "SAFE_MODE: use WATCHLIST_AUTO_APPLY=true with --apply-watchlist",
+            "reason": "WATCHLIST_AUTO_APPLY=false (use --apply-watchlist after enabling env)",
         }
 
     try:
@@ -81,7 +81,7 @@ def apply_candidates_to_watchlist(
         return {
             "ok": True,
             "applied": False,
-            "reason": "SAFE_MODE: CANDIDATE_AUTO_REPLACE=false",
+            "reason": "CANDIDATE_AUTO_REPLACE=false",
         }
     return {
         "ok": False,

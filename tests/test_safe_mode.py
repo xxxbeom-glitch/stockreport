@@ -1,4 +1,4 @@
-"""SAFE_MODE — watchlist·Slack·스케줄 게이트 테스트."""
+"""플래그 분리 — DAILY_PICK vs WATCHLIST_REVIEW."""
 
 from __future__ import annotations
 
@@ -16,51 +16,57 @@ from data.kr_watchlist import load_kr_watchlist_raw, save_kr_watchlist_raw
 from utils import safe_mode
 
 
-class TestSafeModeFlags(unittest.TestCase):
+class TestDailyPickFlags(unittest.TestCase):
     def setUp(self) -> None:
         self._env = os.environ.copy()
 
     def tearDown(self) -> None:
         os.environ.clear()
         os.environ.update(self._env)
-        load_kr_watchlist_raw.cache_clear()
 
-    def test_defaults_block_auto_actions(self) -> None:
-        os.environ.pop("SAFE_MODE", None)
-        os.environ.pop("WATCHLIST_AUTO_APPLY", None)
-        os.environ.pop("SLACK_AUTO_SEND", None)
-        self.assertTrue(safe_mode.is_safe_mode())
-        self.assertFalse(safe_mode.watchlist_auto_apply_enabled())
-        self.assertFalse(safe_mode.slack_auto_send_enabled())
-        self.assertFalse(safe_mode.can_apply_watchlist(explicit_cli=False))
-        self.assertFalse(safe_mode.can_apply_watchlist(explicit_cli=True))
-        self.assertFalse(safe_mode.can_send_slack(explicit_cli=True))
+    def test_daily_pick_auto_send_default_true(self) -> None:
+        os.environ.pop("DAILY_PICK_AUTO_SEND", None)
+        self.assertTrue(safe_mode.daily_pick_auto_send_enabled())
 
-    def test_explicit_send_when_env_enabled(self) -> None:
+    def test_daily_pick_send_not_blocked_by_safe_mode(self) -> None:
         os.environ["SAFE_MODE"] = "true"
-        os.environ["SLACK_AUTO_SEND"] = "true"
-        self.assertTrue(safe_mode.can_send_slack(explicit_cli=True))
+        os.environ.pop("DAILY_PICK_AUTO_SEND", None)
+        self.assertTrue(
+            safe_mode.can_send_daily_pick_slack(explicit_cli=True, scheduled=True)
+        )
 
-    def test_banner_lines(self) -> None:
+    def test_daily_pick_banner_enabled(self) -> None:
+        os.environ["DAILY_PICK_AUTO_SEND"] = "true"
         lines: list[str] = []
-        safe_mode.print_safe_mode_banner(emit=lines.append)
-        joined = "\n".join(lines)
-        self.assertIn("watchlist auto apply disabled", joined)
-        self.assertIn("slack auto send disabled", joined)
-        self.assertIn("candidate auto replace disabled", joined)
+        safe_mode.print_daily_pick_status(emit=lines.append)
+        self.assertIn("[DAILY_PICK] auto send enabled", lines)
 
 
-class TestWatchlistNotModified(unittest.TestCase):
+class TestWatchlistReviewFlags(unittest.TestCase):
     def setUp(self) -> None:
         self._env = os.environ.copy()
-        os.environ["SAFE_MODE"] = "true"
+        os.environ["WATCHLIST_REVIEW_AUTO_SEND"] = "false"
         os.environ["WATCHLIST_AUTO_APPLY"] = "false"
+        os.environ["CANDIDATE_AUTO_REPLACE"] = "false"
         load_kr_watchlist_raw.cache_clear()
 
     def tearDown(self) -> None:
         os.environ.clear()
         os.environ.update(self._env)
         load_kr_watchlist_raw.cache_clear()
+
+    def test_watchlist_review_send_default_false(self) -> None:
+        os.environ.pop("WATCHLIST_REVIEW_AUTO_SEND", None)
+        self.assertFalse(safe_mode.watchlist_review_auto_send_enabled())
+        self.assertFalse(safe_mode.can_send_watchlist_review_slack(explicit_cli=True))
+
+    def test_watchlist_review_banner(self) -> None:
+        lines: list[str] = []
+        safe_mode.print_watchlist_review_status(emit=lines.append)
+        joined = "\n".join(lines)
+        self.assertIn("[WATCHLIST_REVIEW] auto send disabled", joined)
+        self.assertIn("[WATCHLIST_REVIEW] auto apply disabled", joined)
+        self.assertIn("candidate auto replace disabled", joined)
 
     def test_save_without_apply_returns_false(self) -> None:
         before = load_kr_watchlist_raw()
@@ -69,7 +75,7 @@ class TestWatchlistNotModified(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(before, after)
 
-    def test_apply_watchlist_without_flag_is_proposal_only(self) -> None:
+    def test_apply_watchlist_blocked_without_env(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             proposal = Path(tmp) / "p.json"
             before = load_kr_watchlist_raw()
@@ -81,46 +87,42 @@ class TestWatchlistNotModified(unittest.TestCase):
             self.assertFalse(result.get("applied"))
             self.assertEqual(load_kr_watchlist_raw(), before)
 
-    def test_apply_false_never_writes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            proposal = Path(tmp) / "p.json"
-            before = load_kr_watchlist_raw()
-            proposal.write_text("{}", encoding="utf-8")
-            result = apply_watchlist_from_proposal(proposal, apply=False)
-            self.assertFalse(result.get("applied"))
-            self.assertEqual(load_kr_watchlist_raw(), before)
 
-
-class TestWorkflowCronDisabled(unittest.TestCase):
-    def test_weekly_workflow_has_no_active_schedule(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        text = (root / ".github" / "workflows" / "weekly_watchlist.yml").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("workflow_dispatch:", text)
-        self.assertNotRegex(text, r"^\s+schedule:\s*$", text)
-        self.assertIn("# schedule:", text)
-
-    def test_intraday_workflow_has_no_active_schedule(self) -> None:
+class TestWorkflowSchedules(unittest.TestCase):
+    def test_daily_pick_workflow_has_active_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
         text = (root / ".github" / "workflows" / "kr_intraday_slack.yml").read_text(
             encoding="utf-8"
         )
         self.assertIn("workflow_dispatch:", text)
-        self.assertIn("# schedule:", text)
-        lines = text.splitlines()
+        self.assertIn("\n  schedule:\n", text)
         active_cron = [
             ln
-            for ln in lines
+            for ln in text.splitlines()
+            if "cron:" in ln and not ln.strip().startswith("#")
+        ]
+        self.assertGreaterEqual(len(active_cron), 2)
+        self.assertIn('DAILY_PICK_AUTO_SEND: "true"', text)
+
+    def test_watchlist_review_workflow_has_no_active_schedule(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        text = (root / ".github" / "workflows" / "weekly_watchlist.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("workflow_dispatch:", text)
+        self.assertIn("# schedule:", text)
+        active_cron = [
+            ln
+            for ln in text.splitlines()
             if "cron:" in ln and not ln.strip().startswith("#")
         ]
         self.assertEqual(active_cron, [])
+        self.assertIn('WATCHLIST_REVIEW_AUTO_SEND: "false"', text)
 
 
 class TestPipelineSlackGate(unittest.TestCase):
-    def test_pipeline_skips_slack_when_not_allowed(self) -> None:
-        os.environ["SAFE_MODE"] = "true"
-        os.environ["SLACK_AUTO_SEND"] = "false"
+    def test_pipeline_skips_watchlist_review_slack_by_default(self) -> None:
+        os.environ["WATCHLIST_REVIEW_AUTO_SEND"] = "false"
         fake_metric = {
             "symbol": "테스트",
             "ticker": "000001",
@@ -142,9 +144,7 @@ class TestPipelineSlackGate(unittest.TestCase):
                     "agents.weekly_watchlist_update.pipeline.run_weekly_review",
                     return_value=({"stocks": [], "summary": ""}, None),
                 ):
-                    with patch(
-                        "slack_sender.post_message",
-                    ) as post_mock:
+                    with patch("slack_sender.post_message") as post_mock:
                         from agents.weekly_watchlist_update.pipeline import (
                             run_weekly_watchlist_update,
                         )

@@ -1,4 +1,5 @@
-# 주간 관심종목 재평가 (수동 전용 — cron 잠정 중지, SAFE_MODE)
+# 주간 관심종목 재판단/재구성 — 수동 전용 (cron 중지, WATCHLIST_REVIEW 플래그)
+# 매일 투자 후보 메시지는 kr_intraday_slack.yml 과 별도
 name: weekly_watchlist
 
 on:
@@ -8,16 +9,16 @@ on:
         description: "네이버 뉴스·DART 공시 수집"
         type: boolean
         default: false
-  # schedule: (잠정 중지 — 재개 시 주석 해제)
+  # schedule: (관심종목 재구성 자동화 중지 — 재개 시 주석 해제)
   #   - cron: "0 9 * * 5"  # 매주 금 18:00 KST
 
 jobs:
   weekly:
     runs-on: ubuntu-latest
     env:
-      SAFE_MODE: "true"
+      DAILY_PICK_AUTO_SEND: "true"
+      WATCHLIST_REVIEW_AUTO_SEND: "false"
       WATCHLIST_AUTO_APPLY: "false"
-      SLACK_AUTO_SEND: "false"
       CANDIDATE_AUTO_REPLACE: "false"
       DART_API_KEY: ${{ secrets.DART_API_KEY }}
       NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
@@ -35,7 +36,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Run weekly watchlist
+      - name: Run weekly watchlist review
         run: |
           EXTRA=""
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.with_news }}" = "true" ]; then

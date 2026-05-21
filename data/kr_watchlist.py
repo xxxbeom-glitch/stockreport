@@ -37,7 +37,7 @@ def save_kr_watchlist_raw(
     explicit_apply: bool = False,
 ) -> bool:
     """
-    kr_watchlist.json 저장. explicit_apply + SAFE_MODE 게이트 통과 시에만 기록.
+    kr_watchlist.json 저장. explicit_apply + WATCHLIST_AUTO_APPLY 게이트 통과 시에만 기록.
     """
     from utils.safe_mode import can_apply_watchlist
 

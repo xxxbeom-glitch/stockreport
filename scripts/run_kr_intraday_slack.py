@@ -30,7 +30,10 @@ from agents.kr_intraday_slack.llm_client import (  # noqa: E402
     is_grok_configured,
 )
 from data.kr_watchlist import validate_watchlist_spec  # noqa: E402
-from utils.safe_mode import can_send_slack, print_safe_mode_banner  # noqa: E402
+from utils.safe_mode import (  # noqa: E402
+    can_send_daily_pick_slack,
+    print_daily_pick_status,
+)
 
 SLOT_CHOICES = list(SCAN_SLOTS.keys()) + ["auto"]
 
@@ -92,9 +95,14 @@ def main() -> int:
         action="store_true",
         help="진입 후보 0건이어도 메인+섹터 쓰레드 발송 (수동 확인용)",
     )
+    parser.add_argument(
+        "--scheduled",
+        action="store_true",
+        help="GitHub Actions schedule 실행 (DAILY_PICK_AUTO_SEND 적용)",
+    )
     args = parser.parse_args()
 
-    print_safe_mode_banner(emit=safe_print)
+    print_daily_pick_status(emit=safe_print)
 
     if args.dry_run and args.send:
         safe_print(
@@ -102,13 +110,18 @@ def main() -> int:
             file=sys.__stderr__,
         )
         return 1
-    if args.send and not can_send_slack(explicit_cli=True):
-        safe_print(
-            "[KR INTRADAY] Slack 발송 차단 (SAFE_MODE) — "
-            "드라이런으로 진행합니다. 발송하려면 SAFE_MODE=false, SLACK_AUTO_SEND=true"
+    if args.send:
+        allowed = can_send_daily_pick_slack(
+            explicit_cli=True,
+            scheduled=args.scheduled,
         )
-        args.send = False
-        args.dry_run = True
+        if not allowed:
+            safe_print(
+                "[DAILY_PICK] Slack 발송 차단 — DAILY_PICK_AUTO_SEND=false, "
+                "드라이런으로 진행합니다."
+            )
+            args.send = False
+            args.dry_run = True
     if args.max_messages < 1:
         safe_print("[ERROR] --max-messages 는 1 이상이어야 합니다.", file=sys.__stderr__)
         return 1
