@@ -1,4 +1,4 @@
-# 주간 관심종목 재평가 (수동/스케줄). 뉴스·공시는 --with-news 시 secrets 필요.
+# 주간 관심종목 재평가 (수동 전용 — cron 잠정 중지, SAFE_MODE)
 name: weekly_watchlist
 
 on:
@@ -8,14 +8,17 @@ on:
         description: "네이버 뉴스·DART 공시 수집"
         type: boolean
         default: false
-  schedule:
-    # 매주 금 18:00 KST (09:00 UTC)
-    - cron: "0 9 * * 5"
+  # schedule: (잠정 중지 — 재개 시 주석 해제)
+  #   - cron: "0 9 * * 5"  # 매주 금 18:00 KST
 
 jobs:
   weekly:
     runs-on: ubuntu-latest
     env:
+      SAFE_MODE: "true"
+      WATCHLIST_AUTO_APPLY: "false"
+      SLACK_AUTO_SEND: "false"
+      CANDIDATE_AUTO_REPLACE: "false"
       DART_API_KEY: ${{ secrets.DART_API_KEY }}
       NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
       NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}

@@ -19,7 +19,8 @@ from agents.kr_intraday_slack.llm_client import (  # noqa: E402
     is_primary_configured,
 )
 from agents.weekly_watchlist_update import run_weekly_watchlist_update  # noqa: E402
-from data.kr_watchlist import validate_watchlist_spec  # noqa: E402
+from data.kr_watchlist import load_kr_watchlist_raw, validate_watchlist_spec  # noqa: E402
+from utils.safe_mode import print_safe_mode_banner  # noqa: E402
 
 
 def main() -> int:
@@ -35,8 +36,15 @@ def main() -> int:
     )
     parser.add_argument(
         "--send-slack",
+        "--send",
         action="store_true",
-        help="Slack 요약 발송",
+        dest="send_slack",
+        help="Slack 요약 발송 (SAFE_MODE 해제·SLACK_AUTO_SEND=true 필요)",
+    )
+    parser.add_argument(
+        "--apply-watchlist",
+        action="store_true",
+        help="제안서를 kr_watchlist.json에 반영 (기본 비활성, SAFE_MODE 해제 필요)",
     )
     parser.add_argument(
         "--no-llm",
@@ -70,7 +78,23 @@ def main() -> int:
         action="store_true",
         help="watchlist 제외·섹터 유니버스에서 새 후보 스캔 (제안만, watchlist 미수정)",
     )
+    parser.add_argument(
+        "--candidate-limit",
+        type=int,
+        default=60,
+        metavar="N",
+        help="후보 pykrx 스캔 상한 (섹터 우선순위 상위 N, 기본 60)",
+    )
+    parser.add_argument(
+        "--candidate-days",
+        type=int,
+        default=5,
+        metavar="N",
+        help="daily_scan 누적 일수·trend_score 윈도 (기본 5)",
+    )
     args = parser.parse_args()
+
+    print_safe_mode_banner(emit=safe_print)
 
     send = args.send_slack and not args.no_send
     spec_errs = validate_watchlist_spec()
@@ -91,15 +115,28 @@ def main() -> int:
     if not args.no_llm:
         safe_print(f"[WEEKLY] aux (참고, 주간 파이프라인 미사용): {aux_models_status()}")
 
+    watchlist_before = None
+    if args.apply_watchlist:
+        watchlist_before = load_kr_watchlist_raw()
+
     result = run_weekly_watchlist_update(
         as_of_date=args.as_of,
         send_slack=send,
+        send_slack_explicit=bool(args.send_slack),
+        apply_watchlist=bool(args.apply_watchlist),
         use_llm=not args.no_llm,
         slack_log_days=args.slack_log_days,
         fetch_snapshots=not args.pykrx_only,
         collect_news=args.with_news,
         use_existing_news=args.use_existing_news,
     )
+
+    if watchlist_before is not None:
+        watchlist_after = load_kr_watchlist_raw()
+        if watchlist_before == watchlist_after:
+            safe_print("[WEEKLY] watchlist unchanged (proposal only or apply blocked)")
+        else:
+            safe_print("[WEEKLY] watchlist updated via --apply-watchlist")
 
     safe_print(f"[WEEKLY] as_of={result.as_of_date} stocks={len(result.metrics)}")
     safe_print(
@@ -155,18 +192,28 @@ def main() -> int:
             build_candidate_slack_text,
             write_candidate_outputs,
         )
-        from agents.weekly_watchlist_update.candidate_scanner import run_candidate_scan
+        from agents.weekly_watchlist_update.candidate_scanner import (
+            format_candidate_scan_log_lines,
+            run_candidate_scan,
+        )
 
-        safe_print("[CANDIDATES] 신규 후보 스캔 시작 (watchlist 제외·제안만)")
+        limit = max(1, int(args.candidate_limit))
+        trend_days = max(1, int(args.candidate_days))
+        safe_print(
+            f"[CANDIDATES] 신규 후보 스캔 시작 "
+            f"(limit={limit}, trend_days={trend_days}, watchlist 제외·제안만)"
+        )
         try:
-            cand = run_candidate_scan(as_of_date=result.as_of_date)
+            cand = run_candidate_scan(
+                as_of_date=result.as_of_date,
+                scan_limit=limit,
+                candidate_days=trend_days,
+                on_progress=safe_print,
+            )
             cand_path = write_candidate_outputs(cand)
             cand_slack = build_candidate_slack_text(cand)
-            safe_print(
-                f"[CANDIDATES] scanned={cand.scanned} "
-                f"candidates={len(cand.candidates)} "
-                f"green={len(cand.green)} yellow={len(cand.yellow)} red={len(cand.red)}"
-            )
+            for line in format_candidate_scan_log_lines(cand):
+                safe_print(line)
             if cand_path:
                 safe_print(f"[CANDIDATES] saved: {cand_path}")
             if cand.errors:

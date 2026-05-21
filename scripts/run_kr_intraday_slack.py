@@ -30,6 +30,7 @@ from agents.kr_intraday_slack.llm_client import (  # noqa: E402
     is_grok_configured,
 )
 from data.kr_watchlist import validate_watchlist_spec  # noqa: E402
+from utils.safe_mode import can_send_slack, print_safe_mode_banner  # noqa: E402
 
 SLOT_CHOICES = list(SCAN_SLOTS.keys()) + ["auto"]
 
@@ -93,12 +94,21 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    print_safe_mode_banner(emit=safe_print)
+
     if args.dry_run and args.send:
         safe_print(
             "[ERROR] --dry-run 과 --send 는 동시에 사용할 수 없습니다.",
             file=sys.__stderr__,
         )
         return 1
+    if args.send and not can_send_slack(explicit_cli=True):
+        safe_print(
+            "[KR INTRADAY] Slack 발송 차단 (SAFE_MODE) — "
+            "드라이런으로 진행합니다. 발송하려면 SAFE_MODE=false, SLACK_AUTO_SEND=true"
+        )
+        args.send = False
+        args.dry_run = True
     if args.max_messages < 1:
         safe_print("[ERROR] --max-messages 는 1 이상이어야 합니다.", file=sys.__stderr__)
         return 1

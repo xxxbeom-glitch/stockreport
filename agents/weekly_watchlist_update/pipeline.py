@@ -44,6 +44,8 @@ def run_weekly_watchlist_update(
     *,
     as_of_date: str | None = None,
     send_slack: bool = False,
+    send_slack_explicit: bool = False,
+    apply_watchlist: bool = False,
     use_llm: bool = True,
     slack_log_days: int = 7,
     fetch_snapshots: bool = True,
@@ -135,7 +137,23 @@ def run_weekly_watchlist_update(
 
     result.slack_text = build_slack_text(as_of_date=date_iso, judgment=judgment)
 
-    if send_slack and result.slack_text:
+    from utils.safe_mode import can_apply_watchlist, can_send_slack
+
+    if apply_watchlist and result.proposal_path:
+        from .watchlist_apply import apply_watchlist_from_proposal
+
+        apply_result = apply_watchlist_from_proposal(
+            result.proposal_path,
+            apply=True,
+        )
+        if not apply_result.get("applied"):
+            logger.info("watchlist apply skipped: %s", apply_result.get("reason"))
+
+    may_send = send_slack and can_send_slack(explicit_cli=send_slack_explicit)
+    if send_slack and not may_send:
+        logger.info("Slack send skipped (SAFE_MODE / SLACK_AUTO_SEND=false)")
+
+    if may_send and result.slack_text:
         try:
             from slack_sender import post_message, resolve_slack_channel
 

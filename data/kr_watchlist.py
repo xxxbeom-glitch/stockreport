@@ -31,6 +31,26 @@ def load_kr_watchlist_raw() -> dict[str, Any]:
         return json.load(f)
 
 
+def save_kr_watchlist_raw(
+    data: dict[str, Any],
+    *,
+    explicit_apply: bool = False,
+) -> bool:
+    """
+    kr_watchlist.json 저장. explicit_apply + SAFE_MODE 게이트 통과 시에만 기록.
+    """
+    from utils.safe_mode import can_apply_watchlist
+
+    if not can_apply_watchlist(explicit_cli=explicit_apply):
+        return False
+    _WATCHLIST_PATH.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    load_kr_watchlist_raw.cache_clear()
+    return True
+
+
 def watchlist_sectors_meta() -> list[dict[str, Any]]:
     """reportData.meta.watchlistSectors."""
     raw = load_kr_watchlist_raw()

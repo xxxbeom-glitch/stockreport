@@ -1,6 +1,7 @@
-# KR 관심종목 장중 슬랙 (자동·수동 실운영)
-# - schedule: KST 10:30 / 13:50 (월~금) — 항상 --live --send
-# - workflow_dispatch: 실운영 수동 실행 (기본 live=true, send=true)
+# KR 관심종목 장중 슬랙 (수동 전용 — cron 잠정 중지, SAFE_MODE)
+# - workflow_dispatch: 수동 실행 (send 기본 false)
+# - schedule: (잠정 중지 — 재개 시 주석 해제)
+#     KST 10:30 / 13:50 (월~금)
 #
 # Secrets: Repository secrets (Settings → Secrets and variables → Actions)
 # Environment secrets 사용 시 job.environment 주석 해제
@@ -12,9 +13,9 @@
 name: KR Intraday Slack Scan
 
 on:
-  schedule:
-    - cron: "30 1 * * 0-4"
-    - cron: "50 4 * * 0-4"
+  # schedule:
+  #   - cron: "30 1 * * 0-4"
+  #   - cron: "50 4 * * 0-4"
   workflow_dispatch:
     inputs:
       slot:
@@ -30,9 +31,9 @@ on:
         type: boolean
         default: true
       send:
-        description: "조건 충족 시 Slack 실발송 (false=드라이런)"
+        description: "조건 충족 시 Slack 실발송 (SAFE_MODE 해제·SLACK_AUTO_SEND=true 필요)"
         type: boolean
-        default: true
+        default: false
       max_messages:
         description: "슬롯당 최대 Slack 발송 건수 (SendFilter)"
         type: string
@@ -49,6 +50,10 @@ jobs:
 
     env:
       TZ: Asia/Seoul
+      SAFE_MODE: "true"
+      WATCHLIST_AUTO_APPLY: "false"
+      SLACK_AUTO_SEND: "false"
+      CANDIDATE_AUTO_REPLACE: "false"
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
@@ -180,7 +185,7 @@ jobs:
             MAX="${{ inputs.max_messages }}"
           else
             LIVE=true
-            SEND=true
+            SEND=false
             MAX=3
           fi
 
