@@ -864,6 +864,38 @@ SendFilter → compose_sector_summary_message → Gemini polish 1회 → Slack 1
 - `tests/test_send_filter.py`: 상한·정렬 단위 테스트
 - `message_tone.py` / `slack_message.py` / `README.md` docstring 보강
 
+## 2026-05-21 작업 기록 — 진입 후보 구간 `-` 표시 제거
+
+### 증상
+
+- AI `entry_price_range`가 85%~100% 검증에 걸려 규칙값으로 되돌렸으나, 파이프라인에 `evaluate_entry` 미적용으로 `entry_range`가 빈 문자열 → Slack `진입 후보 구간 -`.
+
+### 수정
+
+| 항목 | 내용 |
+|------|------|
+| AI 밴드 | 70%~102% 허용, `high > current` → current로 보정 |
+| 너무 넓음 | `high-low > current×8%` → 95%~99%로 보정 |
+| fallback | `entry_price.build_entry_range_fallback` — day_low/prev_close/support 우선, 없으면 95%~99% |
+| 발송 | 구간 없으면 `ai_send_slack=false` + SendFilter 제외 |
+| Slack | `compose_sector_stock_block` — 구간 없으면 카드 미생성, `-` 미사용 |
+| 로그 | AI 사용 / AI 보정 / 규칙 fallback / 계산 불가 구분 |
+
+### 동진쎄미켐 예시 (AI 단위 오류 `6150~61000`, current 61,500)
+
+- `entry_range_source`: `rule_anchor` (day_low 59,800 반영)
+- Slack:
+
+```text
+*진입 후보 구간* 59,700원 ~ 59,900원
+• *경고*
+57,000원 이탈 또는 거래 급감 시 오늘은 넘기기
+```
+
+### 파일
+
+- `entry_price.py`, `ai_judge.py`, `message_tone.py`, `send_filter.py`, `tests/test_entry_range.py`
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

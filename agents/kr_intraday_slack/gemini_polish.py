@@ -48,7 +48,7 @@ def _polish_prompt(draft: str, row: dict[str, Any], *, retry_short: bool = False
 📌 *{row.get("name")}*
 
 *현재가* (숫자 그대로)
-*진입 후보 구간* (숫자 그대로, 없으면 -)
+*진입 후보 구간* (숫자 범위 필수, 변경·생략 금지)
 
 설명 2~4문장 (완성 문장만, 줄임표 .../… 금지)
 눌림/관찰 1문장.

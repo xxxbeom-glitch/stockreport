@@ -23,6 +23,7 @@ from .constants import (
     SLACK_SEND_FORBIDDEN,
     normalize_decision,
 )
+from .entry_price import has_valid_entry_range
 from .send_log import entry_range_changed_significantly, last_sent_entry_range, was_sent_today
 
 
@@ -141,6 +142,19 @@ def filter_for_slack_send(
                 {
                     **base_log,
                     "skip_reason": row.get("ai_skip_reason") or "AI send_slack=false",
+                }
+            )
+            continue
+
+        if require_ai and not has_valid_entry_range(
+            str(row.get("entry_range") or ""),
+            entry_low=row.get("entry_low"),
+            entry_high=row.get("entry_high"),
+        ):
+            skipped.append(
+                {
+                    **base_log,
+                    "skip_reason": "진입 후보 구간 없음 — 발송 제외",
                 }
             )
             continue

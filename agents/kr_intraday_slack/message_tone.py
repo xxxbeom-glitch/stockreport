@@ -8,6 +8,7 @@ from typing import Any
 from data.kr_watchlist import watchlist_sector_labels
 
 from .constants import SLACK_BODY_FORBIDDEN, SLACK_STOCK_SEPARATOR, slack_display_label
+from .entry_price import has_valid_entry_range
 
 # 딱딱한 표현 → 쉬운 말투
 _SOFTEN_MAP: tuple[tuple[str, str], ...] = (
@@ -202,12 +203,13 @@ def grok_one_liner(row: dict[str, Any]) -> str:
 
 
 def _has_entry_range(entry_range: str) -> bool:
-    er = (entry_range or "").strip()
-    return bool(er) and er not in ("—", "-", "N/A")
+    return has_valid_entry_range(entry_range)
 
 
 def _entry_range_display(entry_range: str) -> str:
-    return entry_range.strip() if _has_entry_range(entry_range) else "-"
+    """유효한 구간만 표시. '-' 플레이스홀더 사용 안 함."""
+    er = (entry_range or "").strip()
+    return er if _has_entry_range(er) else ""
 
 
 def _pullback_line(entry_range: str, decision: str) -> str:
@@ -243,8 +245,19 @@ def _watch_line(row: dict[str, Any], *, include_grok: bool = True) -> str:
     return base
 
 
+def _default_warning_below_entry(entry_low: Any) -> str:
+    try:
+        lo = int(entry_low)
+    except (TypeError, ValueError):
+        return ""
+    if lo <= 0:
+        return ""
+    warn = max(int(lo * 0.97), lo - 500)
+    return f"{warn:,}원 이탈 또는 거래 급감 시 오늘은 넘기기"
+
+
 def _warning_line(row: dict[str, Any]) -> str:
-    """매수가가 아닌 회피·무효 기준 (진입 후보 구간 무효 조건)."""
+    """매수가가 아닌 회피·무효 기준 (진입 후보 구간보다 아래 이탈)."""
     raw = soften_text(str(row.get("ai_cancel_condition", "")))
     if not raw:
         return "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
@@ -264,7 +277,12 @@ def _warning_line(row: dict[str, Any]) -> str:
             return complete
         return "거래 급감·가격 이탈 시 오늘은 넘기기"
     complete = first_short_sentence(line, max_len=90)
-    return complete or "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
+    if complete:
+        return complete
+    below = _default_warning_below_entry(row.get("entry_low"))
+    if below:
+        return below
+    return "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
 
 
 def _one_share_line(entry_range: str, decision: str) -> str:
@@ -323,14 +341,21 @@ def _narrative_lines(
 
 
 def compose_sector_stock_block(row: dict[str, Any]) -> str | None:
-    """섹터 요약 안의 종목 카드 1건."""
+    """섹터 요약 안의 종목 카드 1건. 진입 후보 구간 없으면 None."""
     name = str(row.get("name", "")).strip()
     if not name or not str(row.get("ai_cancel_condition", "")).strip():
         return None
 
-    price = str(row.get("current_price_fmt") or row.get("current_price") or "N/A")
     entry_raw = str(row.get("entry_range") or "")
+    if not has_valid_entry_range(
+        entry_raw, entry_low=row.get("entry_low"), entry_high=row.get("entry_high")
+    ):
+        return None
+
+    price = str(row.get("current_price_fmt") or row.get("current_price") or "N/A")
     entry_display = _entry_range_display(entry_raw)
+    if not entry_display:
+        return None
     decision = slack_display_label(str(row.get("ai_decision") or row.get("status") or ""))
 
     lines = [

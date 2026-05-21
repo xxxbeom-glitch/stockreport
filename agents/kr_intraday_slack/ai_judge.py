@@ -12,6 +12,12 @@ from .constants import (
     SLACK_SEND_FORBIDDEN,
     normalize_decision,
 )
+from .entry_price import (
+    build_entry_range_fallback,
+    format_entry_range,
+    has_valid_entry_range,
+    normalize_ai_entry_range,
+)
 from .llm_client import call_llm_json, is_ai_configured
 from .slack_message import build_slack_message_from_ai
 
@@ -21,55 +27,131 @@ RULE_CANDIDATE_MIN = 3
 RULE_CANDIDATE_MAX = 7
 
 
-def _fmt_range(low: Any, high: Any) -> str:
+def _parse_ai_range(item: dict[str, Any]) -> tuple[int, int]:
+    raw = item.get("entry_price_range") or {}
     try:
-        lo = int(low)
-        hi = int(high)
-        if lo > 0 and hi > 0:
-            return f"{lo:,}원 ~ {hi:,}원"
+        return int(raw.get("low")), int(raw.get("high"))
     except (TypeError, ValueError):
-        pass
-    return ""
+        return 0, 0
+
+
+def _log_entry_resolution(
+    candidate: dict[str, Any],
+    *,
+    kind: str,
+    detail: str,
+    low: int = 0,
+    high: int = 0,
+) -> None:
+    ticker = candidate.get("ticker")
+    name = candidate.get("name")
+    if kind == "ai_ok":
+        logger.info(
+            "[%s %s] 진입 구간: AI range 사용 (%s~%s)",
+            ticker,
+            name,
+            f"{low:,}",
+            f"{high:,}",
+        )
+    elif kind == "ai_adjusted":
+        logger.info(
+            "[%s %s] 진입 구간: AI range 보정 (%s) (%s~%s)",
+            ticker,
+            name,
+            detail,
+            f"{low:,}",
+            f"{high:,}",
+        )
+    elif kind == "rule_fallback":
+        logger.info(
+            "[%s %s] 진입 구간: 규칙 fallback (%s) %s",
+            ticker,
+            name,
+            detail,
+            format_entry_range(low, high) if low and high else detail,
+        )
+    elif kind == "rule_candidate":
+        logger.info(
+            "[%s %s] 진입 구간: 후보 규칙값 사용 %s",
+            ticker,
+            name,
+            format_entry_range(low, high),
+        )
+    elif kind == "unavailable":
+        logger.warning(
+            "[%s %s] 진입 구간: 계산 불가 — 발송 제외 (%s)",
+            ticker,
+            name,
+            detail,
+        )
 
 
 def _resolve_entry_range(
     candidate: dict[str, Any], item: dict[str, Any]
-) -> tuple[str, int | None, int | None]:
+) -> tuple[str, int | None, int | None, str]:
     """
-    AI entry_price_range는 current_price(원)와 동일 단위여야 함.
-    범위가 현재가 대비 비정상(×10·÷10 등)이면 규칙 기반 entry_range로 대체.
+    진입 후보 구간 확정.
+
+    Returns (entry_range, entry_low, entry_high, source)
+    source: ai | ai_adjusted | rule_candidate | rule_anchor | rule_default | unavailable
     """
-    rule_range = str(candidate.get("entry_range") or "")
-    rule_low = candidate.get("entry_low")
-    rule_high = candidate.get("entry_high")
+    current = int(candidate.get("current_price") or 0)
+    ai_lo, ai_hi = _parse_ai_range(item)
+
+    if current > 0 and ai_lo > 0 and ai_hi > 0:
+        norm_lo, norm_hi, status = normalize_ai_entry_range(ai_lo, ai_hi, current)
+        if status not in ("invalid", "out_of_band") and norm_lo > 0 and norm_hi > 0:
+            text = format_entry_range(norm_lo, norm_hi)
+            if status == "ok":
+                _log_entry_resolution(candidate, kind="ai_ok", detail="", low=norm_lo, high=norm_hi)
+                return text, norm_lo, norm_hi, "ai"
+            _log_entry_resolution(
+                candidate,
+                kind="ai_adjusted",
+                detail=status,
+                low=norm_lo,
+                high=norm_hi,
+            )
+            return text, norm_lo, norm_hi, "ai_adjusted"
+        _log_entry_resolution(
+            candidate,
+            kind="ai_adjusted",
+            detail=f"AI 밴드 밖({ai_lo}~{ai_hi} vs current={current}) → fallback",
+            low=0,
+            high=0,
+        )
+    elif ai_lo > 0 or ai_hi > 0:
+        logger.info(
+            "[%s] AI entry_price_range 파싱/밴드 불가 (%s~%s) — fallback",
+            candidate.get("ticker"),
+            ai_lo,
+            ai_hi,
+        )
+
     try:
-        rule_lo = int(rule_low) if rule_low is not None else 0
-        rule_hi = int(rule_high) if rule_high is not None else 0
+        rule_lo = int(candidate.get("entry_low") or 0)
+        rule_hi = int(candidate.get("entry_high") or 0)
     except (TypeError, ValueError):
         rule_lo, rule_hi = 0, 0
 
-    raw = item.get("entry_price_range") or {}
-    try:
-        lo = int(raw.get("low"))
-        hi = int(raw.get("high"))
-    except (TypeError, ValueError):
-        lo, hi = 0, 0
+    if current > 0 and rule_lo > 0 and rule_hi > 0:
+        norm_lo, norm_hi, status = normalize_ai_entry_range(rule_lo, rule_hi, current)
+        if status not in ("invalid", "out_of_band") and norm_lo > 0 and norm_hi > 0:
+            text = format_entry_range(norm_lo, norm_hi)
+            _log_entry_resolution(
+                candidate, kind="rule_candidate", detail="", low=norm_lo, high=norm_hi
+            )
+            return text, norm_lo, norm_hi, "rule_candidate"
 
-    current = int(candidate.get("current_price") or 0)
-    if current > 0 and lo > 0 and hi > 0 and lo <= hi:
-        if current * 0.85 <= lo <= current and current * 0.85 <= hi <= current:
-            return _fmt_range(lo, hi), lo, hi
-        logger.warning(
-            "[%s] AI entry_price_range 단위 이상 (%s~%s vs current=%s) — 규칙값 사용",
-            candidate.get("ticker"),
-            lo,
-            hi,
-            current,
+    text, fb_lo, fb_hi, source = build_entry_range_fallback(candidate)
+    if has_valid_entry_range(text, entry_low=fb_lo, entry_high=fb_hi):
+        _log_entry_resolution(
+            candidate, kind="rule_fallback", detail=source, low=fb_lo, high=fb_hi
         )
+        return text, fb_lo, fb_hi, source
 
-    if rule_range:
-        return rule_range, rule_lo or None, rule_hi or None
-    return "", rule_lo or None, rule_hi or None
+    _log_entry_resolution(candidate, kind="unavailable", detail="current_price 없음 또는 0")
+    return "", None, None, "unavailable"
 
 
 def _stock_payload(row: dict[str, Any]) -> dict[str, Any]:
@@ -135,7 +217,8 @@ def build_intraday_prompt(
 }}
 
 decisions 배열 길이는 후보 수와 같아야 합니다. 각 symbol/ticker는 후보와 일치해야 합니다.
-entry_price_range의 low/high는 후보 current_price와 동일한 원(₩) 단위 정수이며, 보통 현재가의 85%~100% 구간입니다.
+entry_price_range의 low/high는 후보 current_price와 동일한 원(₩) 단위 정수입니다.
+high는 current_price를 넘지 않게 하고, 보통 현재가의 70%~100% 구간(눌림 목표)으로 잡습니다.
 
 슬랙 문구 톤: 리포트체·로그체 금지. "활발", "증대", "데이터 불충분", 숫자 나열 문장 금지.
 쉬운 말로 "왜 볼 만한지 / 진입 후보 구간(1주 기준 노릴 가격대) / 경고(매수가 아님·이탈·거래 급감 시 오늘은 넘기기)"만 씁니다.
@@ -172,7 +255,15 @@ def _validate_decision(item: dict[str, Any], candidate: dict[str, Any]) -> str |
 def _merge_decision(candidate: dict[str, Any], item: dict[str, Any]) -> dict[str, Any]:
     decision = normalize_decision(str(item.get("decision", "")).strip())
     send_slack = bool(item.get("send_slack")) and decision in SLACK_SEND_ALLOWED
-    entry_range, entry_low, entry_high = _resolve_entry_range(candidate, item)
+    entry_range, entry_low, entry_high, source = _resolve_entry_range(candidate, item)
+
+    if send_slack and not has_valid_entry_range(
+        entry_range, entry_low=entry_low, entry_high=entry_high
+    ):
+        send_slack = False
+        skip = "진입 후보 구간 계산 불가"
+    else:
+        skip = ""
 
     merged = {
         **candidate,
@@ -185,10 +276,12 @@ def _merge_decision(candidate: dict[str, Any], item: dict[str, Any]) -> dict[str
         "entry_range": entry_range,
         "entry_low": entry_low,
         "entry_high": entry_high,
+        "entry_range_source": source,
     }
     if not send_slack:
         merged["ai_skip_reason"] = (
-            str(item.get("skip_reason", "")).strip()
+            skip
+            or str(item.get("skip_reason", "")).strip()
             or f"AI send_slack=false ({decision})"
         )
     return merged
