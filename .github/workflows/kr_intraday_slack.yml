@@ -205,9 +205,12 @@ jobs:
           ARGS+=(--max-messages "$MAX")
 
           echo "Command: ${ARGS[*]}"
+          set -o pipefail
           "${ARGS[@]}" 2>&1 | tee scan.log
+          exit_code=${PIPESTATUS[0]}
           echo "--- scan.log tail ---"
-          tail -n 30 scan.log
+          tail -n 30 scan.log || true
+          exit "$exit_code"
 
       - name: Upload scan log
         if: always()

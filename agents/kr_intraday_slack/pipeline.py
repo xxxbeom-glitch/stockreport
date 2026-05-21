@@ -96,6 +96,12 @@ def run_intraday_scan(
         live=live,
         tickers=tickers,
     )
+    try:
+        from utils.safe_stdio import ensure_stdio
+
+        ensure_stdio()
+    except ImportError:
+        pass
     merged = merge_sector_scan_results(sector_results, slot=slot)
     stocks = merged.stocks
     mood = merged.sector_mood

@@ -110,7 +110,10 @@ def scan_one_sector(
     except Exception as exc:
         base.ok = False
         base.error = f"데이터 수집 실패: {exc}"
-        logger.error("[%s] %s", sector_name, base.error, exc_info=live)
+        try:
+            logger.error("[%s] %s", sector_name, base.error, exc_info=live)
+        except Exception:
+            pass
         return base
 
 
@@ -155,6 +158,12 @@ def run_sector_scan_parallel(
                 )
 
     results.sort(key=lambda r: r.sector_order)
+    try:
+        from utils.safe_stdio import ensure_stdio
+
+        ensure_stdio()
+    except ImportError:
+        pass
     return results
 
 

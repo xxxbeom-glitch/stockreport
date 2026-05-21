@@ -260,6 +260,13 @@ def polish_sector_summary_message(
         return draft, meta
 
     try:
+        from utils.safe_stdio import ensure_stdio
+
+        ensure_stdio()
+    except ImportError:
+        pass
+
+    try:
         model = cfg["model"]
         polished = _call_gemini(_sector_summary_polish_prompt(draft, slot=slot), model)
         accepted = _accept_sector_summary(polished or "", draft)

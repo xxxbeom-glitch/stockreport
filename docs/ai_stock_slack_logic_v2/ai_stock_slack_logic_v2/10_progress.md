@@ -749,6 +749,34 @@ SendFilter → compose_sector_summary_message → Gemini polish 1회 → Slack 1
 - Slack: 5섹터 헤더 항상 표시, SendFilter·`max_messages`·실전 톤 동일.
 - 발송 0건이면 postMessage 없음 (기존과 동일).
 
+## 2026-05-21 작업 기록 — GitHub Actions closed stderr 수정
+
+### 증상
+
+- Actions 실행 말미: `ValueError: I/O operation on closed file` / `lost sys.stderr`
+- KIS/pykrx·DeepSeek·Grok까지는 진행된 뒤 Gemini/종료 로그 단계에서 발생
+
+### 원인
+
+- **섹터 병렬 스캔** 시 `data/kr_market._suppress_pykrx_output()` 가 `contextlib.redirect_stdout/stderr` 로 전역 스트림을 교체
+- 여러 스레드가 동시에 redirect/복구하면서 `stderr` 가 닫힌 devnull 파일을 가리키거나 복구가 깨짐
+- 이후 `logging` / `print` / Gemini 경고 출력 시 실패 → exit code 1
+
+### 수정
+
+| 항목 | 내용 |
+|------|------|
+| `data/kr_market.py` | `_pykrx_io_lock` + redirect 종료 시 항상 `sys.__stdout__` / `sys.__stderr__` 복구 |
+| `utils/safe_stdio.py` | **신규** — `ensure_stdio`, `setup_logging`(StreamHandler→`__stderr__`), `safe_print` |
+| `scripts/run_kr_intraday_slack.py` | `basicConfig` 제거, safe print, scan 전후 `ensure_stdio` |
+| `pipeline.py` / `sector_scan.py` / `gemini_polish.py` | 병렬 수집·Gemini 직전 `ensure_stdio()` |
+| `.github/workflows/kr_intraday_slack.yml` | `tee scan.log` + `pipefail` + `PIPESTATUS[0]` 로 종료 코드 전달, `if: always()` artifact 유지 |
+
+### CI 로그 저장
+
+- Python 내부 redirect **사용 안 함**
+- 셸: `python ... 2>&1 | tee scan.log` (실패 시에도 `scan.log` artifact 업로드)
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

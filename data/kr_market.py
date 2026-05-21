@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import contextlib
 import os
+import sys
+import threading
 from datetime import datetime, timedelta
 from typing import Any
+
+_pykrx_io_lock = threading.Lock()
 
 from dotenv import load_dotenv
 
@@ -49,10 +53,19 @@ def _fmt_pct(value: float) -> str:
 
 @contextlib.contextmanager
 def _suppress_pykrx_output() -> Any:
-    """Suppress noisy pykrx stdout/stderr when API returns empty frames."""
-    with open(os.devnull, "w", encoding="utf-8") as devnull:
-        with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
-            yield
+    """
+    Suppress noisy pykrx stdout/stderr when API returns empty frames.
+    Thread-safe: sector 병렬 스캔 시 redirect 경합으로 closed stderr 방지.
+    """
+    with _pykrx_io_lock:
+        with open(os.devnull, "w", encoding="utf-8") as devnull:
+            try:
+                sys.stdout = devnull
+                sys.stderr = devnull
+                yield
+            finally:
+                sys.stdout = sys.__stdout__
+                sys.stderr = sys.__stderr__
 
 
 def _fetch_foreign_net_purchases_frame(
