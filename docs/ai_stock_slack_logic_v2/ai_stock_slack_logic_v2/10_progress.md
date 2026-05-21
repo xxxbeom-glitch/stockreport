@@ -11,8 +11,38 @@
 
 ## 다음 작업 (선택)
 
-- Actions **workflow_dispatch** 1회 수동 실행으로 스케줄 활성화 확인
-- 수정된 cron(0-4 UTC) 적용 후 다음 슬롯 자동 실행 확인
+- Environment secrets 사용 시 `kr_intraday_slack.yml` 의 `environment:` 이름 확인 후 주석 해제
+- workflow_dispatch Preflight 전부 OK 확인 후 스케줄 슬롯 모니터링
+
+---
+
+## 2026-05-21 작업 기록 — Actions secret MISSING 수정
+
+### 원인
+
+`Preflight secrets` step에 `env`가 없고, secrets 매핑이 **다음 step(`Run intraday scan`)에만** 있어서 bash에서 빈 값으로 체크됨.
+
+### 수정 (`kr_intraday_slack.yml`)
+
+- **job 레벨 `env`** 에 필수/optional secrets·vars 일괄 매핑 (이름 통일)
+- Preflight: 존재 여부만 `OK` / `MISSING` 출력 (값 미출력)
+- optional 키는 MISSING이어도 job 중단 없음
+- Environment secrets: `jobs.scan.environment` 주석 + README 안내 (이름은 repo Settings에서 확인 필요)
+
+### 필수 secret 이름
+
+`DEEPSEEK_API_KEY`, `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_KR`, `KIS_APP_KEY`, `KIS_APP_SECRET`
+
+### 확인 방법
+
+Actions → Run workflow → **Preflight secrets** 로그:
+
+```text
+OK DEEPSEEK_API_KEY
+OK SLACK_BOT_TOKEN
+...
+All required secrets present.
+```
 
 ---
 
