@@ -70,6 +70,7 @@ def run_intraday_scan(
     *,
     live: bool = False,
     tickers: list[str] | None = None,
+    max_messages: int | None = None,
 ) -> IntradayScanResult:
     """
     시간대별 관심종목 스캔.
@@ -134,6 +135,7 @@ def run_intraday_scan(
                 ai_approved,
                 slot=slot,
                 require_ai=True,
+                max_messages=max_messages,
             )
             skipped.extend(filter_skip)
             for fs in filter_skip:

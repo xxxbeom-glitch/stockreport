@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from .constants import MAX_MESSAGES_PER_SCAN, SLACK_SEND_ALLOWED, SLACK_SEND_FORBIDDEN
+from .constants import (
+    MAX_MESSAGES_PER_SCAN,
+    SLACK_SEND_ALLOWED,
+    SLACK_SEND_FORBIDDEN,
+    normalize_decision,
+)
 from .send_log import entry_range_changed_significantly, last_sent_entry_range, was_sent_today
 
 
@@ -14,15 +19,19 @@ def filter_for_slack_send(
     slot: str,
     allow_resend_on_range_change: bool = True,
     require_ai: bool = False,
+    max_messages: int | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Returns (to_send, skipped_log_rows).
     """
     to_send: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
+    limit = max_messages if max_messages is not None else MAX_MESSAGES_PER_SCAN
 
     for row in evaluated:
-        status = str(row.get("status", ""))
+        status = normalize_decision(
+            str(row.get("ai_decision") or row.get("status", ""))
+        )
         ticker = str(row.get("ticker", ""))
         name = str(row.get("name", ""))
         base_log = {
@@ -57,8 +66,8 @@ def filter_for_slack_send(
                 skipped.append({**base_log, "skip_reason": "당일 이미 발송됨"})
                 continue
 
-        to_send.append(row)
-        if len(to_send) >= MAX_MESSAGES_PER_SCAN:
+        to_send.append({**row, "status": status, "ai_decision": status})
+        if len(to_send) >= limit:
             break
 
     return to_send, skipped

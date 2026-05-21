@@ -5,10 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from .constants import FORBIDDEN_PHRASES
+from .constants import FORBIDDEN_PHRASES, slack_display_label
 from .llm_client import is_gemini_configured, summary_config
 from .message_tone import (
     compose_slack_message,
+    contains_slack_body_forbidden,
     has_required_slack_shape,
     is_message_too_long,
     is_message_too_stiff,
@@ -20,6 +21,8 @@ _MAX_RETRIES = 2
 
 
 def _contains_forbidden(text: str) -> bool:
+    if contains_slack_body_forbidden(text):
+        return True
     lower = text.lower()
     return any(p in text or p in lower for p in FORBIDDEN_PHRASES)
 
@@ -35,7 +38,7 @@ def _polish_prompt(draft: str, row: dict[str, Any], *, retry_short: bool = False
 {extra}
 
 출력 구조 (줄 수·순서 유지, 6~9줄 권장):
-[{row.get("ai_decision") or row.get("status")}] 종목명
+[{slack_display_label(str(row.get("ai_decision") or row.get("status") or ""))}] 종목명
 
 현재가: (그대로)
 예약가 후보: (그대로)
@@ -43,7 +46,7 @@ def _polish_prompt(draft: str, row: dict[str, Any], *, retry_short: bool = False
 지금 이 종목은 ~ 흐름입니다. (1~2문장, 짧게)
 다만 바로 따라가기보다는, 예약가 구간까지 눌리는지 보는 게 좋아 보입니다.
 
-1주 테스트라면 이 구간에서만 진입을 검토하고,
+1주 기준이라면 이 구간에서만 진입을 검토하고,
 아래 취소 조건이 나오면 오늘은 넘기는 쪽이 안전합니다.
 
 취소 조건:
@@ -52,7 +55,8 @@ def _polish_prompt(draft: str, row: dict[str, Any], *, retry_short: bool = False
 말투 규칙:
 - 리포트/로그체 금지 ("섹터 증대", "활발", "데이터 불충분" 같은 표현 쓰지 않기)
 - "매수하세요", "무조건", "급등 추격" 금지
-- "진입 검토", "눌림 확인", "오늘은 넘기기", "1주 테스트" 같은 쉬운 말
+- "테스트", "드라이런", "검증" 단어 금지
+- "진입 검토", "눌림 확인", "오늘은 넘기기", "1주 기준" 같은 쉬운 말
 - X/이슈 맥락은 있으면 한 줄만 ("이슈:" 로 짧게)
 - 가격·종목명·예약가 숫자는 바꾸지 않음
 - JSON 없이 메시지 본문만 출력
@@ -70,7 +74,8 @@ def _retry_shorten_prompt(draft: str, row: dict[str, Any], reason: str) -> str:
 
 - 전체 9줄 이내
 - 문장은 짧게, 대화체
-- 구조: [제목] 종목 / 현재가 / 예약가 / 왜 볼만한지 1~2줄 / 눌림 확인 1줄 / 1주 테스트 2줄 / 취소 조건 1줄
+- 구조: [제목] 종목 / 현재가 / 예약가 / 왜 볼만한지 1~2줄 / 눌림 확인 1줄 / 1주 기준 2줄 / 취소 조건 1줄
+- "테스트", "드라이런", "검증" 금지
 - 딱딱한 표현·숫자 나열 줄이기
 - 가격 숫자는 유지
 

@@ -36,11 +36,11 @@ def evaluate_entry(row: dict[str, Any], *, slot: str) -> dict[str, Any]:
     elif foreign < -50 and vol < 1.0:
         status = "수급 약함"
     elif score >= 5.5 and not is_chasing:
-        status = "테스트 진입 검토"
+        status = "진입 검토"
     elif score >= 4.5:
-        status = "예약가 제안"
+        status = "예약가 후보"
     elif score >= 3.5:
-        status = "관찰 강화" if slot in ("1350", "1450") else "눌림 진입 가능"
+        status = "관찰 강화" if slot in ("1350", "1450") else "눌림 확인"
     else:
         status = "판단 애매"
 

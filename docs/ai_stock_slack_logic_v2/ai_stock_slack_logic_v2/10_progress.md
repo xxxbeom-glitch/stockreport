@@ -562,6 +562,84 @@ python scripts/run_kr_intraday_slack.py --slot 0930 --live
 
 - Gemini 모델명 정합 후 polish `status=ok` 검증 (위 E2E 검증 섹션 참고)
 
+## 2026-05-21 작업 기록 — 실운영 수동 발송·슬랙 실전 톤
+
+### 목표
+
+- GitHub Actions **Run workflow** 로 장중 실스캔·실슬랙 발송
+- 기본값: `--live --send` (SendFilter·DeepSeek `ai_send_slack` 조건 유지)
+- 슬랙 본문에서 **테스트/드라이런/검증** 표현 제거, 실전용 라벨·말투
+
+### 수정 파일
+
+| 파일 | 내용 |
+|------|------|
+| `.github/workflows/kr_intraday_slack.yml` | `workflow_dispatch` inputs: slot/live/send/max_messages |
+| `scripts/run_kr_intraday_slack.py` | `--max-messages`, `--dry-run`/`--send` 상호 배제, mode 로그 |
+| `agents/kr_intraday_slack/constants.py` | 실전 decision 라벨, `DECISION_ALIASES`, `SLACK_BODY_FORBIDDEN` |
+| `agents/kr_intraday_slack/message_tone.py` | `[진입 검토]` 등 표시, `1주 기준` 문구 |
+| `agents/kr_intraday_slack/slack_message.py` | 금지어·라벨 검증 |
+| `agents/kr_intraday_slack/entry_price.py`, `ai_judge.py`, `llm_client.py`, `gemini_polish.py`, `send_filter.py` | 라벨·alias 정합 |
+
+### workflow_dispatch 사용법
+
+1. GitHub → **Actions** → **KR Intraday Slack Scan** → **Run workflow**
+2. Inputs (기본값이 실운영):
+   - **slot**: `auto` (KST 시각→0930/1050/1350/1450) 또는 고정 슬롯
+   - **live**: `true` (KIS/pykrx)
+   - **send**: `true` (실슬랙; `false`면 드라이런만)
+   - **max_messages**: `3`
+3. Preflight `OK` 확인 후 스캔 로그·artifact(`scan.log`, `data/logs/kr_slack/*.jsonl`)
+
+### 수동 발송 명령 (로컬·운영 동일)
+
+```powershell
+# 실운영 (live + Slack)
+python scripts/run_kr_intraday_slack.py --slot auto --live --send
+
+# 슬롯 고정
+python scripts/run_kr_intraday_slack.py --slot 1050 --live --send --max-messages 3
+
+# 드라이런 (메시지 생성만, Slack 미발송)
+python scripts/run_kr_intraday_slack.py --slot 0930 --live --dry-run
+
+# 더미 시세 + 미리보기
+python scripts/run_kr_intraday_slack.py --slot 0930
+```
+
+### 자동 발송 시간 (KST, 월~금)
+
+| KST | slot | cron (UTC) |
+|-----|------|------------|
+| 09:30 | 0930 | `30 0 * * 0-4` |
+| 10:50 | 1050 | `50 1 * * 0-4` |
+| 13:50 | 1350 | `50 4 * * 0-4` |
+| 14:50 | 1450 | `50 5 * * 0-4` |
+
+스케줄 실행은 항상 `--live --send --max-messages 3`.
+
+### Slack 메시지 라벨 변경
+
+| 이전 (슬랙 제목) | 이후 |
+|------------------|------|
+| 테스트 진입 검토 | **진입 검토** |
+| 예약가 제안 | **예약가 후보** |
+| 눌림 진입 가능 | **눌림 확인** |
+| 관찰 강화 | 관찰 강화 (유지) |
+| 수급 반전 감지 | 수급 반전 감지 (유지) |
+
+본문: `1주 테스트` → **`1주 기준`** / `소액 기준` 권장.  
+금지(본문): `테스트`, `드라이런`, `검증` — 로그의 `dry_run`/`mode=send`는 Slack에 노출 안 함.
+
+### 실제 발송 조건 (변경 없음·요약)
+
+1. `--send` (또는 Actions `send=true`)
+2. DeepSeek `ai_send_slack=true`
+3. `decision` ∈ {진입 검토, 관찰 강화, 눌림 확인, 예약가 후보, 수급 반전 감지} (구 라벨은 alias로 정규화)
+4. `SendFilter`: 당일 중복·최대 `max_messages`건
+5. 메시지 본문 생성 성공 + 금지 표현 없음
+6. **0건이면 Slack API 호출 없음**
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.

@@ -58,6 +58,17 @@ Secrets를 **Environment**(예: `production`)에만 넣었다면:
 
 Preflight 단계는 **job `env`에서 secrets를 받음** — step에만 env를 두면 MISSING이 난다 (2026-05-21 수정).
 
-### 수동 검증
+### 수동 실운영 발송 (workflow_dispatch)
 
-Actions → **KR Intraday Slack Scan** → **Run workflow** → Preflight 로그에 `OK DEEPSEEK_API_KEY` 등 표시 확인.
+Actions → **KR Intraday Slack Scan** → **Run workflow**
+
+| Input | 기본값 | 설명 |
+|-------|--------|------|
+| `slot` | `auto` | `auto` \| `0930` \| `1050` \| `1350` \| `1450` |
+| `live` | `true` | `false` 시 더미/로컬 시세 |
+| `send` | `true` | `false` 시 `--dry-run` (Slack 미발송) |
+| `max_messages` | `3` | SendFilter 상한 |
+
+기본 실행: `python scripts/run_kr_intraday_slack.py --slot <SLOT> --live --send --max-messages 3`
+
+Preflight 로그에 `OK DEEPSEEK_API_KEY` 등 표시 확인.

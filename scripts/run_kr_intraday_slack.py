@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from agents.kr_intraday_slack import SCAN_SLOTS, run_intraday_scan
+from agents.kr_intraday_slack.constants import MAX_MESSAGES_PER_SCAN
 from agents.kr_intraday_slack.llm_client import (
     ai_config,
     aux_models_status,
@@ -50,22 +51,44 @@ def main() -> int:
         choices=SLOT_CHOICES,
         help="0930|1050|1350|1450|auto (auto=KST 시각 기준)",
     )
-    parser.add_argument("--dry-run", action="store_true", help="슬랙 발송 없이 결과만 출력")
-    parser.add_argument("--send", action="store_true", help="조건 충족 시 Slack 발송")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="슬랙 발송 없이 메시지 초안만 생성·출력",
+    )
+    parser.add_argument(
+        "--send",
+        action="store_true",
+        help="조건 충족 시 Slack 실발송 (운영)",
+    )
     parser.add_argument("--json", action="store_true", help="JSON 요약 출력")
     parser.add_argument(
         "--live",
         action="store_true",
-        help="KIS/pykrx 라이브 수집 (실패 시 더미 대체 없음, 로그 기록)",
+        help="KIS/pykrx 라이브 수집 (미지정 시 더미/로컬 시세)",
+    )
+    parser.add_argument(
+        "--max-messages",
+        type=int,
+        default=MAX_MESSAGES_PER_SCAN,
+        metavar="N",
+        help=f"슬랙 최대 발송 건수 (기본 {MAX_MESSAGES_PER_SCAN}, SendFilter)",
     )
     parser.add_argument(
         "--ticker",
         action="append",
         dest="tickers",
         metavar="CODE",
-        help="테스트용: 특정 티커만 (예: --ticker 089030). 여러 번 지정 가능",
+        help="특정 티커만 스캔 (예: --ticker 222800). 여러 번 지정 가능",
     )
     args = parser.parse_args()
+
+    if args.dry_run and args.send:
+        print("[ERROR] --dry-run 과 --send 는 동시에 사용할 수 없습니다.", file=sys.stderr)
+        return 1
+    if args.max_messages < 1:
+        print("[ERROR] --max-messages 는 1 이상이어야 합니다.", file=sys.stderr)
+        return 1
 
     logging.basicConfig(
         level=logging.INFO,
@@ -96,14 +119,25 @@ def main() -> int:
         f"configured={is_gemini_configured()}"
     )
 
+    mode = "dry_run" if args.dry_run else ("send" if args.send else "preview")
+    data_src = "live" if args.live else "dummy"
+    print(
+        f"[KR INTRADAY] mode={mode} data={data_src} "
+        f"max_messages={args.max_messages}"
+    )
     if args.live and args.send:
-        print("[KR INTRADAY] 운영 모드: --live --send (조건 충족 시 Slack 실발송)")
+        print("[KR INTRADAY] 운영: live 수집 + 조건 충족 시 Slack 실발송")
     elif args.live:
-        print("[KR INTRADAY] 라이브 드라이런: --live (슬랙 미발송)")
+        print("[KR INTRADAY] live 수집, Slack 미발송 (dry-run 또는 preview)")
     elif args.send:
-        print("[KR INTRADAY] 더미 시세 + --send")
+        print("[KR INTRADAY] 더미 시세 + Slack 실발송")
 
-    result = run_intraday_scan(slot, live=args.live, tickers=tickers)
+    result = run_intraday_scan(
+        slot,
+        live=args.live,
+        tickers=tickers,
+        max_messages=args.max_messages,
+    )
 
     if args.json:
         print(
@@ -111,7 +145,9 @@ def main() -> int:
                 {
                     "slot": result.slot,
                     "slot_label": result.slot_label,
+                    "mode": mode,
                     "live": args.live,
+                    "max_messages": args.max_messages,
                     "ai_enabled": result.ai_enabled,
                     "ai_errors": result.ai_errors,
                     "ai_model": cfg["model"],
@@ -149,8 +185,10 @@ def main() -> int:
             print(msg)
 
     if args.dry_run:
-        print("[KR INTRADAY] --dry-run: 슬랙 발송 생략")
-    elif args.send:
+        print(f"[KR INTRADAY] dry_run: 메시지 {len(result.messages)}건 생성, Slack 미발송")
+        return 0
+
+    if args.send:
         if not result.ai_enabled:
             print("[KR INTRADAY] AI 미설정 — 슬랙 미발송", file=sys.stderr)
             return 1
@@ -164,8 +202,11 @@ def main() -> int:
         if not posted.get("ok") and posted.get("count", 0) == 0:
             print("[KR INTRADAY] Slack API 실패", file=sys.stderr)
             return 1
-    elif not result.messages:
-        print("[KR INTRADAY] 슬랙 미발송 (드라이런 또는 send_slack=false)")
+    else:
+        print(
+            f"[KR INTRADAY] preview: 메시지 {len(result.messages)}건 "
+            "(--send 없음, Slack 미발송)"
+        )
 
     return 0
 

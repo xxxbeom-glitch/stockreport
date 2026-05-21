@@ -6,7 +6,12 @@ import json
 import logging
 from typing import Any
 
-from .constants import SCAN_SLOTS, SLACK_SEND_ALLOWED, SLACK_SEND_FORBIDDEN
+from .constants import (
+    SCAN_SLOTS,
+    SLACK_SEND_ALLOWED,
+    SLACK_SEND_FORBIDDEN,
+    normalize_decision,
+)
 from .llm_client import call_llm_json, is_ai_configured
 from .slack_message import build_slack_message_from_ai
 
@@ -25,6 +30,46 @@ def _fmt_range(low: Any, high: Any) -> str:
     except (TypeError, ValueError):
         pass
     return ""
+
+
+def _resolve_entry_range(
+    candidate: dict[str, Any], item: dict[str, Any]
+) -> tuple[str, int | None, int | None]:
+    """
+    AI entry_price_range는 current_price(원)와 동일 단위여야 함.
+    범위가 현재가 대비 비정상(×10·÷10 등)이면 규칙 기반 entry_range로 대체.
+    """
+    rule_range = str(candidate.get("entry_range") or "")
+    rule_low = candidate.get("entry_low")
+    rule_high = candidate.get("entry_high")
+    try:
+        rule_lo = int(rule_low) if rule_low is not None else 0
+        rule_hi = int(rule_high) if rule_high is not None else 0
+    except (TypeError, ValueError):
+        rule_lo, rule_hi = 0, 0
+
+    raw = item.get("entry_price_range") or {}
+    try:
+        lo = int(raw.get("low"))
+        hi = int(raw.get("high"))
+    except (TypeError, ValueError):
+        lo, hi = 0, 0
+
+    current = int(candidate.get("current_price") or 0)
+    if current > 0 and lo > 0 and hi > 0 and lo <= hi:
+        if current * 0.85 <= lo <= current and current * 0.85 <= hi <= current:
+            return _fmt_range(lo, hi), lo, hi
+        logger.warning(
+            "[%s] AI entry_price_range 단위 이상 (%s~%s vs current=%s) — 규칙값 사용",
+            candidate.get("ticker"),
+            lo,
+            hi,
+            current,
+        )
+
+    if rule_range:
+        return rule_range, rule_lo or None, rule_hi or None
+    return "", rule_lo or None, rule_hi or None
 
 
 def _stock_payload(row: dict[str, Any]) -> dict[str, Any]:
@@ -79,17 +124,18 @@ def build_intraday_prompt(
     {{
       "symbol": "종목명(한글)",
       "ticker": "6자리",
-      "decision": "테스트 진입 검토",
+      "decision": "진입 검토",
       "send_slack": true,
       "entry_price_range": {{ "low": 31600, "high": 31900 }},
       "reason": "왜 지금 볼 만한지 1문장(쉬운 말투, 거래대금·억 단위 숫자 나열 금지)",
-      "entry_view": "예약가 구간 눌림 확인·1주 테스트 관점 1문장",
+      "entry_view": "예약가 구간 눌림 확인·1주 기준 관점 1문장",
       "cancel_condition": "취소 조건 1문장(가격 이탈 또는 거래 급감, 짧게)"
     }}
   ]
 }}
 
 decisions 배열 길이는 후보 수와 같아야 합니다. 각 symbol/ticker는 후보와 일치해야 합니다.
+entry_price_range의 low/high는 후보 current_price와 동일한 원(₩) 단위 정수이며, 보통 현재가의 85%~100% 구간입니다.
 
 슬랙 문구 톤: 리포트체·로그체 금지. "활발", "증대", "데이터 불충분", 숫자 나열 문장 금지.
 쉬운 말로 "왜 볼 만한지 / 어디서 눌림 볼지 / 언제 넘길지"만 짧게 씁니다."""
@@ -106,7 +152,7 @@ def _validate_decision(item: dict[str, Any], candidate: dict[str, Any]) -> str |
     if ticker != cand_ticker and name != cand_name:
         return f"종목 불일치 (AI {ticker}/{name} vs {cand_ticker}/{cand_name})"
 
-    decision = str(item.get("decision", "")).strip()
+    decision = normalize_decision(str(item.get("decision", "")).strip())
     if not decision:
         return "decision 없음"
     if decision in SLACK_SEND_FORBIDDEN:
@@ -122,11 +168,9 @@ def _validate_decision(item: dict[str, Any], candidate: dict[str, Any]) -> str |
 
 
 def _merge_decision(candidate: dict[str, Any], item: dict[str, Any]) -> dict[str, Any]:
-    decision = str(item.get("decision", "")).strip()
+    decision = normalize_decision(str(item.get("decision", "")).strip())
     send_slack = bool(item.get("send_slack")) and decision in SLACK_SEND_ALLOWED
-    low = (item.get("entry_price_range") or {}).get("low")
-    high = (item.get("entry_price_range") or {}).get("high")
-    entry_range = _fmt_range(low, high) or str(candidate.get("entry_range") or "")
+    entry_range, entry_low, entry_high = _resolve_entry_range(candidate, item)
 
     merged = {
         **candidate,
@@ -137,8 +181,8 @@ def _merge_decision(candidate: dict[str, Any], item: dict[str, Any]) -> dict[str
         "ai_entry_view": str(item.get("entry_view", "")).strip(),
         "ai_cancel_condition": str(item.get("cancel_condition", "")).strip(),
         "entry_range": entry_range,
-        "entry_low": low,
-        "entry_high": high,
+        "entry_low": entry_low,
+        "entry_high": entry_high,
     }
     if not send_slack:
         merged["ai_skip_reason"] = (

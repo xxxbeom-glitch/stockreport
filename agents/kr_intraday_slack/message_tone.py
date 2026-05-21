@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from .constants import SLACK_BODY_FORBIDDEN, slack_display_label
+
 # 딱딱한 표현 → 쉬운 말투
 _SOFTEN_MAP: tuple[tuple[str, str], ...] = (
     ("X 데이터 불충분", "관련 이슈는 아직 뚜렷하진 않지만, 섹터 흐름은 확인할 만합니다"),
@@ -177,7 +179,7 @@ def compose_slack_message(row: dict[str, Any]) -> str | None:
     if not row.get("ai_send_slack"):
         return None
 
-    status = str(row.get("ai_decision") or row.get("status") or "")
+    status = slack_display_label(str(row.get("ai_decision") or row.get("status") or ""))
     name = str(row.get("name", ""))
     price = str(row.get("current_price_fmt") or row.get("current_price") or "N/A")
     entry_range = str(row.get("entry_range") or "—")
@@ -193,9 +195,9 @@ def compose_slack_message(row: dict[str, Any]) -> str | None:
     elif entry_view:
         entry_hint = "예약가 후보 구간"
 
-    entry_sentence = "1주 테스트라면 이 구간에서만 진입을 검토하고,"
+    entry_sentence = "1주 기준이라면 이 구간에서만 진입을 검토하고,"
     if entry_hint:
-        entry_sentence = f"1주 테스트라면 {entry_hint}에서만 진입을 검토하고,"
+        entry_sentence = f"1주 기준이라면 {entry_hint}에서만 진입을 검토하고,"
 
     lines = [
         f"[{status}] {name}",
@@ -249,3 +251,8 @@ def is_message_too_long(text: str) -> bool:
 
 def has_required_slack_shape(text: str) -> bool:
     return "[" in text and "현재가" in text and "취소 조건" in text
+
+
+def contains_slack_body_forbidden(text: str) -> bool:
+    lower = text.lower()
+    return any(p in text or p in lower for p in SLACK_BODY_FORBIDDEN)
