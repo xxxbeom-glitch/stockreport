@@ -58,10 +58,15 @@ _STIFF_MARKERS = (
 _OBSERVE_DECISIONS = frozenset({"관찰 강화", "눌림 확인", "수급 반전 감지"})
 
 _TITLE_EMOJI = "📌"
-_MAX_LINES = 12
-_MAX_CHARS = 720
-_MAX_SUMMARY_LINES = 85
-_MAX_SUMMARY_CHARS = 4500
+_LABEL_ENTRY_RANGE = "진입 후보 구간"
+_ELLIPSIS_RE = re.compile(r"\.{3,}|…")
+_MAX_LINES = 16
+_MAX_CHARS = 900
+_MAX_SUMMARY_LINES = 100
+_MAX_SUMMARY_CHARS = 5500
+_MAX_NARRATIVE_SENTENCES = 4
+_MAX_ISSUE_SENTENCES = 2
+_MAX_SENTENCE_CHARS = 140
 
 
 def soften_text(text: str) -> str:
@@ -76,15 +81,81 @@ def soften_text(text: str) -> str:
     return out.strip(" ,.")
 
 
+def contains_slack_ellipsis(text: str) -> bool:
+    """슬랙 본문에 줄임표(… / ...)가 있으면 True."""
+    if not text:
+        return False
+    return bool(_ELLIPSIS_RE.search(text))
+
+
+def _split_sentences(text: str) -> list[str]:
+    t = soften_text(text.replace("\n", " "))
+    if not t:
+        return []
+    parts = re.split(r"(?<=[.!?])\s+", t)
+    out: list[str] = []
+    for part in parts:
+        p = part.strip()
+        if not p or len(p) < 8 or contains_slack_ellipsis(p):
+            continue
+        if p[-1] not in ".!?":
+            p = f"{p}."
+        out.append(p)
+    return out
+
+
+def _complete_sentences(
+    text: str,
+    *,
+    max_sentences: int = 2,
+    max_chars: int = _MAX_SENTENCE_CHARS,
+) -> list[str]:
+    """완성 문장만 반환. 길면 자르지 않고 해당 문장은 생략."""
+    chosen: list[str] = []
+    for sentence in _split_sentences(text):
+        if len(chosen) >= max_sentences:
+            break
+        if len(sentence) > max_chars:
+            continue
+        chosen.append(sentence)
+    return chosen
+
+
+def _reject_ellipsis_body(text: str) -> str:
+    """줄임표로 끊긴 줄은 제거하거나, 완성 문장만 남김."""
+    lines: list[str] = []
+    for line in text.split("\n"):
+        stripped = line.rstrip()
+        if not stripped:
+            lines.append(line)
+            continue
+        if stripped.endswith("...") or stripped.endswith("…"):
+            fixed = _ELLIPSIS_RE.sub("", stripped).strip()
+            if len(fixed) >= 10 and fixed[-1] in ".!?":
+                lines.append(fixed)
+            continue
+        if "..." in stripped or "…" in stripped:
+            fixed = stripped.replace("…", "").replace("...", "").strip()
+            if len(fixed) >= 10 and not contains_slack_ellipsis(fixed):
+                lines.append(fixed)
+            continue
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def sanitize_slack_mrkdwn(text: str) -> str:
-    """Gemini 등 외부 출력 → 슬랙 본문 정규화 (취소 조건 → 경고)."""
+    """Gemini 등 외부 출력 → 슬랙 본문 정규화."""
     if not text:
         return ""
     out = text.strip()
     out = re.sub(r"취소\s*조건\s*:", "• *경고*", out, flags=re.IGNORECASE)
     out = re.sub(r"아래\s*취소\s*조건", "아래 경고", out)
     out = out.replace("취소 조건", "경고")
+    out = out.replace("예약가 후보", _LABEL_ENTRY_RANGE)
+    out = re.sub(r"예약가\s*후보\s*:", f"*{_LABEL_ENTRY_RANGE}*", out)
+    out = re.sub(r"(?<!\*)\b현재가\s*:", "*현재가*", out)
     out = re.sub(r"\n{3,}", "\n\n", out)
+    out = _reject_ellipsis_body(out)
     return out.strip()
 
 
@@ -96,55 +167,38 @@ def join_intraday_slack_messages(messages: list[str]) -> str:
     return blocks[0]
 
 
-def _usable_hint(text: str) -> str:
-    if not text:
-        return ""
-    t = soften_text(text)
-    clause = re.split(r"[,，]\s*", t)[0].strip()
-    if not clause or len(clause) < 10:
-        return ""
-    if re.search(r"\d", clause):
-        return ""
-    broken = ("으로 거래", "으로 붙", "분위기는 애매하지만", "확인할 만")
-    if any(b in clause for b in broken):
-        return ""
-    if len(clause) > 56:
-        clause = clause[:55].rstrip() + "…"
-    return clause
+def first_short_sentence(text: str, *, max_len: int = 140) -> str:
+    """완성 문장 1개. 길면 생략(줄임표 금지)."""
+    sentences = _complete_sentences(text, max_sentences=1, max_chars=max_len)
+    return sentences[0] if sentences else ""
 
 
-def first_short_sentence(text: str, *, max_len: int = 72) -> str:
-    hint = _usable_hint(text)
-    if hint:
-        return hint
-    t = soften_text(text)
-    parts = re.split(r"(?<=[.!?])\s+|[\n]+", t)
-    sentence = (parts[0] if parts else t).strip()
-    if re.search(r"\d", sentence) or len(sentence) < 10:
-        return ""
-    if len(sentence) > max_len:
-        sentence = sentence[: max_len - 1].rstrip() + "…"
-    return sentence
-
-
-def grok_one_liner(row: dict[str, Any]) -> str:
+def _grok_raw_text(row: dict[str, Any]) -> str:
     if row.get("grok_status") != "ok":
         return ""
-    raw = (
+    return (
         str(row.get("grok_why_now", "")).strip()
         or str(row.get("grok_mention_summary", "")).strip()
         or str(row.get("grok_sector_issue", "")).strip()
     )
+
+
+def grok_issue_sentences(row: dict[str, Any]) -> list[str]:
+    """Grok 이슈 — 완성 문장 최대 2개, 줄임표·'이슈:' 접두 금지."""
+    raw = _grok_raw_text(row)
     if not raw:
-        return ""
+        return []
     line = soften_text(raw)
     if "뚜렷한 새 소식" in line or "이슈는 아직" in line:
-        return ""
-    if len(line) > 68:
-        line = line[:67].rstrip() + "…"
-    if line.startswith("이슈:"):
-        return line
-    return f"이슈: {line}" if line else ""
+        return []
+    line = re.sub(r"^이슈\s*:\s*", "", line).strip()
+    return _complete_sentences(line, max_sentences=_MAX_ISSUE_SENTENCES)
+
+
+def grok_one_liner(row: dict[str, Any]) -> str:
+    """하위 호환 — 첫 이슈 문장만."""
+    sents = grok_issue_sentences(row)
+    return sents[0] if sents else ""
 
 
 def _has_entry_range(entry_range: str) -> bool:
@@ -159,7 +213,7 @@ def _entry_range_display(entry_range: str) -> str:
 def _pullback_line(entry_range: str, decision: str) -> str:
     if _has_entry_range(entry_range):
         return (
-            "다만 바로 따라가기보다는 예약가 후보 구간까지 눌리는지 "
+            "다만 바로 따라가기보다는, 위 구간까지 눌리는지 "
             "보는 게 좋아 보입니다."
         )
     if decision in _OBSERVE_DECISIONS:
@@ -190,11 +244,13 @@ def _watch_line(row: dict[str, Any], *, include_grok: bool = True) -> str:
 
 
 def _warning_line(row: dict[str, Any]) -> str:
+    """매수가가 아닌 회피·무효 기준 (진입 후보 구간 무효 조건)."""
     raw = soften_text(str(row.get("ai_cancel_condition", "")))
     if not raw:
         return "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
     line = raw.replace("\n", " ").strip()
     line = re.sub(r"취소\s*조건", "", line).strip(" :")
+    line = re.sub(r"^(매수|진입)\s*(가|가격)\s*", "", line).strip()
     price_m = re.search(r"([\d,]+)\s*원", line)
     price_plain = re.search(r"(\d{4,6})\s*이하", line)
     if price_m and ("이탈" in line or "이하" in line):
@@ -203,37 +259,67 @@ def _warning_line(row: dict[str, Any]) -> str:
         p = f"{int(price_plain.group(1)):,}"
         return f"{p}원 이탈 또는 거래 급감 시 오늘은 넘기기"
     if "거래" in line and ("급" in line or "줄" in line):
-        return line if len(line) <= 55 else "거래 급감·가격 이탈 시 오늘은 넘기기"
-    if len(line) > 55:
-        line = first_short_sentence(line, max_len=52)
-    return line or "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
+        complete = first_short_sentence(line, max_len=90)
+        if complete:
+            return complete
+        return "거래 급감·가격 이탈 시 오늘은 넘기기"
+    complete = first_short_sentence(line, max_len=90)
+    return complete or "가격 이탈 또는 거래 급감 시 오늘은 넘기기"
 
 
-def _one_share_sentence(entry_range: str, decision: str) -> str:
-    """섹터 요약 종목 카드용 1주 기준 한 줄."""
+def _one_share_line(entry_range: str, decision: str) -> str:
+    """• *1주 기준* 아래 한 줄."""
     if _has_entry_range(entry_range):
-        return "1주 기준이라면 예약가 후보 구간에서만 진입 검토."
+        return f"{entry_range} 구간에서만 진입 검토"
     if decision in _OBSERVE_DECISIONS:
-        return "1주 기준이라면 눌림·흐름만 가볍게 확인."
-    return "1주 기준이라면 예약가가 잡히기 전까지는 관찰 위주로 보기."
+        return "눌림·흐름만 가볍게 확인"
+    return "진입 후보 구간이 잡히기 전까지는 관찰 위주"
 
 
 def _pullback_sentence(entry_range: str, decision: str) -> str:
     if _has_entry_range(entry_range):
-        return "다만 바로 따라가기보다 눌림 구간을 보는 쪽이 좋아 보입니다."
+        return _pullback_line(entry_range, decision)
     if decision in _OBSERVE_DECISIONS:
-        return "예약가 후보가 없으므로 지금은 눌림 확인 중심으로 보는 게 좋아 보입니다."
-    return "예약가 후보가 없으므로 지금은 눌림 확인 중심으로 보는 게 좋아 보입니다."
+        return (
+            "진입 후보 구간이 없으므로 지금은 눌림·흐름 확인 중심으로 "
+            "보는 게 좋아 보입니다."
+        )
+    return (
+        "진입 후보 구간이 없으므로 지금은 눌림 확인 중심으로 "
+        "보는 게 좋아 보입니다."
+    )
 
 
-def _sector_reason_line(row: dict[str, Any]) -> str:
+def _narrative_lines(
+    row: dict[str, Any],
+    entry_range: str,
+    decision: str,
+) -> list[str]:
+    """종목 설명 2~4문장 (완성 문장만)."""
     sector = str(row.get("sector_name", "")).strip()
-    hint = first_short_sentence(str(row.get("ai_reason", "")))
-    if sector:
-        return f"{sector} 쪽에서 다시 관심이 붙는 흐름입니다."
-    if hint:
-        return hint if hint.endswith(("습니다", "입니다", "요", "다")) else f"{hint}."
-    return "다시 관심이 붙는 흐름입니다."
+    lines: list[str] = []
+
+    reason_sents = _complete_sentences(
+        str(row.get("ai_reason", "")),
+        max_sentences=1,
+        max_chars=_MAX_SENTENCE_CHARS,
+    )
+    if reason_sents:
+        lines.extend(reason_sents)
+    elif sector:
+        lines.append(f"{sector} 쪽에서 다시 관심이 붙는 흐름입니다.")
+    else:
+        lines.append("장중에 다시 볼 만한 흐름입니다.")
+
+    for sent in grok_issue_sentences(row):
+        if sent not in lines:
+            lines.append(sent)
+
+    pullback = _pullback_sentence(entry_range, decision)
+    if pullback not in lines:
+        lines.append(pullback)
+
+    return lines[:_MAX_NARRATIVE_SENTENCES]
 
 
 def compose_sector_stock_block(row: dict[str, Any]) -> str | None:
@@ -249,17 +335,22 @@ def compose_sector_stock_block(row: dict[str, Any]) -> str | None:
 
     lines = [
         f"{_TITLE_EMOJI} *{name}*",
-        f"현재가: {price}",
-        f"예약가 후보: {entry_display}",
         "",
-        _sector_reason_line(row),
+        f"*현재가* {price}",
+        f"*{_LABEL_ENTRY_RANGE}* {entry_display}",
+        "",
     ]
-    grok = grok_one_liner(row)
-    if grok:
-        lines.append(grok)
-    lines.append(_pullback_sentence(entry_raw, decision))
-    lines.append(_one_share_sentence(entry_raw, decision))
-    lines.extend(["", "• *경고*", _warning_line(row)])
+    lines.extend(_narrative_lines(row, entry_raw, decision))
+    lines.extend(
+        [
+            "",
+            "• *1주 기준*",
+            _one_share_line(entry_raw, decision),
+            "",
+            "• *경고*",
+            _warning_line(row),
+        ]
+    )
     return sanitize_slack_mrkdwn("\n".join(lines))
 
 
@@ -355,7 +446,7 @@ def _one_share_basis_detail(entry_range: str, decision: str, entry_view: str) ->
         return view
     if decision in _OBSERVE_DECISIONS:
         return "소액 기준으로 눌림·흐름만 가볍게 확인"
-    return "예약가 후보가 잡히기 전까지는 관찰 위주로 보기"
+    return "진입 후보 구간이 잡히기 전까지는 관찰 위주로 보기"
 
 
 def compose_slack_message(row: dict[str, Any]) -> str | None:
@@ -396,7 +487,13 @@ def is_message_too_long(text: str) -> bool:
 def has_required_slack_shape(text: str) -> bool:
     """종목 카드 형식."""
     t = sanitize_slack_mrkdwn(text)
-    return _TITLE_EMOJI in t and "현재가:" in t and "• *경고*" in t
+    return (
+        _TITLE_EMOJI in t
+        and "*현재가*" in t
+        and f"*{_LABEL_ENTRY_RANGE}*" in t
+        and "• *경고*" in t
+        and "• *1주 기준*" in t
+    )
 
 
 def contains_slack_body_forbidden(text: str) -> bool:

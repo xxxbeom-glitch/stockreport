@@ -8,6 +8,7 @@ from .constants import FORBIDDEN_PHRASES, SCAN_SLOTS, SLACK_SEND_ALLOWED, normal
 from .message_tone import (
     compose_sector_summary_message,
     contains_slack_body_forbidden,
+    contains_slack_ellipsis,
     sanitize_slack_mrkdwn,
     soften_text,
 )
@@ -38,7 +39,7 @@ def build_sector_slack_summary(
     if not text:
         return None
     text = sanitize_slack_mrkdwn(text)
-    if _contains_forbidden(text):
+    if _contains_forbidden(text) or contains_slack_ellipsis(text):
         return None
     return text
 

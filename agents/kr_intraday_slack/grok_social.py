@@ -29,11 +29,16 @@ DeepSeek 1차 판단(참고, 변경하지 말 것): {row.get("ai_decision")} / s
 이 종목이 지금 왜 언급되는지, X·뉴스·시장 분위기를 보조 요약하세요.
 슬랙 발송 여부는 결정하지 마세요.
 
+문장 규칙:
+- 각 필드는 완성된 문장만 (마침표로 끝)
+- 줄임표(..., …)·글자 수로 자른 미완성 문장 금지
+- 필드당 최대 2문장, 짧고 명확하게
+
 JSON만 응답:
 {{
-  "mention_summary": "2~3문장 요약",
-  "why_now": "지금 주목되는 이유 1~2문장",
-  "sector_issue": "섹터·이슈 1문장",
+  "mention_summary": "완성 문장 1~2개",
+  "why_now": "지금 주목되는 이유 완성 문장 1~2개",
+  "sector_issue": "섹터·이슈 완성 문장 1개",
   "x_sentiment": "positive|neutral|negative|unknown"
 }}"""
 

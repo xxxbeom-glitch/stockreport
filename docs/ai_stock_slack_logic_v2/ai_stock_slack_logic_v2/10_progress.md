@@ -777,6 +777,71 @@ SendFilter → compose_sector_summary_message → Gemini polish 1회 → Slack 1
 - Python 내부 redirect **사용 안 함**
 - 셸: `python ... 2>&1 | tee scan.log` (실패 시에도 `scan.log` artifact 업로드)
 
+## 2026-05-21 작업 기록 — Slack 진입 구간·경고 표현·줄임표 제거
+
+### 배경
+
+- Grok/이슈 문장이 68자 등에서 `…`로 잘려 의미가 끊김.
+- "예약가 후보"·"경고"가 매수 가격으로 오해될 수 있음.
+- 사용자 의도: **진입 후보 구간** = 1주 기준 매수 타이밍을 노릴 가격대, **경고** = 매수가 아닌 무효·오늘은 넘기기 기준.
+
+### 변경 요약
+
+| 항목 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| 가격대 라벨 | 예약가 후보 | **진입 후보 구간** |
+| 종목 카드 | `현재가:` / 짧은 `…` 절단 | `*현재가*`, `*진입 후보 구간*`, 완성 문장 2~4개 |
+| Grok | 67자 + `…` | `grok_issue_sentences` 완성 문장 최대 2개, 초과 시 생략 |
+| 경고 | 짧게 잘림 가능 | 회피 기준 문장(이탈·거래 급감), 매수가 접두 제거 |
+| 검증 | 없음 | `contains_slack_ellipsis`, `sanitize`·Gemini·`build_sector_slack_summary`에서 `...`/`…` 거부 |
+
+### 수정 파일
+
+| 파일 | 내용 |
+|------|------|
+| `agents/kr_intraday_slack/message_tone.py` | `_complete_sentences`, `_reject_ellipsis_body`, `compose_sector_stock_block` 포맷, 용어·서술 |
+| `agents/kr_intraday_slack/slack_message.py` | 발송 전 줄임표 검사 |
+| `agents/kr_intraday_slack/grok_social.py` | 완성 문장·줄임표 금지 프롬프트 |
+| `agents/kr_intraday_slack/gemini_polish.py` | 진입 후보 구간/경고 의미, ellipsis 거부 |
+| `agents/kr_intraday_slack/ai_judge.py` | reason/cancel_condition 톤 가이드 |
+
+### Slack 예시 (심텍, 변경 후)
+
+```text
+📌 *심텍*
+
+*현재가* 124,700원
+*진입 후보 구간* 119,000원 ~ 122,000원
+
+반도체 부품 쪽에서 다시 관심이 붙는 흐름입니다.
+…(Grok 완성 문장 0~2개)…
+다만 바로 따라가기보다는, 위 구간까지 눌리는지 보는 게 좋아 보입니다.
+
+• *1주 기준*
+119,000원 ~ 122,000원 구간에서만 진입 검토
+
+• *경고*
+109,000원 이탈 또는 거래 급감 시 오늘은 넘기기
+```
+
+로컬 `compose_sector_stock_block` / `build_sector_slack_summary` 기준 **`...`/`…` 없음** 확인.
+
+### 변경 전 (참고)
+
+```text
+📌 *심텍*
+현재가: 124,700원
+예약가 후보: 119,000원 ~ 122,000원
+
+반도체 부품 쪽에서 다시 관심이 붙는 흐름입니다.
+이슈: 반도체 장비 수주 기대감이 다시 거론되면서 부품주로 관심이 확산되는 분…
+다만 바로 따라가기보다 눌림 구간을 보는 쪽이 좋아 보입니다.
+1주 기준이라면 예약가 후보 구간에서만 진입 검토.
+
+• *경고*
+109,000원 이탈 또는 거래 급감 시 오늘은 넘기기
+```
+
 ## 기록 규칙
 
 Cursor는 각 작업 완료 후 위 형식으로 추가 기록한다.
