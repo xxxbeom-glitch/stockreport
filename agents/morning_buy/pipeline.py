@@ -21,12 +21,14 @@ def run_morning_buy_alert(
         include_temp_watch=True,
     )
     merged = merge_sector_scan_results(sector_results, slot=slot)
-    main, send_rows, stats = run_morning_voting_finalize(
+    main, send_rows, stats, detail_messages = run_morning_voting_finalize(
         merged.stocks,
         slot=slot,
         max_messages=max_messages,
     )
 
+    thread_messages = [{"text": t} for t in detail_messages]
+    all_messages = [main, *detail_messages] if main else []
     zero = not send_rows and bool(merged.stocks)
     return IntradayScanResult(
         slot=slot,
@@ -34,9 +36,11 @@ def run_morning_buy_alert(
         scanned=stats.get("scanned", len(merged.stocks)),
         candidates=merged.candidates,
         evaluated=send_rows,
-        messages=[main] if main else [],
+        messages=all_messages,
         main_message=main if (send_rows or send_empty_summary) else "",
+        thread_messages=thread_messages,
         send_rows=send_rows,
         ai_enabled=True,
         zero_pick_notice=zero and bool(main),
+        slack_send_mode="sequential",
     )

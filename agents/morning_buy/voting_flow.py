@@ -10,6 +10,7 @@ from agents.ai.grok_research import fetch_grok_market_research
 from agents.ai.model_config import GEMINI_MODEL_ID
 from agents.gemini_client import generate_gemini_json
 from agents.kr_intraday_slack.llm_client import call_primary_json, is_gemini_configured
+from agents.kr_intraday_slack.entry_price import enrich_intraday_entry
 from agents.kr_intraday_slack.send_filter import filter_for_slack_send
 from agents.weekly_watchlist_update.candidate_agents import (
     build_sector_context,
@@ -22,7 +23,10 @@ from data.candidates.dart_disclosure_tracker import (
     format_dart_summary,
 )
 
-from .slack_message import build_morning_buy_slack, build_morning_buy_empty_slack
+from .slack_message import (
+    build_morning_buy_empty_slack,
+    build_morning_buy_slack_bundle,
+)
 
 logger = logging.getLogger("morning_buy.voting")
 
@@ -48,7 +52,7 @@ def run_morning_voting_finalize(
     max_messages: int = 3,
 ) -> tuple[str, list[dict[str, Any]], dict[str, Any]]:
     """
-    Returns (main_slack_message, send_rows, stats).
+    Returns (summary_message, send_rows, stats, detail_messages).
     """
     stats: dict[str, Any] = {
         "scanned": len(stocks),
@@ -62,7 +66,8 @@ def run_morning_voting_finalize(
         "grok_x_search_used": False,
     }
     if not stocks:
-        return build_morning_buy_empty_slack(slot=slot, scanned=0), [], stats
+        empty = build_morning_buy_empty_slack(slot=slot, scanned=0)
+        return empty, [], stats, []
 
     sector_ctx = build_sector_context(
         [{**s, "return_5d_pct": 0, "tv_increase": True} for s in stocks[:10]]
@@ -168,6 +173,7 @@ JSON:
             row["ai_send_slack"] = status in SEND_STATES
             if item.get("entry_range"):
                 row["entry_range"] = item["entry_range"]
+            row = enrich_intraday_entry(row, slot=slot)
             finalized.append(row)
         stats["deepseek_ok"] = len(finalized)
     else:
@@ -199,7 +205,13 @@ JSON:
         require_ai=False,
         max_messages=max_messages,
     )
-    main = build_morning_buy_slack(slot=slot, send_rows=to_send, scanned=len(stocks))
+    to_send = [enrich_intraday_entry(r, slot=slot) for r in to_send]
+    bundle = build_morning_buy_slack_bundle(
+        slot=slot, send_rows=to_send, scanned=len(stocks)
+    )
+    main = bundle["summary"]
+    details = list(bundle["detail_messages"])
     if not to_send and stocks:
         main = build_morning_buy_empty_slack(slot=slot, scanned=len(stocks))
-    return main, to_send, stats
+        details = []
+    return main, to_send, stats, details

@@ -26,6 +26,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="오늘 매수 후보 알림")
     parser.add_argument("--live-data", action="store_true", help="실제 데이터로 확인")
     parser.add_argument("--send-slack", action="store_true", help="Slack으로 보내기")
+    parser.add_argument(
+        "--no-send",
+        action="store_true",
+        help="Slack 미발송 (기본값, 미리보기만)",
+    )
     parser.add_argument("--max-pick", type=int, default=3, help="최대 발송 개수")
     parser.add_argument("--scheduled", action="store_true", help="Actions schedule 실행")
     args = parser.parse_args()
@@ -38,6 +43,8 @@ def main() -> int:
     temps = list_active_temp_candidates()
     safe_print(f"[MORNING_BUY] 임시 관찰 후보 {len(temps)}건 포함")
 
+    if args.no_send:
+        args.send_slack = False
     if args.send_slack and not can_send_daily_pick_slack(
         explicit_cli=True, scheduled=args.scheduled
     ):
@@ -55,9 +62,15 @@ def main() -> int:
     log.counts["DeepSeek 최종 판단 수"] = len(result.evaluated)
     log.counts["Slack 발송 대상"] = len(result.send_rows)
 
-    if result.main_message:
-        safe_print("--- MAIN ---")
-        safe_print(result.main_message)
+    preview = result.messages or (
+        [result.main_message] if result.main_message else []
+    )
+    for idx, msg in enumerate(preview, start=1):
+        if not msg:
+            continue
+        safe_print(f"--- MESSAGE {idx} ---")
+        safe_print(msg)
+        safe_print("")
 
     if args.send_slack:
         if not result.main_message:

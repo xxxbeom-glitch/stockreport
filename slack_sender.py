@@ -841,6 +841,48 @@ def log_thread_send_result(
         )
 
 
+def send_slack_sequential_messages(
+    messages: list[str],
+    *,
+    channel: str,
+    retries: int = 1,
+) -> dict[str, Any]:
+    """독립 메시지 N건을 순서대로 발송 (쓰레드 없음)."""
+    texts = [str(t).strip() for t in messages if str(t).strip()]
+    if not texts:
+        return {"ok": True, "skipped": True, "reason": "no_messages", "posts": 0}
+    if not channel:
+        return {"ok": False, "error": "Slack channel missing", "skipped": True}
+
+    errors: list[str] = []
+    posted_count = 0
+    first_ts = None
+    for text in texts:
+        if is_incoming_webhook(channel):
+            posted = post_webhook(text, channel, retries=retries)
+        else:
+            posted = post_message(text, channel, retries=retries)
+        if posted.get("ok"):
+            posted_count += 1
+            if first_ts is None:
+                first_ts = posted.get("ts")
+        else:
+            errors.append(str(posted.get("error", "post_failed")))
+            break
+
+    ok = posted_count == len(texts)
+    return {
+        "ok": ok,
+        "main_message_ts": first_ts,
+        "thread_count": 0,
+        "thread_posted": 0,
+        "sector_thread_status": [],
+        "errors": errors,
+        "channel": channel,
+        "posts": posted_count,
+    }
+
+
 def send_slack_threaded_messages(
     main_text: str,
     thread_messages: list[str],
@@ -931,17 +973,24 @@ def send_kr_intraday_slack(
     ]
     thread_texts = [t for t in thread_texts if t]
 
+    send_mode = str(getattr(result, "slack_send_mode", "threaded") or "threaded")
     destination = resolve_buy_candidate_destination()
-    if is_incoming_webhook(destination):
+    channel = destination or resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
+        "SLACK_CHANNEL_KR", ""
+    )
+
+    if send_mode == "sequential" and thread_texts:
+        all_texts = [main_text, *thread_texts]
+        if is_incoming_webhook(channel):
+            posted = send_slack_sequential_messages(all_texts, channel=channel, retries=1)
+        else:
+            posted = send_slack_sequential_messages(all_texts, channel=channel or "", retries=1)
+    elif is_incoming_webhook(channel):
         combined = main_text
         if thread_texts:
             combined = main_text + "\n\n" + "\n\n".join(thread_texts)
-        posted = post_webhook(combined, destination, retries=1)
-        channel = destination
+        posted = post_webhook(combined, channel, retries=1)
     else:
-        channel = destination or resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
-            "SLACK_CHANNEL_KR", ""
-        )
         posted = send_slack_threaded_messages(
             main_text, thread_texts, channel=channel or "", retries=1
         )
@@ -1005,7 +1054,7 @@ def send_kr_watchlist_report_slack(
     posted = post_to_destination(fallback, destination, blocks=blocks, retries=1)
     return {
         "ok": bool(posted.get("ok")),
-        "channel": channel,
+        "channel": destination,
         "briefing_url": briefing_url or None,
         "errors": [] if posted.get("ok") else [str(posted.get("error", "unknown"))],
         "ts": posted.get("ts"),

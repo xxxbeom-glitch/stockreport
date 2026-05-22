@@ -44,6 +44,7 @@ class IntradayScanResult:
     grok_notes: list[str] = field(default_factory=list)
     sector_scan_notes: list[str] = field(default_factory=list)
     zero_pick_notice: bool = False
+    slack_send_mode: str = "threaded"
 
     @property
     def should_send_slack(self) -> bool:
