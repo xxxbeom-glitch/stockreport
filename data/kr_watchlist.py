@@ -11,17 +11,15 @@ _WATCHLIST_PATH = Path(__file__).resolve().parent / "kr_watchlist.json"
 
 # 섹터 표시·필터 순서 (고정)
 SECTOR_ORDER: tuple[str, ...] = (
-    "semiconductor_materials",
-    "semiconductor_parts",
-    "semiconductor_equipment",
-    "defense_space",
-    "shipbuilding_materials",
+    "semiconductor_subdev",
+    "aerospace_defense",
+    "shipbuilding_robotics",
 )
 
 FILTER_ALL = "전체섹터"
 
-WATCHLIST_STOCK_LIMIT = 25
-WATCHLIST_SECTOR_LIMIT = 5
+WATCHLIST_STOCK_LIMIT = 29
+WATCHLIST_SECTOR_LIMIT = 3
 FORBIDDEN_SECTOR_KEYWORDS: tuple[str, ...] = ("해운", "조선·해양방산·해운")
 
 
@@ -69,7 +67,7 @@ def watchlist_sectors_meta() -> list[dict[str, Any]]:
 
 
 def stock_filter_options() -> list[str]:
-    """드롭다운: 전체 + 5개 섹터명."""
+    """드롭다운: 전체 + 섹터명."""
     labels = [str((load_kr_watchlist_raw().get("sectors") or {}).get(k, {}).get("label", k)) for k in SECTOR_ORDER]
     return [FILTER_ALL, *labels]
 
@@ -166,7 +164,7 @@ def watchlist_sector_labels() -> list[str]:
 
 
 def default_sector_flow() -> dict[str, list[str]]:
-    """관심 5섹터 기준 hot/cold (오프라인·검증용)."""
+    """관심 섹터 기준 hot/cold (오프라인·검증용)."""
     labels = watchlist_sector_labels()
     if len(labels) >= 3:
         return {"hot": labels[:2], "cold": [labels[-1]]}

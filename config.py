@@ -141,7 +141,7 @@ US_SECTOR_ETFS: Final[dict[str, str]] = {
     "AI인프라": "BOTZ",
 }
 
-# ---- KR watchlist (data/kr_watchlist.json — 5섹터·25종목 고정) ----
+# ---- KR watchlist (data/kr_watchlist.json) ----
 def _kr_watchlist_from_json() -> dict[str, dict[str, str]]:
     """config ↔ data 순환 import 방지: JSON 직접 로드."""
     import json
@@ -149,13 +149,9 @@ def _kr_watchlist_from_json() -> dict[str, dict[str, str]]:
 
     path = Path(__file__).resolve().parent / "data" / "kr_watchlist.json"
     raw = json.loads(path.read_text(encoding="utf-8"))
-    order = (
-        "semiconductor_materials",
-        "semiconductor_parts",
-        "semiconductor_equipment",
-        "defense_space",
-        "shipbuilding_materials",
-    )
+    from data.kr_watchlist import SECTOR_ORDER
+
+    order = SECTOR_ORDER
     out: dict[str, dict[str, str]] = {}
     sectors = raw.get("sectors") or {}
     for key in order:
