@@ -149,9 +149,12 @@ def _kr_watchlist_from_json() -> dict[str, dict[str, str]]:
 
     path = Path(__file__).resolve().parent / "data" / "kr_watchlist.json"
     raw = json.loads(path.read_text(encoding="utf-8"))
-    from data.kr_watchlist import SECTOR_ORDER
-
-    order = SECTOR_ORDER
+    # data.kr_watchlist import 금지 — data/__init__ → config 순환 참조 방지
+    order = (
+        "semiconductor_subdev",
+        "aerospace_defense",
+        "shipbuilding_robotics",
+    )
     out: dict[str, dict[str, str]] = {}
     sectors = raw.get("sectors") or {}
     for key in order:
