@@ -10,6 +10,12 @@ SCAN_SLOTS: Final[dict[str, tuple[str, str]]] = {
     "1350": ("13:50", "오후 수급 변화·신규 후보 재점검"),
 }
 
+# Slack 0건 안내 제목용 (1350 = 장중·장마감 동일 슬롯)
+SLOT_PHASE_LABEL: Final[dict[str, str]] = {
+    "1030": "장전",
+    "1350": "장중",
+}
+
 # 슬랙 발송 허용 decision (실전용 라벨)
 SLACK_SEND_ALLOWED: Final[frozenset[str]] = frozenset(
     {

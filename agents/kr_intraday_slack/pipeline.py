@@ -13,6 +13,7 @@ from .gemini_polish import polish_slack_message
 from .grok_social import enrich_rows_with_grok
 from .llm_client import aux_models_status, is_ai_configured
 from .message_tone import (
+    compose_daily_pick_zero_message,
     compose_new_candidate_stock_block,
     select_pass_today_rows,
 )
@@ -42,6 +43,7 @@ class IntradayScanResult:
     aux_models: dict[str, Any] = field(default_factory=dict)
     grok_notes: list[str] = field(default_factory=list)
     sector_scan_notes: list[str] = field(default_factory=list)
+    zero_pick_notice: bool = False
 
     @property
     def should_send_slack(self) -> bool:
@@ -203,14 +205,6 @@ def run_intraday_scan(
                     pass_rows=pass_rows,
                     evaluated=evaluated,
                 )
-            elif send_empty_summary:
-                bundle = build_intraday_slack_thread_bundle(
-                    [],
-                    slot=slot,
-                    allow_empty=True,
-                    evaluated=evaluated,
-                )
-
             if bundle is not None:
                 if not bundle.get("main"):
                     ai_errors.append("슬랙 메인·쓰레드 메시지 생성 실패")
@@ -229,6 +223,28 @@ def run_intraday_scan(
                         send_rows.append(out_row)
                         _log_row(out_row, slot=slot)
 
+    zero_pick_notice = False
+    if (
+        not main_message
+        and send_empty_summary
+        and len(stocks) > 0
+        and ai_enabled
+    ):
+        qualified = len(send_rows)
+        main_message = compose_daily_pick_zero_message(
+            slot=slot,
+            scanned=len(stocks),
+            qualified_count=qualified,
+        )
+        if main_message:
+            messages = [main_message]
+            zero_pick_notice = True
+            logger.info(
+                "[DAILY_PICK] 후보 0건 안내 메시지 준비 (scanned=%s qualified=%s)",
+                len(stocks),
+                qualified,
+            )
+
     result = IntradayScanResult(
         slot=slot,
         slot_label=f"{clock} {label}",
@@ -246,6 +262,7 @@ def run_intraday_scan(
         aux_models=aux,
         grok_notes=grok_notes,
         sector_scan_notes=sector_notes,
+        zero_pick_notice=zero_pick_notice,
     )
 
     if not main_message:

@@ -93,7 +93,7 @@ def main() -> int:
     parser.add_argument(
         "--send-empty-summary",
         action="store_true",
-        help="진입 후보 0건이어도 메인+섹터 쓰레드 발송 (수동 확인용)",
+        help="후보 0건 안내 Slack (--send 없이 미리보기용, --send 시 자동 포함)",
     )
     parser.add_argument(
         "--scheduled",
@@ -179,7 +179,7 @@ def _run(args: argparse.Namespace) -> int:
         live=args.live,
         tickers=tickers,
         max_messages=args.max_messages,
-        send_empty_summary=args.send_empty_summary,
+        send_empty_summary=args.send or args.send_empty_summary,
     )
     ensure_stdio()
 
@@ -230,6 +230,8 @@ def _run(args: argparse.Namespace) -> int:
         )
         if result.send_rows:
             safe_print(f"  gemini_polished: {gem_ok}/{len(result.send_rows)}")
+        if result.zero_pick_notice:
+            safe_print("[DAILY_PICK] 후보 0건 — 안내 메시지 생성됨")
         if result.main_message:
             safe_print("--- MAIN ---")
             safe_print(result.main_message)
@@ -248,18 +250,21 @@ def _run(args: argparse.Namespace) -> int:
             safe_print("[KR INTRADAY] AI 미설정 — 슬랙 미발송", file=sys.__stderr__)
             return 1
         if not result.main_message:
-            safe_print("[KR INTRADAY] 발송 대상 0건 — 슬랙 미발송 (정상)")
-            safe_print(
-                "[KR INTRADAY] 0건이어도 메인을내려면 --send-empty-summary 와 함께 실행"
-            )
-            return 0
+            safe_print("[KR INTRADAY] 슬랙 메시지 없음 — 미발송", file=sys.__stderr__)
+            return 1
         from slack_sender import send_kr_intraday_slack
 
         ensure_stdio()
         posted = send_kr_intraday_slack(result)
         ensure_stdio()
-        safe_print(f"[KR INTRADAY] slack send: {posted}")
-        if not posted.get("ok") and posted.get("count", 0) == 0:
+        if result.zero_pick_notice and posted.get("ok"):
+            safe_print(
+                "[DAILY_PICK] 후보 0건 안내 메시지 Slack 발송 완료 "
+                f"(scanned={result.scanned} qualified={len(result.send_rows)})"
+            )
+        else:
+            safe_print(f"[KR INTRADAY] slack send: {posted}")
+        if not posted.get("ok"):
             safe_print("[KR INTRADAY] Slack API 실패", file=sys.__stderr__)
             return 1
     else:

@@ -5,8 +5,10 @@ from __future__ import annotations
 import unittest
 
 from agents.kr_intraday_slack.message_tone import (
+    compose_daily_pick_zero_message,
     compose_new_candidate_scan_message,
     compose_new_candidate_stock_block,
+    has_daily_pick_zero_message_shape,
     has_new_candidate_scan_shape,
     tier_for_send_row,
 )
@@ -97,6 +99,22 @@ class TestNewCandidateScanMessage(unittest.TestCase):
         self.assertIn("심텍", text)
         self.assertIn("켄코아", text)
         self.assertTrue(has_new_candidate_scan_shape(text))
+
+    def test_zero_pick_message_shape(self):
+        text = compose_daily_pick_zero_message(
+            slot="1030", scanned=25, qualified_count=0
+        )
+        self.assertIn("[장전 10:30]", text)
+        self.assertIn("매일 투자 후보", text)
+        self.assertIn("25개 종목을 확인했으며", text)
+        self.assertIn("조건을 충족한 종목은 0개", text)
+        self.assertTrue(has_daily_pick_zero_message_shape(text))
+
+    def test_zero_pick_message_intraday_slot(self):
+        text = compose_daily_pick_zero_message(
+            slot="1350", scanned=25, qualified_count=0
+        )
+        self.assertIn("[장중 13:50]", text)
 
     def test_empty_send_still_has_sections(self):
         text = compose_new_candidate_scan_message(

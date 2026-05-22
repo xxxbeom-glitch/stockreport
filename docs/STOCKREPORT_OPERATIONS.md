@@ -127,6 +127,7 @@ python scripts/run_candidate_scan_test.py --live-data --send-slack
   - `🔴 오늘은 패스` — 최대 1종목 수준 (`select_pass_today_rows`)
 - **종목 블록**: 이름, 현재가, 볼 구간, 이유, 체크 줄, 주의 (쉬운 말 scrub)
 - **발송 게이트**: `can_send_daily_pick_slack(explicit_cli=--send, scheduled=--scheduled)` + `DAILY_PICK_AUTO_SEND`
+- **후보 0건**: `--send` 시 안내 메시지 1건 발송 (제목에 장전/장중·시각 포함)
 - **로그**: `data/logs/kr_slack/*.jsonl`
 
 ### 4.2 신규 후보 스캔 (테스트/주간 `--with-candidates`)

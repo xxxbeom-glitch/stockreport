@@ -425,6 +425,31 @@ def compose_new_candidate_stock_block(
     return sanitize_slack_mrkdwn("\n".join(lines[:_MAX_STOCK_LINES]))
 
 
+def compose_daily_pick_zero_message(
+    *,
+    slot: str,
+    scanned: int,
+    qualified_count: int = 0,
+) -> str:
+    """매수 후보 0건일 때 Slack 안내 1건 (실행 여부 확인용)."""
+    from .constants import SCAN_SLOTS, SLOT_PHASE_LABEL
+
+    clock, _ = SCAN_SLOTS.get(slot, (slot, ""))
+    phase = SLOT_PHASE_LABEL.get(slot, "장중")
+    title = f"📡 [{phase} {clock}] 매일 투자 후보"
+    body = (
+        "오늘은 현재 기준으로 매수 후보에 해당하는 종목이 없습니다.\n"
+        f"{scanned}개 종목을 확인했으며, 조건을 충족한 종목은 {qualified_count}개입니다.\n"
+        "무리한 진입 없이 다음 알림을 기다려주세요."
+    )
+    return sanitize_slack_mrkdwn(f"{title}\n\n{body}")
+
+
+def has_daily_pick_zero_message_shape(text: str) -> bool:
+    t = sanitize_slack_mrkdwn(text)
+    return "📡" in t and "매일 투자 후보" in t and "매수 후보에 해당하는 종목이 없습니다" in t
+
+
 def compose_new_candidate_scan_message(
     *,
     slot_clock: str,
