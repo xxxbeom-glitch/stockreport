@@ -1,0 +1,561 @@
+/* trading_kr-tokens.json — design base 360px */
+/* Pretendard: index.html <link> 로 로드 (모바일 @import 지연 방지) */
+
+:root {
+  --design-w: 360;
+  /* Figma 360px 기준 → 스마트폰 가로폭에 비례해 전체 UI 스케일 */
+  --viewport-w: 100vw;
+  --u: calc(var(--viewport-w) / var(--design-w));
+
+  --color-text: #272727;
+  --color-text-secondary: #344343;
+  --color-text-muted: #8b8b8b;
+  --color-text-body: #5c5c5c;
+  --color-positive: #4750f3;
+  --color-negative: #ff1212;
+  --color-negative-soft: #ff3c3c;
+  --color-bg: #f5f6f6;
+  --color-card: #ffffff;
+  --color-pill-bg: #f3f3f3;
+  --color-pill-border: #e3e3e3;
+  --color-badge-up-bg: #e9efff;
+  --color-badge-down-bg: #ffe9e9;
+  --color-reason-bg: #eff6f9;
+  --color-reason-border: #ddeaf0;
+  --color-shadow: rgba(228, 232, 232, 0.8);
+
+  --radius-card: calc(8 * var(--u));
+  --radius-pill: calc(15 * var(--u));
+  --radius-badge: calc(4 * var(--u));
+  --radius-reason: calc(4 * var(--u));
+
+  --shadow-card: 0 0 calc(6 * var(--u)) var(--color-shadow);
+
+  --space-2: calc(2 * var(--u));
+  --space-4: calc(4 * var(--u));
+  --space-6: calc(6 * var(--u));
+  --space-8: calc(8 * var(--u));
+  --space-10: calc(10 * var(--u));
+  --space-12: calc(12 * var(--u));
+  --space-18: calc(18 * var(--u));
+  --space-24: calc(24 * var(--u));
+  --space-32: calc(32 * var(--u));
+
+  /* Figma spacing map (trading_kr Frame 40) */
+  --gap-header-content: var(--space-32); /* Group 40 하단 ↔ Frame 57 상단 */
+  --gap-page-sections: var(--space-32); /* Frame 57/58/59 사이 */
+  --gap-header-title-meta: var(--space-2); /* Group 40 > Frame 35 */
+  --gap-header-meta-items: var(--space-10); /* Frame 35 meta row */
+  --gap-section-title-content: var(--space-12); /* Frame 57/58/59 */
+  --gap-holdings-cards: var(--space-8); /* Frame 58/Frame_60: 카드 래퍼 간 */
+  --gap-agent-cards: var(--space-8); /* Frame 59/Group_60/Frame_62: 에이전트 카드 간 */
+  --gap-card-inner-blocks: var(--space-12); /* stock/agent Frame 56 */
+  --gap-card-top-row: var(--space-6); /* Frame 48 */
+  --gap-card-top-quote: var(--space-4); /* badge/price stack */
+  --gap-card-grid-rows: var(--space-6); /* Frame 60 in grid */
+  --gap-card-grid-cols: var(--space-10); /* Frame 61 row */
+  --gap-rank-rows: var(--space-4); /* rank table Frame 56 */
+  --gap-rank-cols: var(--space-6); /* Frame 55~66 */
+  --gap-reason-inner: var(--space-6); /* Frame 63 */
+
+  --pad-page-x: calc(16 * var(--u));
+  --pad-page-top: calc(23.5 * var(--u)); /* Figma 47 → 상단↔헤더 타이틀 50% 축소 */
+  --pad-card-y: calc(24 * var(--u));
+  --pad-card-x: calc(18 * var(--u));
+
+  --fs-8: calc(8 * var(--u));
+  --fs-10: calc(10 * var(--u));
+  --fs-12: calc(12 * var(--u));
+  --fs-16: calc(16 * var(--u));
+  --fs-18: calc(18 * var(--u));
+  --fs-20: calc(20 * var(--u));
+  --fs-28: calc(28 * var(--u));
+
+  --lh-100: 1;
+  --lh-130: 1.3;
+  --lh-140: 1.4;
+  --lh-150: 1.5;
+  --lh-160: 1.6;
+}
+
+@supports (width: 100dvw) {
+  :root {
+    --viewport-w: 100dvw;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  width: 100%;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--lh-150);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.app {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: var(--pad-page-top) var(--pad-page-x) var(--space-32);
+  min-width: 0;
+}
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Header — Group 40: 높이 64, 아래 컨텐츠와 gap 32 */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-header-title-meta);
+  min-height: calc(64 * var(--u));
+  margin: 0 0 var(--gap-header-content);
+}
+
+.page-header > * {
+  margin: 0;
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-page-sections);
+  min-width: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--fs-28);
+  font-weight: 600;
+  line-height: var(--lh-160);
+  color: var(--color-text);
+}
+
+.page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-header-meta-items);
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-140);
+  color: var(--color-text-secondary);
+}
+
+/* Section — Frame 57/58/59: 제목 영역 ↔ 카드/목록 gap 12 */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-section-title-content);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: calc(30 * var(--u));
+}
+
+.section-title {
+  margin: 0;
+  font-size: var(--fs-18);
+  font-weight: 600;
+  line-height: var(--lh-160);
+  color: var(--color-text);
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: calc(75 * var(--u));
+  height: calc(30 * var(--u));
+  padding: 0 calc(12 * var(--u));
+  border: 1px solid var(--color-pill-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-pill-bg);
+  font-size: var(--fs-10);
+  font-weight: 600;
+  line-height: var(--lh-100);
+  color: var(--color-text);
+  cursor: default;
+}
+
+.filter-pill__chevron {
+  display: block;
+  flex-shrink: 0;
+  width: calc(8 * var(--u));
+  height: calc(8 * var(--u));
+  color: var(--color-text);
+}
+
+/* Card */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.card--pad {
+  padding: var(--pad-card-y) var(--pad-card-x);
+}
+
+/* Ranking table — Frame 55~66: col 26|80|62|62|46, gap 6, row gap 4, 전열 CENTER */
+.rank-card {
+  display: block;
+}
+
+.rank-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-rank-rows);
+  min-width: 0;
+  width: 100%;
+}
+
+.rank-table__head,
+.rank-table__row {
+  display: grid;
+  grid-template-columns:
+    calc(26 * var(--u))
+    calc(80 * var(--u))
+    calc(62 * var(--u))
+    calc(62 * var(--u))
+    calc(46 * var(--u));
+  column-gap: var(--gap-rank-cols);
+  align-items: center;
+  width: 100%;
+  min-height: calc(22 * var(--u));
+}
+
+.rank-table__head {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-130);
+  color: var(--color-text-muted);
+}
+
+.rank-table__row {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-130);
+  color: var(--color-text);
+}
+
+.rank-table__head > span,
+.rank-table__row > span {
+  min-width: 0;
+  text-align: center;
+}
+
+.rank-table__row .col-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-table__row .col-return.is-up {
+  color: var(--color-positive);
+}
+
+.rank-table__row .col-return.is-down {
+  color: var(--color-negative);
+}
+
+/* Holdings — Frame_58/Frame_60: 카드↔카드 상하 8 */
+.holdings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-holdings-cards);
+}
+
+/* 보유 카드 — Frame 56: 블록 12 / 상단 6·4 / 그리드 6·10 */
+.stock-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card-inner-blocks);
+}
+
+.stock-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-card-top-row);
+}
+
+.stock-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.stock-card__name {
+  margin: 0;
+  font-size: var(--fs-16);
+  font-weight: 600;
+  line-height: var(--lh-150);
+  color: var(--color-text);
+}
+
+.stock-card__sector {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-150);
+  color: var(--color-text-body);
+}
+
+.stock-card__quote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--gap-card-top-quote);
+  flex-shrink: 0;
+}
+
+.pct-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(16 * var(--u));
+  padding: calc(4 * var(--u));
+  border-radius: var(--radius-badge);
+  font-size: var(--fs-8);
+  font-weight: 700;
+  line-height: var(--lh-100);
+}
+
+.pct-badge.is-up {
+  background: var(--color-badge-up-bg);
+  color: var(--color-positive);
+}
+
+.pct-badge.is-down {
+  background: var(--color-badge-down-bg);
+  color: var(--color-negative-soft);
+}
+
+.stock-card__price {
+  font-size: var(--fs-16);
+  font-weight: 600;
+  line-height: var(--lh-150);
+}
+
+.stock-card__price.is-up {
+  color: var(--color-positive);
+}
+
+.stock-card__price.is-down {
+  color: var(--color-negative);
+}
+
+.stock-card__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card-grid-rows);
+}
+
+.stock-card__grid-row {
+  display: grid;
+  grid-template-columns: calc(146 * var(--u)) calc(136 * var(--u));
+  column-gap: var(--gap-card-grid-cols);
+  align-items: center;
+}
+
+.kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-6);
+  font-size: var(--fs-12);
+  line-height: var(--lh-160);
+  min-width: 0;
+}
+
+.kv__label {
+  flex-shrink: 0;
+  width: calc(54 * var(--u));
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.kv__value {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.reason-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-reason-inner);
+  padding: calc(8 * var(--u)) calc(12 * var(--u));
+  border: 1px solid var(--color-reason-border);
+  border-radius: var(--radius-reason);
+  background: var(--color-reason-bg);
+}
+
+.reason-box--plain {
+  margin-top: 0;
+}
+
+.reason-box__title {
+  font-size: var(--fs-12);
+  font-weight: 700;
+  line-height: var(--lh-160);
+  color: var(--color-text-secondary);
+}
+
+.reason-box__body {
+  margin: 0;
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-160);
+  color: var(--color-text-secondary);
+}
+
+.kv--agent {
+  align-items: center;
+}
+
+.kv__value--agents {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.agent-icon-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: calc(4 * var(--u));
+}
+
+.agent-icon-item {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* kv 값 줄 높이(12px × 1.6)에 맞춘 정사각형 — 추후 아이콘 이미지로 교체 */
+.agent-icon-placeholder {
+  display: block;
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
+  border-radius: var(--radius-badge);
+  background: var(--color-pill-bg);
+  border: 1px solid var(--color-pill-border);
+}
+
+.agent-icon-empty {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.rank-empty {
+  margin: 0;
+  padding: var(--space-8) 0;
+  font-size: var(--fs-12);
+  color: var(--color-text-muted);
+}
+
+/* Agents — Frame 62: 카드 간 8 / 카드 내부 블록 12 */
+/* Agents — Frame_62: 카드↔카드 상하 8 */
+.agents-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-agent-cards);
+}
+
+.agent-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card-inner-blocks);
+}
+
+.agent-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-card-grid-cols);
+}
+
+.agent-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.agent-card__name {
+  margin: 0;
+  font-size: var(--fs-16);
+  font-weight: 600;
+  line-height: var(--lh-150);
+  color: var(--color-text);
+}
+
+.agent-card__model {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-150);
+  color: var(--color-text-body);
+}
+
+.agent-card__return {
+  font-size: var(--fs-20);
+  font-weight: 700;
+  line-height: var(--lh-150);
+  flex-shrink: 0;
+}
+
+.agent-card__return.is-up {
+  color: var(--color-positive);
+}
+
+.agent-card__return.is-down {
+  color: var(--color-negative-soft);
+}
+
+.agent-card__holdings {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-card-grid-cols);
+  font-size: var(--fs-12);
+  line-height: var(--lh-160);
+}
+
+.agent-card__holdings .kv__label {
+  width: calc(54 * var(--u));
+  text-align: left;
+}
+
+.agent-card__holdings .kv__value {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  text-align: left;
+}

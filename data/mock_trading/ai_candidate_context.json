@@ -1,0 +1,4339 @@
+{
+  "generated_at": "2026-05-22T20:23:03+09:00",
+  "source": "ai_input_candidates.json",
+  "selection_rule": {
+    "market": "KOSDAQ",
+    "market_check": "verified",
+    "max_price": 59000,
+    "min_avg_trading_value_5d": 3000000000,
+    "risk_exclusion_applied": true,
+    "source_file": "candidate_universe.json"
+  },
+  "summary": {
+    "ai_input_candidate_count": 76,
+    "news_ok": 69,
+    "news_empty": 7,
+    "news_fail": 0,
+    "news_skip": 0,
+    "disclosure_ok": 27,
+    "disclosure_empty": 49,
+    "disclosure_fail": 0,
+    "disclosure_skip": 0,
+    "flow_ok": 76,
+    "flow_empty": 0,
+    "flow_fail": 0
+  },
+  "candidates": [
+    {
+      "ticker": "036540",
+      "name": "SFA반도체",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1998년 설립되어 2001년 코스닥 상장한 반도체 후공정 전문기업으로, 삼성전자, Micron, SK하이닉스 등에 최첨단 패키징 솔루션을 제공하고 있음. 필리핀 법인 SSP 준공으로 원가경쟁력을 확보하였고, R&D역량 강화와 해외마케팅을 통한 거래선 다변화를 추구하고 있음. 메모리 반도체 중심에서 반도체 시장의 80%를 차지하는 S-LSI분야 진입을 통해 안정적인 성장기반을 구축하고 있음.",
+      "current_price": 10250,
+      "metrics": {
+        "return_5d_pct": 19.05,
+        "return_10d_pct": 21.88,
+        "avg_trading_value_5d": 205816198064,
+        "last_trading_value": 702354149000,
+        "volume_change": null,
+        "foreign_flow": 9385.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "SFA반도체 주가, 급등세... 왜?",
+          "published_at": "Fri, 22 May 2026 10:12:00 +0900",
+          "source": "naver_search_news",
+          "summary": "사진=SFA반도체 SFA반도체 주가가 급등 중이다"
+        },
+        {
+          "title": "SFA반도체 주가, 5월 22일 장중 10,570원 18.09% 상승",
+          "published_at": "Fri, 22 May 2026 10:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "22일 오전 10시 43분 기준, 네이버페이 증권에 따르면 SFA반도체는 지난 종가 대비 크게 상승한 가격대를 나타내며 거래되고 있다"
+        },
+        {
+          "title": "SFA반도체 주가 19% 도약, 전일 이어 급등…52주 신고가도 경신",
+          "published_at": "Fri, 22 May 2026 11:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "SFA반도체(036540) 주가가 주말을 앞둔 장에서 급등세를 보이고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "403870",
+      "name": "HPSP",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "고압 수소 어닐링 장비",
+      "current_price": 54700,
+      "metrics": {
+        "return_5d_pct": 10.51,
+        "return_10d_pct": 1.48,
+        "avg_trading_value_5d": 104917453260,
+        "last_trading_value": 92330153900,
+        "volume_change": null,
+        "foreign_flow": 20442.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "HPSP, 올해 4분기부터 'DRAM 1d' 개발투자 본격화",
+          "published_at": "Wed, 20 May 2026 08:54:00 +0900",
+          "source": "naver_search_news",
+          "summary": "▲HPSP 제공 반도체 전공정장비 제조업체 HPSP의 올해 1분기 매출액과 영업이익은 319억원, 161억원 (OPM +50..."
+        },
+        {
+          "title": "[코스닥 외국인] 에코프로·HPSP까지 동시 매수…수급 대이동 시작",
+          "published_at": "Fri, 22 May 2026 16:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이어 대주전자재료, 주성엔지니어링, 케이엠더블유, HPSP, 원익IPS, 서진시스템도 강한 순매수 흐름을 보이며.."
+        },
+        {
+          "title": "HPSP 주가, 5월 21일 53,400원 10.33% 상승 마감",
+          "published_at": "Thu, 21 May 2026 16:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "21일 KRX 마감 기준, 네이버페이 증권에 따르면 HPSP는 지난 종가 48,400원 대비 5,000원(10.33%) 상승한 53,400원에 장을 마쳤다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "주요사항보고서(자기주식처분결정)",
+          "published_at": "20260513",
+          "importance": "important"
+        },
+        {
+          "title": "자기주식처분결과보고서",
+          "published_at": "20260511",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "043260",
+      "name": "성호전자",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1973년 진영전자로 설립 후 2000년 성호전자주식회사로 사명을 변경하고, 2001년 코스닥에 상장함. 2024년 중 ㈜제이케이아이홀딩스 등 7개 자회사를 신규 편입해 연결대상 종속회사를 16개로 확대함. 전원공급장치, 필름콘덴서, 증착필름을 제조하며 파워사업은 프린터, 전기차 등으로, 콘덴서사업은 디지털 TV, 데이터 센터 등 고부가가치 시장을 개척하고 있음.",
+      "current_price": 41250,
+      "metrics": {
+        "return_5d_pct": 1.48,
+        "return_10d_pct": -5.71,
+        "avg_trading_value_5d": 104660822660,
+        "last_trading_value": 93858765000,
+        "volume_change": null,
+        "foreign_flow": 11653.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "성호전자 주가, 5월 22일 장중 40,500원 3.58% 상승",
+          "published_at": "Fri, 22 May 2026 10:54:00 +0900",
+          "source": "naver_search_news",
+          "summary": "22일 오전 10시 50분 기준, 네이버페이 증권에 따르면 성호전자 주가는 현재 40,500원을 기록하며 지난 종가 대비 3.58% 상승한 흐름을 보이고 있다"
+        },
+        {
+          "title": "[코스닥 기관] 테스 알테오젠 성호전자 폭풍매도...레인보우로보스틱 로...",
+          "published_at": "Wed, 20 May 2026 17:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "AI 산업 확산에 따른 반도체 투자 기대감이 재차 부각되는 가운데 단기 급등 업종을 중심으로 수급 재편이 나타나고 있다는 분석이 나온다"
+        },
+        {
+          "title": "코스피 200, GS건설·세방전지 OUT, HD건설기계·달바글로벌 IN",
+          "published_at": "Fri, 22 May 2026 17:03:00 +0900",
+          "source": "naver_search_news",
+          "summary": "코스닥 150 편입 종목은 삼표시멘트·에이치브이엠·현대무벡스·{세트렉아이}·휴림로봇·비츠로셀·삼현·한라캐스트·오름테라퓨틱·미래에셋벤처투자·원익홀딩스·성호전자·아이티센글로벌·브이엠·로보스타..."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "032820",
+      "name": "우리기술",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1993년 설립된 제어계측 전문기업으로 2000년 코스닥 상장하였으며, 2024년 소각재 자원순환사업 목적법인 ㈜이엘씨를 공동설립해 지분 53.3%를 취득함. 원자력발전소 감시제어시스템, 철도용 승강장안전문 및 신호열차제어시스템 등 다양한 사업을 영위하고 있음. 국내외 원전사업 수주 확대, 철도시스템 SIL4 인증을 통한 안전제어 기술력 강화, 친환경 그린에너지 사업 다각화를 추구하고 있음.",
+      "current_price": 16800,
+      "metrics": {
+        "return_5d_pct": -1.93,
+        "return_10d_pct": -16.63,
+        "avg_trading_value_5d": 83409730762,
+        "last_trading_value": 75290292000,
+        "volume_change": null,
+        "foreign_flow": -12052.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "우리기술, 장중 1만7000원대 강세…원전·방산 기대감에 매수세 확대",
+          "published_at": "Fri, 22 May 2026 09:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "우리기술이 22일 오전 상승 흐름을 이어가며 투자자들의 관심을 끌고 있다"
+        },
+        {
+          "title": "두산에너빌리티·우리기술 상승, 원전주 줄줄이 강세…연휴 앞두고 어떤...",
+          "published_at": "Fri, 22 May 2026 06:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "한국전력은 6.5% 오른 3만9300원, 우진은 5.9% 상승한 2만1400원에 마감했다"
+        },
+        {
+          "title": "[인터뷰] 서한석 세아베스틸 대표 &quot;따라올 수 없는 특수강 기업 만들겠...",
+          "published_at": "Thu, 21 May 2026 17:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "서 대표는 &quot;그린스틸 시대에는 고급 철스크랩 확보 능력이 핵심 경쟁력이 될 것&quot;이라며 &quot;전력비 부담과 고급.."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260518",
+          "importance": "important"
+        },
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결",
+          "published_at": "20260427",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "098460",
+      "name": "고영",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2002년 검사 및 측정 자동화 시스템 제조 목적으로 설립되고 2008년 코스닥 상장함. 메카트로닉스, 광학, 비전, SW, AI 기술을 보유하며 3D 납도포 검사장비, 3D 광학 검사장비, 3D 반도체후공정 패키징 검사장비를 다양한 제조업체에 공급하고 있음. 3D 측정 기반 검사 기술에 AI 솔루션을 결합해 스마트팩토리를 지원하며, 뇌수술용 의료로봇의 인허가 획득으로 글로벌 시장 진출을 추진하고 있음.",
+      "current_price": 39400,
+      "metrics": {
+        "return_5d_pct": 8.24,
+        "return_10d_pct": -3.19,
+        "avg_trading_value_5d": 76847610160,
+        "last_trading_value": 102647756200,
+        "volume_change": null,
+        "foreign_flow": 12773.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "고영 주가, 5월 22일 장중 40,550원 8.13% 상승",
+          "published_at": "Fri, 22 May 2026 10:44:00 +0900",
+          "source": "naver_search_news",
+          "summary": "22일 오전 10시 40분 기준, 네이버페이 증권에 따르면 고영의 주가가 지난 종가 대비 상승세를 나타내며 4만 원대에서 거래되고 있다"
+        },
+        {
+          "title": "고영 주가, 5월 21일 장중 36,800원 8.71% 상승",
+          "published_at": "Thu, 21 May 2026 10:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "따르면 고영 주가는 지난 종가 대비 큰 폭의 상승세를 나타내며 36,800원을 기록하고 있다"
+        },
+        {
+          "title": "SK하이닉스·삼성전자 고영 급등, 이오테크닉스도 껑충…HBM 기대감에 반...",
+          "published_at": "Thu, 21 May 2026 11:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 자료사진"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]주요사항보고서(자기주식처분결정)",
+          "published_at": "20260514",
+          "importance": "important"
+        },
+        {
+          "title": "주요사항보고서(자기주식처분결정)",
+          "published_at": "20260513",
+          "importance": "important"
+        },
+        {
+          "title": "연결재무제표기준영업(잠정)실적(공정공시)",
+          "published_at": "20260423",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "125020",
+      "name": "티씨머티리얼즈",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1995년 설립되어 전력인프라, 전장, 가전 소재 및 모터 관련 제품과 서비스를 생산하는 기업임. 전도성과 경제성 뛰어난 구리를 활용해 발전기, 케이블 및 배전시설에 제품을 공급하고 전력기기용 권선 제품을 생산하며 권선시장을 확장함. 30년 이상의 절연 기술과 노하우로 소재 생산부터 제품 제작, 수리까지 일괄 공정 및 효율적 부품 공급망으로 고부가가치를 창출하고 있음.",
+      "current_price": 9190,
+      "metrics": {
+        "return_5d_pct": 37.57,
+        "return_10d_pct": 20.76,
+        "avg_trading_value_5d": 55833990214,
+        "last_trading_value": 113654503670,
+        "volume_change": null,
+        "foreign_flow": 3486.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "티씨머티리얼즈, 1분기 영업익 169% 급증…매출 1014억 달성",
+          "published_at": "Fri, 15 May 2026 11:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "소재 전문기업 티씨머티리얼즈는 2026년 1분기 매출액 1014억원을 기록하며 전년 동기 대비 49.3% 증가했다고.."
+        },
+        {
+          "title": "[EBN 데이터센터] 21일 상승 종목 30選…LG전자 상한가 기록",
+          "published_at": "Thu, 21 May 2026 16:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "◆코스피, 전기전자·전선·유통까지 급등 확산 이날 코스피 상위 종목군을 보면 전선과 전력기기.."
+        },
+        {
+          "title": "[급등락주 짚어보기] 국내 증시 폭등에 LG전자 등 17개 종목 '상한가'",
+          "published_at": "Thu, 21 May 2026 17:26:00 +0900",
+          "source": "naver_search_news",
+          "summary": "티씨머티리얼즈는 지난해 자체 역량을 집중해온 '초전도체(NbTi) 와이어 코팅기술 연구개발' 과제를 지난해 12월 말 기점으로 마무리 단계에 돌입했다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "089030",
+      "name": "테크윙",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "메모리 테스트 핸들러",
+      "current_price": 53700,
+      "metrics": {
+        "return_5d_pct": 6.55,
+        "return_10d_pct": -9.44,
+        "avg_trading_value_5d": 47172068430,
+        "last_trading_value": 33469062000,
+        "volume_change": null,
+        "foreign_flow": 2099.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결(자율공시)",
+          "published_at": "20260519",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "417200",
+      "name": "LS머트리얼즈",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 2021년 LS엠트론 울트라캐패시터 사업부문 물적분할로 설립되었음. 신재생에너지, 스마트팩토리 AGV, 전기차 분야 중대형 울트라캐패시터 생산·판매, 알루미늄 부품 제조 및 경관재 시설물 제공 사업을 하고 있음. AI 데이터센터 전력 안정화 사업 진출 위해 2024년 버티브 社와 MOU 체결 및 신재생에너지 전력망 안정화 제품 개발을 완료하고 글로벌 전력설비기업과 UC 공급을 논의 중임.",
+      "current_price": 23650,
+      "metrics": {
+        "return_5d_pct": 6.05,
+        "return_10d_pct": -11.09,
+        "avg_trading_value_5d": 39500446110,
+        "last_trading_value": 48320615750,
+        "volume_change": null,
+        "foreign_flow": -3327.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "LS머트리얼즈, AI 데이터센터·전력망 안정화 핵심 '부상'…&quot;하반기 턴어...",
+          "published_at": "Thu, 21 May 2026 08:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "&quot;대형 울트라커패시터 글로벌 시장 점유율 1위…AIDC·전력망으로 전방 시장 확대&quot; DB증권은 21일 LS머트리얼즈(417200)에 대해 인공지능(AI) 데이터센터(AIDC)와 전력망 안정화 트렌드 속에서 동사의 주력 제품인..."
+        },
+        {
+          "title": "LS머트리얼즈 주가, 5월 22일 장중 23,950원 6.44% 상승",
+          "published_at": "Fri, 22 May 2026 11:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "|중앙이코노미뉴스 조용우 기자|출처=네이버페이 증권 22일 오전 11시 27분 기준, 네이버페이 증권에 따르면 LS머트리얼즈 주가가 상승 흐름을 보이며 23,950원에 거래되고 있다"
+        },
+        {
+          "title": "키움증권, LS 목표가 70만원으로 100% 상향...전선·일렉트릭·MnM 실적 개...",
+          "published_at": "Fri, 22 May 2026 10:58:00 +0900",
+          "source": "naver_search_news",
+          "summary": "초고압 케이블 매출은 전년 동기 대비 177% 늘었다.LS머트리얼즈는 1분기 연결 기준 매출 431억원을 냈다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "417840",
+      "name": "저스템",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2016년 설립 후 2022년 코스닥 상장을 승인받고 2023년 종속회사 플람을 인수했음. 반도체 제조 공정의 핵심인 N₂ Purge System 분야에서 독보적 기술을 보유한 글로벌 리더이자, 반도체 장비 사업이 전체 매출의 85%를 차지함. 독자적인 N₂ 치환 기술과 정밀 기류제어 기술로 초저습도 환경 구현, AI 기반 자율 판단 시스템 적용으로 지능형 장비 체계로 고도화하고 있음.",
+      "current_price": 18790,
+      "metrics": {
+        "return_5d_pct": 16.71,
+        "return_10d_pct": 31.4,
+        "avg_trading_value_5d": 31178207164,
+        "last_trading_value": 25605940970,
+        "volume_change": null,
+        "foreign_flow": -902.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "저스템, 산업은행서 300억 정책자금 유치…반도체 ‘제3공장’ 속도",
+          "published_at": "Mon, 18 May 2026 09:32:00 +0900",
+          "source": "naver_search_news",
+          "summary": "업계에서는 인공지능(AI) 반도체와 첨단 패키징 수요 확대에 따라 향후 수년간 관련 설비 투자도 지속될 것으로 전망하고 있다"
+        },
+        {
+          "title": "﻿저스템, 산업은행 반도체 정책자금 300억 유치...제3공장 투자",
+          "published_at": "Mon, 18 May 2026 18:14:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 습도제어 솔루션 기업 저스템이 300억원의 자금을 유치해 시설 투자를 진행한다"
+        },
+        {
+          "title": "저스템, 산업은행 반도체 정책자금 300억 유치",
+          "published_at": "Tue, 19 May 2026 07:23:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 장비 기업 저스템이 한국산업은행으로부터 300억 원의 반도체 정책자금을 유치했다고 밝혔다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "049080",
+      "name": "기가레인",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2000년 설립되어 반도체 장비를 제조하며, 2012년 합병을 통해 RF 통신부품 사업을 확장함. 2024년 중국 우시에 반도체 장비 대응역량 확대를 위한 법인을 신설하고, 다양한 RF 장비 및 식각장비를 개발·제조하고 있음. AI 기반 네트워크 최적화 등 성장 동력 확보를 위해 O-RU 개발을 완료하고, 세계 유일의 토탈 솔루션 라인업을 완성하고 있음.",
+      "current_price": 1458,
+      "metrics": {
+        "return_5d_pct": -10.83,
+        "return_10d_pct": -18.95,
+        "avg_trading_value_5d": 26623942894,
+        "last_trading_value": 54218194020,
+        "volume_change": null,
+        "foreign_flow": 4607.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": true,
+        "risk_notes": [
+          "투자주의(mrkt_warn_cls_code=01)"
+        ]
+      },
+      "recent_news": [
+        {
+          "title": "기가레인 주가, 급등세... 무슨 회사길래?",
+          "published_at": "Fri, 22 May 2026 10:36:00 +0900",
+          "source": "naver_search_news",
+          "summary": "사진=기가레인 기가레인 주가가 급등 중이다"
+        },
+        {
+          "title": "기가레인, 단일계좌 거래량 급증→투자주의종목 지정",
+          "published_at": "Thu, 21 May 2026 20:24:00 +0900",
+          "source": "naver_search_news",
+          "summary": "기가레인(049080)이 2026년 5월 22일 단일계좌 거래량 급증에 따라 투자주의종목으로 지정됐다고 공시했다"
+        },
+        {
+          "title": "[공시] KBI메탈·기가레인 '투자주의', 제주반도체·피델릭스 '거래정지...",
+          "published_at": "Thu, 21 May 2026 20:56:00 +0900",
+          "source": "naver_search_news",
+          "summary": "상위: 기가레인(049080), 케이엠제약(225430) 특히 코스닥 상장사인 이엠앤아이와 인터로조는 '소수계좌 거래집중'과 '특정계좌 매매관여 과다' 사유로 중복 지정됐다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "038500",
+      "name": "삼표시멘트",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1990년 설립하여 2001년 코스닥시장에 상장하였고, 2010년 동양시멘트 흡수합병 후 2017년 삼표시멘트로 변경함. 강원도 삼척시 소재 공장에서 시멘트를 생산, 전국 출하기지 통해 시멘트 및 2차 제품 판매, 2021년 설립한 삼표레미콘 통해 레미콘 제조 및 판매 중임. ESG 경영체제로 전환 위해 친환경 사업 추가 및 온실가스 저감을 위한 순환자원 처리시설, 폐열발전설비 보강 등 친환경 투자를 지속하고 있음.",
+      "current_price": 13190,
+      "metrics": {
+        "return_5d_pct": -3.37,
+        "return_10d_pct": -12.59,
+        "avg_trading_value_5d": 25110106330,
+        "last_trading_value": 15929760850,
+        "volume_change": null,
+        "foreign_flow": 547.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "HD건설기계·DB하이텍·달바글로벌·OCI '코스피 200' 입성",
+          "published_at": "Fri, 22 May 2026 17:05:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼표시멘트·에이치브이엠·현대무벡스·쎄트렉아이·휴림로봇·비츠로셀·삼현·한라캐스트·오름테라퓨틱·미래에셋벤처투자·원익홀딩스·성호전자·아이티센글로벌·브이엠·로보스타·기가비스가 지수에..."
+        },
+        {
+          "title": "코스피200 DB하이텍 포함되고, GS건설 빠진다…4개종목 맞교체",
+          "published_at": "Fri, 22 May 2026 17:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "코스닥150은 16종목 교체…삼표시멘트·미래에셋벤처투자 편입 코스피200 지수에 DB하이텍 등 4개 종목이 포함되고 GS건설 등 4개 종목이 빠진다"
+        },
+        {
+          "title": "코스피 200 4종목·코스닥150 16종목 구성변경",
+          "published_at": "Fri, 22 May 2026 16:23:00 +0900",
+          "source": "naver_search_news",
+          "summary": "코스닥 150의 경우 삼표시멘트, 현대무벡스,삼현, 오름테라퓨틱, 미래에셋벤처투자, 원익홀딩스 등이 편입되고성일하이텍,에코앤드림, 콜마비앤에이치, 동국제약, 미코 등이 편출된다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]최대주주변경을수반하는주식담보제공계약체결",
+          "published_at": "20260429",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "030530",
+      "name": "원익홀딩스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1991년 반도체 장비 제조 및 판매 목적으로 설립되어 1996년 코스닥시장 상장하였고 2025년 기준 15개 종속회사 보유한 사업형 지주회사임. 반도체·디스플레이 제조공정 원료 가스 공급 장치사업과 배관공사 사업 자체 영위하며, 주요 자회사로는 원익아이피에스, 원익피앤이, 원익큐엔씨가 있음. 동사는 인공지능, 로보틱스 등 미래 기술에 대한 연구개발 통해 혁신 추구하고 사업 포트폴리오 관리 역할 수행하고 있음.",
+      "current_price": 28050,
+      "metrics": {
+        "return_5d_pct": -0.53,
+        "return_10d_pct": -17.01,
+        "avg_trading_value_5d": 23618679990,
+        "last_trading_value": 20569962600,
+        "volume_change": null,
+        "foreign_flow": 278.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "코스피 200, GS건설·세방전지 OUT, HD건설기계·달바글로벌 IN",
+          "published_at": "Fri, 22 May 2026 17:03:00 +0900",
+          "source": "naver_search_news",
+          "summary": "코스닥 150 편입 종목은 삼표시멘트·에이치브이엠·현대무벡스·{세트렉아이}·휴림로봇·비츠로셀·삼현·한라캐스트·오름테라퓨틱·미래에셋벤처투자·원익홀딩스·성호전자·아이티센글로벌·브이엠·로보스타..."
+        },
+        {
+          "title": "HD건설기계·DB하이텍·달바글로벌·OCI '코스피 200' 입성",
+          "published_at": "Fri, 22 May 2026 17:05:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼표시멘트·에이치브이엠·현대무벡스·쎄트렉아이·휴림로봇·비츠로셀·삼현·한라캐스트·오름테라퓨틱·미래에셋벤처투자·원익홀딩스·성호전자·아이티센글로벌·브이엠·로보스타·기가비스가 지수에..."
+        },
+        {
+          "title": "'삼전 협력사' 원익IPS, 삼전 노조 합의에 한숨 돌리나…실적 개선 기대...",
+          "published_at": "Fri, 22 May 2026 18:16:00 +0900",
+          "source": "naver_search_news",
+          "summary": "원익IPS의 주주구성을 살펴보면 원익홀딩스가 약 33%를 차지하고 있는 가운데, 삼성전자, 삼성디스플레이가 도합 7%가 넘는 지분을 차지하고 있다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]최대주주변경을수반하는주식담보제공계약체결",
+          "published_at": "20260430",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "064290",
+      "name": "인텍플러스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1995년 제어계측기기 및 컴퓨터 응용기기 제조를 목적으로 설립되었으며, 2011년 코스닥에 상장함. 머신비전기술로 3D/2D 자동외관검사장비 및 모듈을 개발하여 반도체 후공정 및 다양한 검사장비를 공급하고 있음. 3차원 측정 기술로 최적화된 검사솔루션을 제공하며, 핵심기술을 자체 개발·보유하고 산업 선도 기업들과 파트너십을 통해 사업 다각화하고 있음.",
+      "current_price": 35850,
+      "metrics": {
+        "return_5d_pct": 33.02,
+        "return_10d_pct": 16.78,
+        "avg_trading_value_5d": 21640630880,
+        "last_trading_value": 58925211000,
+        "volume_change": null,
+        "foreign_flow": -4940.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "인텍플러스 주가, 5월 22일 35,850원 26.68% 상승 마감",
+          "published_at": "Fri, 22 May 2026 17:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "|중앙이코노미뉴스 조용우 기자|출처=네이버페이 증권 22일 KRX 마감 기준, 네이버페이 증권에 따르면 인텍플러스는 장 마감 기준 35,850원에 거래를 마쳤다"
+        },
+        {
+          "title": "인텍플러스 주가, 5월 21일 28,300원 17.92% 상승 마감",
+          "published_at": "Thu, 21 May 2026 17:28:00 +0900",
+          "source": "naver_search_news",
+          "summary": "|중앙이코노미뉴스 조용우 기자|출처=네이버페이 증권 21일 KRX 마감 기준, 네이버페이 증권에 따르면 인텍플러스는 장 마감 기준 지난 종가 24,000원보다 4,300원(17.92%) 상승한 28,300원에 거래를 마쳤다...."
+        },
+        {
+          "title": "AI 반도체 병목 잡는 열쇠…인텍플러스, 독보적 3D 머신비전 기술로 초...",
+          "published_at": "Fri, 22 May 2026 15:16:00 +0900",
+          "source": "naver_search_news",
+          "summary": "대표 종목 가운데 인텍플러스는 이날 오후 3시8분 현재 27.92% 올라 36,200원에 거래중이다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "006910",
+      "name": "보성파워텍",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1970년 설립, 1994년 코스닥시장 상장한 전력기자재 전문 제조업체임. 국내 전력시장을 중심으로 송배전 자재 및 발전소, 변전소 철골 등 전력 기자재 개발, 제작, 판매를 주된 사업으로 영위하고 있으며, 철구조사업과 중전기사업으로 운영하고 있음. 가스개폐기, 주상변압기, 송전철탑, 발전소, 변전소용 철구조물 등을 충북 충주공장 및 전남 나주공장에서 직접 생산하고 있음.",
+      "current_price": 11040,
+      "metrics": {
+        "return_5d_pct": -3.41,
+        "return_10d_pct": -22.85,
+        "avg_trading_value_5d": 19603768436,
+        "last_trading_value": 20003961120,
+        "volume_change": null,
+        "foreign_flow": -2873.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "신재생 에너지 타고 흐르는 온기… 선도전기, 글로벌 인프라 시장 '정조...",
+          "published_at": "Thu, 21 May 2026 15:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "보성파워텍과 세명전기는 전력망 투자 확대 기대 속에서 거래가 활발히 이어지고 있다"
+        },
+        {
+          "title": "두산에너빌리티·우리기술·오르비텍·비에이치아이·한전기술·한전산...",
+          "published_at": "Thu, 21 May 2026 15:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "보성파워텍과 한전KPS 역시 동반 오름세를 보였다"
+        },
+        {
+          "title": "비나텍, 수소연료전지·슈퍼커패시터 양날개 달고 중장기 성장 가속",
+          "published_at": "Fri, 22 May 2026 09:24:00 +0900",
+          "source": "naver_search_news",
+          "summary": "지투파워, 보성파워텍, 서전기전, 제룡산업, 제룡전기 등이 오름세를 보이고 있으며 원전 정책 확대 기대와 전력설비 교체 수요가 투자심리를 자극하고 있다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결",
+          "published_at": "20260507",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "330860",
+      "name": "네패스아크",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2019년 네패스 반도체사업부 내 Test 사업부문이 물적 분할되어 설립되고 2020년 코스닥시장에 상장됨. 시스템반도체 후공정 테스트 솔루션을 제공하며, 전력반도체(PMIC), DDI, SoC, RF 등의 주요 제품을 테스트하고 있음. 고가의 테스트 장비 투자 기반 장치산업 특성과 다양한 칩 테스트 프로그램 개발 능력을 보유하여 반도체 고집적화 및 소형화 추세에 맞춰 성장 추구하고 있음.",
+      "current_price": 42850,
+      "metrics": {
+        "return_5d_pct": -5.93,
+        "return_10d_pct": 7.39,
+        "avg_trading_value_5d": 19092317660,
+        "last_trading_value": 8644130500,
+        "volume_change": null,
+        "foreign_flow": 840.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "파두·한미반도체·네패스아크 출렁…외인 흔들기에 반도체 중소형주 널...",
+          "published_at": "Mon, 18 May 2026 11:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "파두와 한미반도체, 네패스아크 등 일부 종목이 급락세를 보이는 반면 세미파이브와 DB하이텍 등은 강세 흐름을 나타내며 종목별 온도차가 극단적으로 벌어지고 있다"
+        },
+        {
+          "title": "네패스아크, 투자주의종목 지정예고→주가 변동성 촉각",
+          "published_at": "Wed, 13 May 2026 20:32:00 +0900",
+          "source": "naver_search_news",
+          "summary": "네패스아크(330860)는 2026년 05월 14일자로 투자주의종목으로 지정된다고 공시했다"
+        },
+        {
+          "title": "스마트기기의 뇌를 깨운다... 제주반도체, 피지컬 AI 시대 직접적 수혜...",
+          "published_at": "Thu, 21 May 2026 14:54:00 +0900",
+          "source": "naver_search_news",
+          "summary": "설계 영역에서는 네패스와 네패스아크가 각각 19% 안팎과 12% 이상 상승하며 강한 흐름을 보이고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "080580",
+      "name": "오킨스전자",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1998년 반도체 검사용 소켓 제조를 목적으로 설립되어 2014년 코스닥에 상장하고, 2006년 반도체 사업부를 설립하여 후공정 테스트 사업을 영위하고 있음. 반도체 검사용 소켓 제조와 테스트 용역 사업을 주력으로 하며, 다양한 제품을 개발 및 생산하고 있음. AI, HPC, 클라우드 서비스 확산에 따른 데이터센터와 서버 시장 성장에 대응, 고성능 메모리 수요에 맞추어 기술 집약적 고부가가치 산업으로 전환을 추구하고 있음.",
+      "current_price": 22650,
+      "metrics": {
+        "return_5d_pct": 13.42,
+        "return_10d_pct": -15.8,
+        "avg_trading_value_5d": 18666131690,
+        "last_trading_value": 13231541100,
+        "volume_change": null,
+        "foreign_flow": -780.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "오킨스전자, 1분기 매출 256억, 영업이익 36억… 전년동기대비 35.4%·111....",
+          "published_at": "Fri, 15 May 2026 16:43:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 부품 업체 오킨스전자는 지난 15일 공시를 통해 지난 1분기에 매출 256억 원, 영업이익 36억 원을 거두며 전년동기 대비 큰 폭 성장했다고 밝혔다"
+        },
+        {
+          "title": "연 매출 1405억 가이던스 청신호… 오킨스전자, 1분기 영업익 2배 '껑충...",
+          "published_at": "Mon, 18 May 2026 08:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "오킨스전자가 1분기 전년 동기 대비 2배가 넘는 영업이익을 기록하며 어닝 서프라이즈를 달성했다"
+        },
+        {
+          "title": "HBM 다음은 CXL… 코리아써키트, 고다층 기판으로 AI 서버 시장 정조준",
+          "published_at": "Wed, 20 May 2026 09:56:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼성전자와 오킨스전자는 제한적인 강세를 나타내고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "083450",
+      "name": "GST",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2001년 설립 후 2006년 코스닥에 상장했으며, 글로벌 거점 확대로 해외 판매망 강화 중임. 반도체 및 디스플레이 제조공정에서 배출되는 유해가스를 정화하는 Scrubber와 공정 온도를 유지하는 Chiller를 주요 제품으로 생산하고 있음. 국내 최초 Burn Wet 방식 Scrubber를 공급하며, 플라즈마 방식 Scrubber 등 신제품 개발 및 신사업 고도화를 통해 기술혁신을 지속하고 있음.",
+      "current_price": 59000,
+      "metrics": {
+        "return_5d_pct": -0.17,
+        "return_10d_pct": 0.51,
+        "avg_trading_value_5d": 17977900580,
+        "last_trading_value": 18455436000,
+        "volume_change": null,
+        "foreign_flow": 2025.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "GST 주가, 5월 22일 장중 59,600원 3.65% 상승",
+          "published_at": "Fri, 22 May 2026 11:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "따르면 GST 주가는 현재 59,600원에 거래되고 있으며, 지난 종가 57,500원 대비 2,100원 상승한 3.65%의.."
+        },
+        {
+          "title": "GST 주가, 5월 20일 장중 54,100원 1.46% 하락",
+          "published_at": "Wed, 20 May 2026 11:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "따르면 GST 주가는 장중 54,100원에 거래되며 지난 종가 대비 하락한 모습을 보이고 있다"
+        },
+        {
+          "title": "S-OIL, GST와 데이터센터용 액침냉각유 공개",
+          "published_at": "Wed, 13 May 2026 23:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "글로벌스탠다드테크놀로지(GST)와 함께 데이터센터용 액침냉각 솔루션을 선보였다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "052900",
+      "name": "KX하이텍",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1997년 범일엔지니어링으로 설립되었고, 2005년 코스닥에 상장, 2022년 케이엑스하이텍으로 이름을 변경함. 반도체 제조 전후공정 부품 소재와 SSD 외관 CASE, 방송수신기 제조 및 판매 사업을 영위하고 있으며, 한국, 중국, 필리핀, 베트남에 생산거점을 보유함. AI 인프라 확대와 고성능 반도체 수요 증가에 대응하여 첨단 패키징 소재 개발과 스토리지 제품 포트폴리오 다변화로 공급망 경쟁력을 강화하고 있음.",
+      "current_price": 2045,
+      "metrics": {
+        "return_5d_pct": 34.89,
+        "return_10d_pct": 61.66,
+        "avg_trading_value_5d": 17412391881,
+        "last_trading_value": 10910643510,
+        "volume_change": null,
+        "foreign_flow": 105.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "&quot;SSD 공장이 풀가동&quot;…KX하이텍, 영업익 351% 급증한 이유",
+          "published_at": "Mon, 18 May 2026 16:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "AI 서버와 데이터센터용 저장장치 시장이 성장하면서 SSD용 부품 주문도 증가했다는 것이다"
+        },
+        {
+          "title": "[주식마감] 광통신주 살아나나... 빛과전자 상한가, 포톤·시지트로닉스...",
+          "published_at": "Fri, 22 May 2026 19:40:00 +0900",
+          "source": "naver_search_news",
+          "summary": "비큐AI, KX하이텍이다"
+        },
+        {
+          "title": "반도체 재료·부품株 유니트론텍 네패스 피엠티 '불기둥'...무슨 호재 있...",
+          "published_at": "Thu, 21 May 2026 15:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "네패스, 하나마이크론, 엠케이전자, KX하이텍, 엘케이켐, 한양디지텍, ISC 등이 투자 심리를 자극하며 강세를 나타냈다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "033640",
+      "name": "네패스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1990년 반도체 및 전자관련 부품 제조·판매를 목적으로 설립되어 1999년 코스닥시장에 상장함. 시스템 반도체의 소형화·고성능화에 기여하는 첨단 후공정 파운드리 사업과 이차전지 부품·소재 사업을 영위하며 다양한 시장에서 국내외 확고한 입지를 구축함. AI반도체 기반 HPC 및 자율주행 등 첨단 패키징 기술 수요 급증에 대응하고, 전자재료와 이차전지 분야에서 국산화를 통한 영역 확대를 추진하고 있음.",
+      "current_price": 36950,
+      "metrics": {
+        "return_5d_pct": 18.24,
+        "return_10d_pct": 12.48,
+        "avg_trading_value_5d": 17057396930,
+        "last_trading_value": 19053637000,
+        "volume_change": null,
+        "foreign_flow": -2619.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "반도체 재료·부품株 유니트론텍 네패스 피엠티 '불기둥'...무슨 호재 있...",
+          "published_at": "Thu, 21 May 2026 15:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "네패스, 하나마이크론, 엠케이전자, KX하이텍, 엘케이켐, 한양디지텍, ISC 등이 투자 심리를 자극하며 강세를 나타냈다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "125490",
+      "name": "한라캐스트",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 2005년 설립되어 알루미늄 등 소재를 적용한 부품제조를 하며, 2025년 코스닥시장에 상장함. LG전자 등 대기업을 1차 고객사로 두고 글로벌 완성차 기업을 최종 고객사로 확보하여 모바일, 가전, 등으로 사업 확장함. 2024년부터 대형 다이캐스팅 설비 도입과 첨단 기술 개발을 통해 글로벌 AI 자동차회사 협력사 계약 및 로봇 부품 수주에 성공, ESG 경영과 스마트팩토리 구축으로 미래 성장동력을 강화하고 있음.",
+      "current_price": 15910,
+      "metrics": {
+        "return_5d_pct": -0.75,
+        "return_10d_pct": -15.6,
+        "avg_trading_value_5d": 16237215780,
+        "last_trading_value": 12584507710,
+        "volume_change": null,
+        "foreign_flow": 531.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "제조혁신 주도 두산로보틱스 주가 다시 펄펄 끓네...글로벌 자동화 투자...",
+          "published_at": "Fri, 15 May 2026 11:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "로봇(산업용·협동로봇) 테마가 15일 강세 흐름을 이어가고 있다"
+        },
+        {
+          "title": "코스피 200, GS건설·세방전지 OUT, HD건설기계·달바글로벌 IN",
+          "published_at": "Fri, 22 May 2026 17:03:00 +0900",
+          "source": "naver_search_news",
+          "summary": "코스닥 150 편입 종목은 삼표시멘트·에이치브이엠·현대무벡스·{세트렉아이}·휴림로봇·비츠로셀·삼현·한라캐스트·오름테라퓨틱·미래에셋벤처투자·원익홀딩스·성호전자·아이티센글로벌·브이엠·로보스타..."
+        },
+        {
+          "title": "HD건설기계·DB하이텍·달바글로벌·OCI '코스피 200' 입성",
+          "published_at": "Fri, 22 May 2026 17:05:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼표시멘트·에이치브이엠·현대무벡스·쎄트렉아이·휴림로봇·비츠로셀·삼현·한라캐스트·오름테라퓨틱·미래에셋벤처투자·원익홀딩스·성호전자·아이티센글로벌·브이엠·로보스타·기가비스가 지수에..."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "252990",
+      "name": "샘씨엔에스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2016년 설립되어 2021년 코스닥시장에 상장된 반도체 테스트 장비 핵심부품 제조기업임. 프로브카드용 세라믹STF를 제작하여 납품하며, 전기적 신호를 PCB로 전달하여 웨이퍼의 양·불량품 판정을 담당하는 부품을 제조하고 있음. 소재부터 제품화까지 자체 개발로 경쟁 우위를 확보하고, 다층 세라믹 기판 시장점유율을 확대하며, 신사업 진출로 매출 확대 및 사업다각화를 추진하고 있음.",
+      "current_price": 14940,
+      "metrics": {
+        "return_5d_pct": 27.47,
+        "return_10d_pct": 9.45,
+        "avg_trading_value_5d": 14876469466,
+        "last_trading_value": 40656700080,
+        "volume_change": null,
+        "foreign_flow": 8791.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "샘씨엔에스, 프로브카드 핵심 밸류체인…리레이팅 기대-메리츠",
+          "published_at": "Fri, 22 May 2026 07:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "메리츠증권은 22일 샘씨엔에스(252990)에 대해 국내 프로브카드(Probe Card) 밸류체인 리레이팅의 중심에 위치한 기업이라며 HBM4 양산과 D램(DRAM)향 침투 확대를 기반으로 추가 성장세가 기대된다고 분석했다...."
+        },
+        {
+          "title": "샘씨엔에스, 1Q 어닝 서프라이즈…'AI·HBM' 업고 연매출 1000억원 가시화",
+          "published_at": "Mon, 18 May 2026 06:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "샘씨엔에스가 인공지능(AI) 반도체와 고대역폭메모리(HBM) 시장 확대에 힘입어 올 1분기 '어닝 서프라이즈'를.."
+        },
+        {
+          "title": "국민참여형 성장펀드 판매 D-7…투자방법ㆍ세제혜택은 [국민성장펀드 해...",
+          "published_at": "Fri, 15 May 2026 15:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "리벨리온·업스테이지·삼성전자·네이버·이수스페셜티케미컬·퓨처그라프·에스티젠바이오·샘씨엔에스.."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "영업(잠정)실적(공정공시)",
+          "published_at": "20260506",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "402490",
+      "name": "그린리소스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2023년 코스닥 상장 후 (주)위드엘씨를 합병하고, 반도체 및 디스플레이 공정 장비용 부품의 내식성·내플라즈마성 제고 소재 제조 및 코팅 사업을 영위함. PVD 방식 초고밀도 코팅을 개발·제조하여 부품에 적용 가능한 코팅층을 제작하고 오염된 부품을 세정 및 코팅하고 있음. 희토류 소재 및 코팅기술 응용 지식재산권 보유하며, 2028년까지 (주)래티스를 통해 초전도선재를 양산하여 산업에 진입할 계획하고 있음.",
+      "current_price": 17450,
+      "metrics": {
+        "return_5d_pct": 6.4,
+        "return_10d_pct": -22.96,
+        "avg_trading_value_5d": 13387072724,
+        "last_trading_value": 14788683050,
+        "volume_change": null,
+        "foreign_flow": -963.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "그린리소스, BW행사 추가상장→주식수 83,502주 증가",
+          "published_at": "Tue, 19 May 2026 17:18:00 +0900",
+          "source": "naver_search_news",
+          "summary": "그린리소스(402490)가 국내사모 신주인수권부사채의 신주인수권 행사에 따라 보통주 83,502주의 추가상장을 결정했다고 공시했다"
+        },
+        {
+          "title": "오늘의 메모[5월 22일]",
+          "published_at": "Thu, 21 May 2026 10:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "(국내CB) 유아이디(유상 제3자배정) 디바이스(187870)(무상) 그린리소스(402490)(국내CB·BW) ▲액면변경=오션인더블유(052300)(5,000원→500원) ▲주권변경상장=오션인더블유·한국정보인증(감자) 더즌(주식소각)"
+        },
+        {
+          "title": "오늘의 메모[5월 20일]",
+          "published_at": "Tue, 19 May 2026 10:51:00 +0900",
+          "source": "naver_search_news",
+          "summary": "(감자) ▲보통주추가상장=제이에스링크·그린리소스·우리기술·SKAI·셀루메드·인벤티지랩·엠플러스·아스트·SV인베스트먼트·TS인베스트먼트(국내CB) 티이엠씨·넥스트바이오메디컬(주식매수선택권행사)..."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "232140",
+      "name": "와이씨",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1991년 설립, 2012년 메모리 테스터 부문 인수, 2015년 에이티테크놀로지 인수로 장비 유지보수 역량 확보함. DRAM 및 NAND 메모리 전공정 웨이퍼 상태 검사, 불량 분석, 메모리 Cell 수리 기능 포함한 자동검사 장비 제조 및 판매 사업을 영위 중임. 삼성전자와 차세대 메모리 테스터 공동개발을 지속하며 HBM, DDR5 등 고부가 메모리 수요 증가에 대응, 고효율 웨이퍼 테스터 개발에 주력하고 있음.",
+      "current_price": 19090,
+      "metrics": {
+        "return_5d_pct": 3.75,
+        "return_10d_pct": -11.42,
+        "avg_trading_value_5d": 13007316926,
+        "last_trading_value": 14962169300,
+        "volume_change": null,
+        "foreign_flow": 1762.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "074600",
+      "name": "원익QnC",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "식각 공정용 쿼츠웨어 제조",
+      "current_price": 38000,
+      "metrics": {
+        "return_5d_pct": 7.19,
+        "return_10d_pct": -4.52,
+        "avg_trading_value_5d": 12960868370,
+        "last_trading_value": 12025822000,
+        "volume_change": null,
+        "foreign_flow": 1237.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "AI 반도체 시대 핵심 소재주…원익QnC 재평가 시작되나",
+          "published_at": "Sun, 17 May 2026 16:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 소재·부품 업체 원익QnC가 자회사 부진에도 불구하고 본업 경쟁력을 앞세워 시장의 재평가 기대를 키우고 있다"
+        },
+        {
+          "title": "[클릭 e종목]&quot;원익QnC, 소부장 톱픽…올들어 3번째 목표가 상향&quot;",
+          "published_at": "Wed, 13 May 2026 06:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "신한투자증권은 원익QnC의 목표주가를 기존 4만5000원에서 6만원으로 상향 조정했다"
+        },
+        {
+          "title": "원익큐엔씨, 구미 공장에 255억 투자…삼성·SK 수요에 쿼츠 공장 증설",
+          "published_at": "Fri, 22 May 2026 17:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "22일 원익QnC는 경북 구미 사업장에 255억2000만의 시설투자를 집행한다고 밝혔다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "연결재무제표기준영업(잠정)실적(공정공시)",
+          "published_at": "20260511",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "083500",
+      "name": "에프엔에스테크",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2002년 평판디스플레이 관련 장비와 반도체 제조용 부품소재 제조 및 판매를 목적으로 설립됨. 동사는 대만 회사 지분을 2025년 취득하여 연결대상 종속회사를 확대하고, 식각기, 박리기, 세정기 등의 디스플레이장비를 생산함. 동사는 플렉서블 디스플레이 시장 확대에 대응 및 스마트팩토리 4.0 기술로 제조 디지털화를 추진하며, 초순수 장치 및 CMP PAD 기술을 혁신하고 있음.",
+      "current_price": 23200,
+      "metrics": {
+        "return_5d_pct": 18.97,
+        "return_10d_pct": 14.57,
+        "avg_trading_value_5d": 12005535250,
+        "last_trading_value": 9368693600,
+        "volume_change": null,
+        "foreign_flow": -1656.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "에프엔에스테크, 22억 규모 자사주 소각 결정",
+          "published_at": "Tue, 19 May 2026 17:31:00 +0900",
+          "source": "naver_search_news",
+          "summary": "에프엔에스테크는 22억원 규모의 자사주 소각을 결정했다고 19일 공시했다"
+        },
+        {
+          "title": "에프엔에스테크, 교환가 웃돌자 EB 첫 행사…오버행 부담 확대",
+          "published_at": "Tue, 19 May 2026 08:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "아사히 램프 인수 효과·HBM 기대감에 주가 반등…잔여 42만주 추가 출회 가능성 코스닥 상장사 '에프엔에스테크(FNS TECH)'에 최근 교환사채(EB) 교환청구가 처음으로 행사됐다"
+        },
+        {
+          "title": "[산업보고서] 유리기판 상용화, AI 반도체 패키징 경쟁의 새 분기점 됐다",
+          "published_at": "Mon, 18 May 2026 07:02:00 +0900",
+          "source": "naver_search_news",
+          "summary": "뷰어스 한용희 그로쓰리서치 연구원 official@growthresearch.co.kr AI 반도체 경쟁의 초점이 칩 자체의 성능에서.."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결(자율공시)",
+          "published_at": "20260507",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "321260",
+      "name": "프로이천",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2006년 설립되어 코스닥시장에 상장됨. 세계 최초 필름형 프로브 블록 특허를 기반으로 디스플레이 및 반도체 검사장치를 제조하며, 삼성디스플레이 등 글로벌 패널 제조사의 1차 협력사로서 독보적 위치를 확보하고 있음. 미세 간극 제조 기술력으로 DDI 칩 검사용 프로브카드를 공급하고, OLEDoS용 신호기 사업 인수를 통해 기술 역량을 내재화함으로써 CIS 및 SoC 시장 진입과 점유율 확대를 추진하고 있음.",
+      "current_price": 4195,
+      "metrics": {
+        "return_5d_pct": 12.92,
+        "return_10d_pct": 11.57,
+        "avg_trading_value_5d": 11777247526,
+        "last_trading_value": 11329872780,
+        "volume_change": null,
+        "foreign_flow": 320.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "&quot;장비 없으면 AI도 없다&quot; 반도체 장비주 불꽃랠리... 로보스타 이오테크...",
+          "published_at": "Thu, 21 May 2026 15:54:00 +0900",
+          "source": "naver_search_news",
+          "summary": "첫째, 글로벌 AI 반도체 수요 확대에 따른 생산라인 증설 기대감이다"
+        },
+        {
+          "title": "OLED 슈퍼사이클 오나…한울반도체 상한가·주성엔지니어링 주가 훨훨",
+          "published_at": "Mon, 11 May 2026 15:32:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체와 OLED 증착 공정 경쟁력이 재조명되며 외국인과 기관 매수세가 동시에 유입된다"
+        },
+        {
+          "title": "[박정식의 국내 주식시황] 반도체 랠리 올라탄 증시…실적 기대감에 지...",
+          "published_at": "Mon, 11 May 2026 09:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "피지컬 AI, 휴머노이드 로봇, 산업용·협동로봇, 스마트팩토리 관련주가 강세를 보였다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "092870",
+      "name": "엑시콘",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2001년 반도체 메모리 테스트 시스템 개발·제조·판매를 목적으로 설립되어 2014년 코넥스와 2015년 코스닥에 상장하였고, 일본 법인이 있음. 반도체 검사장비 제조 및 검사 용역 사업을 영위하며, DDR5 메모리 테스터 등 다양한 제품 포트폴리오를 구축하고 있음. 20년 이상의 개발 노하우로 차세대 메모리반도체 테스터 기술을 확보하고, 비메모리 테스트 장비로 사업을 확장하고 있음.",
+      "current_price": 35300,
+      "metrics": {
+        "return_5d_pct": 22.15,
+        "return_10d_pct": -5.99,
+        "avg_trading_value_5d": 11230637160,
+        "last_trading_value": 18639988500,
+        "volume_change": null,
+        "foreign_flow": 3174.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260506",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "200710",
+      "name": "에이디테크놀로지",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2002년 설립되어 반도체 설계 및 개발에 특화된 국내 시스템 반도체 디자인하우스 선도기업임. TSMC의 가치사슬협력자로 시작해 2020년 삼성 파운드리의 공식 DSP로 전환하였으며, 2023년 Arm의 토탈디자인프로그램 파트너로 선정되어 글로벌 시장 진출 기반을 마련함. 주문형 반도체 설계 및 판매를 주력으로 하며, 팹리스 기업과 IT set 기업을 대상으로 양산 서비스와 개발 용역 서비스를 제공함.",
+      "current_price": 42600,
+      "metrics": {
+        "return_5d_pct": -5.02,
+        "return_10d_pct": -17.12,
+        "avg_trading_value_5d": 11228700890,
+        "last_trading_value": 9870760800,
+        "volume_change": null,
+        "foreign_flow": 1037.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "신한證 &quot;에이디테크놀로지, 삼성 파운드리 수혜 기대…목표가 상향&quot;",
+          "published_at": "Tue, 12 May 2026 08:58:00 +0900",
+          "source": "naver_search_news",
+          "summary": "아주경제=신동근 기자 sdk6425@ajunews.com 신한투자증권은 12일 에이디테크놀로지의 투자의견 매수를 유지하고 목표주가를 기존보다 상향한 6만2500원을 제시했다"
+        },
+        {
+          "title": "[디자인하우스 특수] 에이디테크, 2나노 투자 '하이리스크 하이리턴'",
+          "published_at": "Tue, 19 May 2026 14:37:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼성전자 파운드리 디자인솔루션파트너(DSP)인 에이디테크놀로지가 설계 최적화 대행에서 주문형반도체(ASIC) 중심으로 사업 전환에 속도를 내고 있다"
+        },
+        {
+          "title": "SK하이닉스·삼성전자 동반 폭등랠리…시스템반도체 슈퍼사이클 오나",
+          "published_at": "Mon, 11 May 2026 13:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "오픈엣지테크놀로지는 AI 반도체 설계자산(IP) 경쟁력 확대 기대가 이어지고 있고, 엠디바이스와 에이디테크놀로지도 설계 역량 강화 기대감이 반영되고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "089010",
+      "name": "켐트로닉스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1983년 설립되어 2007년 코스닥에 상장한 반도체·전자·전장 소재 및 부품 전문기업임. 반도체 PR/세정 공정용 소재, 유리기판 가공, 웨이퍼 가공, 전자부품, 무선충전 모듈, 디스플레이 식각, 전장 통신제어, EV 유무선 충전기기 등을 영위함. 초고순도 PGMEA 국산화 및 양산, TGV 기술 기반 유리기판 구축 등 핵심 기술력으로 AI·전기차·디스플레이 시장 진출을 가속화하고 있음.",
+      "current_price": 39250,
+      "metrics": {
+        "return_5d_pct": 6.66,
+        "return_10d_pct": -4.38,
+        "avg_trading_value_5d": 10462056130,
+        "last_trading_value": 8812135250,
+        "volume_change": null,
+        "foreign_flow": 687.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "&quot;켐트로닉스, 2부기부터 반도체 소재 매출 본격화…목표가↑&quot;-신한",
+          "published_at": "Tue, 19 May 2026 08:12:00 +0900",
+          "source": "naver_search_news",
+          "summary": "신한투자증권은 19일 반도체 소재 기업 켐트로닉스에 대해 &quot;우호적 업황 속에서 반도체 소재 매출이.."
+        },
+        {
+          "title": "신한투자증권 &quot;켐트로닉스, 반도체 소재 및 유리기판 기대감 유효&quot;",
+          "published_at": "Tue, 19 May 2026 08:38:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이투데이=심영주 기자 | 19일 신한투자증권은 켐트로닉스에 대해 반도체 소재 매출이 본격화한 가운데 케미칼 유통 마진 개선으로 계단식 성장을 전망했다"
+        },
+        {
+          "title": "[핀셋+] [켐트로닉스] 따로 또 같이?…김응수·응태 형제, 신사옥·상호...",
+          "published_at": "Thu, 14 May 2026 06:06:00 +0900",
+          "source": "naver_search_news",
+          "summary": "56% 취득 켐트로닉스 창업주인 김보균 회장의 두 아들이 분리 경영 체제를 유지하면서도 신사옥 건립과 상호출자 관계 형성 등 그룹 결속을 강화하는 행보에 나서 주목된다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "253590",
+      "name": "네오셈",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2002년 반도체 후공정 검사장비 업체로 설립되어 2019년 대신밸런스제3호기업인수목적(주)와의 합병을 통해 코스닥 시장에 등록됨. 메모리반도체 제조 공정 중 제품 성능과 신뢰성을 검사하는 장비사업을 영위하며, 주력 제품으로는 SSD 검사장비, CXL 메모리 검사장비, 메모리 번인 검사장비 등이 있음. SSD 및 CXL 메모리 검사장비 분야 GLOBAL M/S 1위의 기술 선도 기업임.",
+      "current_price": 16310,
+      "metrics": {
+        "return_5d_pct": 10.58,
+        "return_10d_pct": -8.37,
+        "avg_trading_value_5d": 9919856106,
+        "last_trading_value": 14718584370,
+        "volume_change": null,
+        "foreign_flow": -604.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결(자율공시)",
+          "published_at": "20260508",
+          "importance": "important"
+        },
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260506",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "482630",
+      "name": "삼양엔씨켐",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2008년 설립된 반도체용 정밀화학 소재 전문 기업으로, 2025년 코스닥시장에 상장하였음. 반도체 제조 공정 중 노광 및 세정 공정에 사용되는 Polymer, PAG, PERR 중간체 등을 생산·판매하고 있음. EUV 공정용 고부가가치 제품 비중 확대와 차세대 패키징 공정 대응 소재 개발을 통해 다변화하며, 글로벌 고객사 확대를 추진하여 매출 구조 안정성을 제고하고 있음.",
+      "current_price": 22350,
+      "metrics": {
+        "return_5d_pct": 17.02,
+        "return_10d_pct": 20.75,
+        "avg_trading_value_5d": 9846254894,
+        "last_trading_value": 13085857950,
+        "volume_change": null,
+        "foreign_flow": 1598.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": true,
+        "risk_notes": [
+          "투자주의(mrkt_warn_cls_code=01)"
+        ]
+      },
+      "recent_news": [
+        {
+          "title": "삼양엔씨켐, 1분기 영업익 전년 대비 45%↑… AI·HBM 타고 성장 가속",
+          "published_at": "Mon, 11 May 2026 16:56:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼양엔씨켐이 AI 반도체 시장 확대에 힘입어 올해 1분기 분기 기준 역대 최대 실적을 기록했다"
+        },
+        {
+          "title": "삼양엔씨켐, 1분기 매출액이 407억 원 역대 최대 실적 ... AI 반도체 수요...",
+          "published_at": "Mon, 11 May 2026 22:30:00 +0900",
+          "source": "naver_search_news",
+          "summary": "ⓒ삼양엔씨켐 삼양그룹 계열 반도체 포토레지스트(PR) 소재 전문기업 삼양엔씨켐이 AI 반도체 수요 확대에 힘입어 1분기 기준 역대 최대 실적을 기록했다"
+        },
+        {
+          "title": "삼양엔씨켐, 투자주의종목 지정→단기 주가 급등 투자경계",
+          "published_at": "Thu, 21 May 2026 20:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼양엔씨켐(482630)이 한국거래소의 시장경보제도에 따라 2026년 5월 22일(1일간) 투자주의종목으로 지정됐다고 공시했다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "170920",
+      "name": "엘티씨",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2007년 설립되어 2013년 코스닥시장에 상장하고, 디스플레이 및 반도체용 PR 박리액 개발 및 제조를 주력사업으로 함. 종속회사 엘티씨에이엠을 통해 반도체 제조 과정의 세정액, 식각액 등 화학재료와 시스템을 국내외에 공급하며, 엘에스이를 통해 웨이퍼세정장비를 직접 공급함. 중소형 OLED향 PR, 전해질 재료, 폴리이미드 필름 제조용 단량체 등 국책과제를 통해 기술플랫폼의 변화를 추구하고 있음.",
+      "current_price": 47200,
+      "metrics": {
+        "return_5d_pct": 22.92,
+        "return_10d_pct": 5.01,
+        "avg_trading_value_5d": 9422351180,
+        "last_trading_value": 14514849600,
+        "volume_change": null,
+        "foreign_flow": -630.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "엘티씨, 자회사가 실적 견인차...자금조달 한도도 확대",
+          "published_at": "Fri, 15 May 2026 15:27:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체·디스플레이 소재·장비 기업 엘티씨가 자회사 실적 호조에 힘입어 올해 1분기 연결 기준 역대.."
+        },
+        {
+          "title": "엘티씨, 투자경고 지정해제→재지정 예고…투자주의 촉구",
+          "published_at": "Wed, 20 May 2026 20:30:00 +0900",
+          "source": "naver_search_news",
+          "summary": "엘티씨(170920)가 투자경고종목에서 해제되며, 2026년 05월 21일(1일간) 투자주의종목으로 지정된다고.."
+        },
+        {
+          "title": "[더벨][Company Watch] 반도체 빅사이클 올라탄 엘티씨, 이익률 20% 육박",
+          "published_at": "Fri, 15 May 2026 08:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체·디스플레이 소재 장비 기업 엘티씨가 분기 기준 사상 최대 실적을 기록했다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "187870",
+      "name": "디바이스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2002년 반도체 및 디스플레이 장비 제조를 목적으로 설립되었고, 2017년 코스닥에 상장됨. 주요 사업으로 OLED 증착 공정용 디스플레이 세정장비, 광학검사 장비, 반도체 웨이퍼용 FOUP 오염제거장비를 제조하고 있음. 반도체 Wafer 공정 중 최고 수준의 평탄 식각이 가능한 장비를 개발하여 주요 반도체 제조업체와 성능 평가 후 양산기 시장에 진출하고 있음.",
+      "current_price": 23800,
+      "metrics": {
+        "return_5d_pct": -15.3,
+        "return_10d_pct": 10.44,
+        "avg_trading_value_5d": 9347656150,
+        "last_trading_value": 20670204800,
+        "volume_change": null,
+        "foreign_flow": 924.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "모빌린트 'NPU 솔루션' 조달청 혁신제품 등록…&quot;공공시장 공략&quot;",
+          "published_at": "Fri, 22 May 2026 17:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "제작된 AI 솔루션이다"
+        },
+        {
+          "title": "모빌린트, AI 반도체 2종 조달청 쇼핑몰 등록",
+          "published_at": "Fri, 22 May 2026 16:12:00 +0900",
+          "source": "naver_search_news",
+          "summary": "온디바이스 인공지능(AI) 모델인 'MLX-A1'과 'MLA100'이 대상이다"
+        },
+        {
+          "title": "'삼성전자 파업' 피했지만 우려는 커졌다, '영업익 성과급 확산' 기류에...",
+          "published_at": "Fri, 22 May 2026 17:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "여명구 삼성전자 DS(디바이스솔루션·반도체 사업 담당) 피플팀장(왼쪽)과 최승호 삼성그룹 초기업노동조합.."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "112290",
+      "name": "와이씨켐",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2001년 설립되어 반도체 공정 재료 사업을 영위하며 2022년 코스닥에 상장됨. 특수 Surfactant 및 polymer로 ArF·EUV 공정용 패턴 쓰러짐 방지 용액, 현상액, 세정액 등 반도체 재료를 생산하고 있음. 성주일반산업단지에 200억 설비투자로 토탈 솔루션 기업으로 진화하며, HBM용 TSV 포토레지스트 국산화 등 지속적인 기술 혁신을 추구하고 있음.",
+      "current_price": 15020,
+      "metrics": {
+        "return_5d_pct": 5.26,
+        "return_10d_pct": 0.94,
+        "avg_trading_value_5d": 9186731398,
+        "last_trading_value": 8384314200,
+        "volume_change": null,
+        "foreign_flow": 2090.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[특징주] 와이씨켐, 유리기판용 포토레지스트 첫 공급에 상승...AI 반도체...",
+          "published_at": "Fri, 15 May 2026 14:02:00 +0900",
+          "source": "naver_search_news",
+          "summary": "컨슈머타임스=전은정 기자 | 와이씨켐 주가가 상승중이다"
+        },
+        {
+          "title": "와이씨켐, 1분기 흑전…포토 소재 매출 확대가 실적 견인",
+          "published_at": "Mon, 18 May 2026 09:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "매출 37.4% 증가…HBM·EUV·유리기판 신사업도 확대 추진 반도체용 특수 소재 전문기업 와이씨켐이 전방 산업.."
+        },
+        {
+          "title": "와이씨켐, 유리기판용 포토레지스트 업계 첫 공급",
+          "published_at": "Fri, 15 May 2026 13:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "와이씨켐이 유리기판용 포토레지스트 등 핵심 소재를 고객사에 처음 공급했다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "204270",
+      "name": "제이앤티씨",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1996년 설립, 2020년 코스닥 상장된 첨단소재 및 고정밀 부품 제조업체로, 100% 자회사인 베트남 법인 운영 중임. 강화유리를 포함한 첨단소재사업과 커넥터 사업을 영위하며, 모바일용 커버글라스, 자동차용 강화글라스, 반도체용 TGV유리기판 등을 생산함. 제품 포트폴리오 다변화와 함께 베트남 4공장 생산라인 확대 및 국내 전용 공장 완공으로 AI 산업 핵심부품 양산체계를 구축하고 있음.",
+      "current_price": 21400,
+      "metrics": {
+        "return_5d_pct": 16.94,
+        "return_10d_pct": 3.13,
+        "avg_trading_value_5d": 8823184010,
+        "last_trading_value": 6563444200,
+        "volume_change": null,
+        "foreign_flow": 2624.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "스몰인사이트 &quot;제이앤티씨, 유리 플랫폼 기업 진화 중&quot;",
+          "published_at": "Mon, 11 May 2026 10:30:00 +0900",
+          "source": "naver_search_news",
+          "summary": "특히 AI·클라우드·빅데이터 시대가 본격화되면서 초고용량 HDD 수요가 폭발적으로 증가하고 있다"
+        },
+        {
+          "title": "북미 공급망 진입에 XR 모멘텀까지…제이앤티씨, 쌍두마차 달고 씽씽",
+          "published_at": "Mon, 18 May 2026 10:26:00 +0900",
+          "source": "naver_search_news",
+          "summary": "시장에서는 강화유리와 모바일 외장부품 업체인 제이앤티씨가 강세를 이끈다"
+        },
+        {
+          "title": "글로벌 ESS 경쟁 본격화…서진시스템 대형 수주 확보 '눈에 띄네'",
+          "published_at": "Mon, 18 May 2026 15:24:00 +0900",
+          "source": "naver_search_news",
+          "summary": "한국거래소에 따르면 이날 온디바이스 AI 구현을 위한 고성능 3D 커버글라스 생산 기업 제이앤티씨는 독점적.."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "078130",
+      "name": "국일제지",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1978년 설립된 특수지 제조·판매 기업으로, 2018년 그래핀 및 신소재 연구개발을 위해 자회사 국일그래핀(주)를 설립함. 산업용 기능지와 특수지를 독보적으로 생산하며, 박엽지, 크라프트지 제품 판매 및 임가공 사업을 영위하고 있음. CVD 성장기술 기반 초경량·고강도·고전도성 복합소재 개발을 추진하며 수익성 강화와 고부가가치 지종 개발에 박차를 가하고 있음.",
+      "current_price": 3865,
+      "metrics": {
+        "return_5d_pct": -11.35,
+        "return_10d_pct": -11.35,
+        "avg_trading_value_5d": 8567952523,
+        "last_trading_value": 1615059820,
+        "volume_change": null,
+        "foreign_flow": 202.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "국일제지, 액면병합 주권 변경상장→매매거래 정지 해제",
+          "published_at": "Tue, 19 May 2026 16:14:00 +0900",
+          "source": "naver_search_news",
+          "summary": "국일제지(078130)가 액면병합에 따른 주권 변경상장으로 인해 정지된 주권매매거래가 2026년 5월 20일부로 해제된다고 공시했다"
+        },
+        {
+          "title": "국일제지, 포스코향 스틸가드지 공급…“전방산업 회복 수혜 기대”",
+          "published_at": "Wed, 20 May 2026 08:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "박엽지 전문기업 국일제지(078130)가 철강용 특수지 ‘스틸가드지’를 앞세워 산업용 특수지 사업 확대에 나선다"
+        },
+        {
+          "title": "해성산업, 1분기 영업이익 182억…전년比 180%↑",
+          "published_at": "Fri, 15 May 2026 14:49:00 +0900",
+          "source": "naver_search_news",
+          "summary": "중국 법인 국일제지(장가항)유한공사도 안정적인 실적 흐름을 이어갔다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "059090",
+      "name": "미코",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1999년 설립, 2002년 코스닥 상장한 중견기업으로, 2025년 금오테크놀로지 등 21개 종속기업 신규 연결하며 사업 확장함. 반도체·디스플레이 장비 부품 제작 및 세정·코팅 서비스, 고체산화물 연료전지, 산업용 보일러 등의 사업을 보유함. 세라믹 히터 국산화로 반도체 소재부품 전문기업으로 자리매김, 철강·물류·환경 신성장 산업으로 사업을 확대하고 있음.",
+      "current_price": 21400,
+      "metrics": {
+        "return_5d_pct": -3.82,
+        "return_10d_pct": -11.75,
+        "avg_trading_value_5d": 8527743650,
+        "last_trading_value": 7599589400,
+        "volume_change": null,
+        "foreign_flow": -2160.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "‘싱글맘’ 김지연, 미코 眞의 추락…“10억 빚에 배달 일로 버텨” (같...",
+          "published_at": "Fri, 22 May 2026 13:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "김지연이 10억 원 빚을 떠안고 배달 일까지 했던 사연을 털어놓는다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "098120",
+      "name": "마이크로컨텍솔",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1999년 반도체 검사용 아이씨소켓 제조를 목적으로 설립되었으며, 2022년 ㈜엠에스엘 지분 98.41% 취득으로 역량을 강화함. 반도체 검사용 소켓과 어플라이언스 부문을 운영하며, 다품종 소량생산을 통해 고객 맞춤형 제품 공급함. 동사는 정밀 소켓 기술을 선도 개발하고, 2023년부터 LS ELECTRIC과 협력하여 사업부문 확장하며 혁신을 추구하고 있음.",
+      "current_price": 37100,
+      "metrics": {
+        "return_5d_pct": 23.05,
+        "return_10d_pct": -0.27,
+        "avg_trading_value_5d": 8496407560,
+        "last_trading_value": 12275722200,
+        "volume_change": null,
+        "foreign_flow": 4333.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[공시] 다원넥스뷰·제주반도체 '거래정지 예고', 메디젠휴먼케어·사토...",
+          "published_at": "Fri, 15 May 2026 20:44:00 +0900",
+          "source": "naver_search_news",
+          "summary": "신규 지정 종목은 KX하이텍(052900), 누리플렉스(040160), 동양이엔피(079960), 마이크로컨텍솔(098120), 메이슨캐피탈(021880), 보원케미칼(0010F0), 비큐AI(148780), 비트플래닛(049470), 쏘카(403550), 제닉스로보틱스(381620)..."
+        },
+        {
+          "title": "코미코, 100% 무상증자 발표… 반도체 세정 강자의 자신감",
+          "published_at": "Wed, 13 May 2026 13:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "비씨엔씨, 마이크로컨텍솔이 강세를 보이며 반도체 소재 공급망 가치가 부각되고 있다"
+        },
+        {
+          "title": "[EBN 데이터센터] 코스피 '개미의 힘'으로 사상 첫 8000선 돌파",
+          "published_at": "Fri, 15 May 2026 09:30:00 +0900",
+          "source": "naver_search_news",
+          "summary": "코스닥 시장에서도 사토시홀딩스와 앤씨앤, 소룩스가 나란히 상한가를 기록한 반면 마이크로컨텍솔과 툴젠 등은 두 자릿수 하락률을 보였다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "199820",
+      "name": "제일일렉트릭",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1980년 설립되어 배선기구와 분전반 등을 제조하며 2020년 코스닥시장에 상장됨. 종속법인인 쟈베스코리아전자와 JABEZ VINA COMPANY LIMITED는 자동차용 통신 Cable과 전기차용 와이어 하네스를 제조함. 동사는 IoT 기반 스마트홈 구현에 필요한 배선기구, 차단기 등을 제조하며 국내 스마트홈 네트워크 분야 최고 시장점유율을 확보하고 있음.",
+      "current_price": 14200,
+      "metrics": {
+        "return_5d_pct": -1.39,
+        "return_10d_pct": -17.73,
+        "avg_trading_value_5d": 8063036826,
+        "last_trading_value": 6532639000,
+        "volume_change": null,
+        "foreign_flow": -552.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[더벨][Company Watch] 제일일렉트릭, 미국 이튼 덕에 매출액 '견조'",
+          "published_at": "Fri, 22 May 2026 08:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "국내 스마트 배선기구 기업인 제일일렉트릭이 올해 1분기 견조한 매출 성장을 나타냈다"
+        },
+        {
+          "title": "경동나비엔 주가 불기둥… 스마트 보일러·에너지 효율 경쟁력 부각",
+          "published_at": "Thu, 14 May 2026 14:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "전력·스마트 전기 인프라 관련 기대는 존재하지만 실적 가시성에 대한 우려가 투자심리를 제한하고 있다는 분석이 나온다"
+        },
+        {
+          "title": "썬테크, 비상발전기 세계 최고 기술력… 데이터센터 특수 잡는다",
+          "published_at": "Wed, 13 May 2026 14:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "LS에코에너지는 글로벌 전력망 투자 확대 기대감이 유입되며 상승 흐름을 이어가고 있으며 키스트론 역시 전력기기 관련 기대감 속에서 매수세가 유입되고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "147830",
+      "name": "제룡산업",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 2011년 제룡전기㈜로부터 인적분할되어 설립되고, 2012년 코스닥에 상장함. 송전·배전·지중선 관련 전기기자재와 통신기자재, 철도자재 제조 판매를 하며, 금속제품과 합성수지제품 사업부문으로 운영함. 시장 친화적 기술 선도 강소기업으로 고객 니즈에 맞춘 고부가가치 신제품 개발, 품질 최우선 전략으로 전력기자재 시장에서 높은 브랜드 인지도를 확보하고 있음.",
+      "current_price": 10140,
+      "metrics": {
+        "return_5d_pct": -0.1,
+        "return_10d_pct": -26.15,
+        "avg_trading_value_5d": 7287476788,
+        "last_trading_value": 4411670640,
+        "volume_change": null,
+        "foreign_flow": -50.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[특징주] 제룡산업, 전력망 3법 통과에 ↑… AI 데이터센터發 HVDC 수혜 ...",
+          "published_at": "Thu, 21 May 2026 10:28:00 +0900",
+          "source": "naver_search_news",
+          "summary": "컨슈머타임스=전은정 기자 | 송배전 및 전력기자재 전문기업 제룡산업 주가가 상승세다"
+        },
+        {
+          "title": "[리스트] MVP 상위 20선...프로텍, 제주반도체 등 - 22일",
+          "published_at": "Fri, 22 May 2026 07:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "8% 19 제룡산업 10,020원 ▲8.3% 86점 75점 88점 93점 14.2 2.3 16.4% 20 고영 37,500원 ▲10.8% 85점 100점 77점 78점 174.5 7.7 4.4% &lt;주의: 위 리스트는 단순 투자 참고용으로 이를 바탕으로 한 실제 투자..."
+        },
+        {
+          "title": "신재생 에너지 타고 흐르는 온기… 선도전기, 글로벌 인프라 시장 '정조...",
+          "published_at": "Thu, 21 May 2026 15:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "제룡산업은 배전 설비 중심으로 수급이 집중되며 상승 탄력을 받고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "306620",
+      "name": "지아이에스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2000년 반도체, 디스플레이, MLCC용 절단장비 제조 및 판매를 목적으로 설립되었으며, 2020년 경영효율성 및 인력유치 재무 개선을 추진함. 반도체 및 디스플레이 분야 Dicing, Singulator 장비를 개발하고 있으며, MLCC Cutter, 카메라 모듈 세정 장비도 공급하고 있음. 로봇 분야 설비 기술을 바탕으로 AI 시스템 사업 추진 중이며, 푸드테크 시장 진출 위해 '보글봇' 개발 완료하고 있음.",
+      "current_price": 3420,
+      "metrics": {
+        "return_5d_pct": 26.67,
+        "return_10d_pct": 0.0,
+        "avg_trading_value_5d": 6869865312,
+        "last_trading_value": 12656291400,
+        "volume_change": null,
+        "foreign_flow": 2075.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[더벨][i-point] 지아이에스, 6회차 CB 미상환 잔액 전량 해소",
+          "published_at": "Fri, 22 May 2026 15:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 및 자동화 장비 전문기업 지아이에스는 지난 2023년 발행한 6회차 전환사채(CB)의 미상환 잔액이 전액 해소됐다고 22일 공시를 통해 밝혔다"
+        },
+        {
+          "title": "지아이에스, 6회차 CB 미상환 잔액 전량 해소",
+          "published_at": "Fri, 22 May 2026 15:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "▲ 지아이에스 CI (사진= 지아이에스 제공) 반도체 및 자동화 장비 전문기업 지아이에스가 지난 2023년 발행한 제6회차 전환사채(CB)의 미상환 잔액을 전액 해소했다고 22일 공시를 통해 밝혔다"
+        },
+        {
+          "title": "지아이에스, MLCC 장비 수주 3배 이상 증가",
+          "published_at": "Thu, 21 May 2026 09:27:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체·자동화 장비 전문기업 지아이에스가 최근 핵심 장비군의 수주잔고가 가파른 성장세를 기록하며 올.."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[첨부정정]주요사항보고서(전환사채권발행결정)",
+          "published_at": "20260522",
+          "importance": "important"
+        },
+        {
+          "title": "주요사항보고서(전환사채권발행결정)",
+          "published_at": "20260507",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "147760",
+      "name": "피엠티",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2004년 설립되어 MEMS 기술 기반 3D MEMS 프로브 카드를 개발 상용화하고, 2016년 코스닥에 상장함. 반도체 웨이퍼 테스트용 프로브 카드를 제조 판매하며, 2023년부터 2D MEMS 프로브 카드를 삼성전자 등 고객사에 공급 중임. 독자적 MEMS 공정기술로 12인치 세라믹 기판을 적용하고 무본딩·적층식 기술로 높은 기술력을 보유하고 있음.",
+      "current_price": 9470,
+      "metrics": {
+        "return_5d_pct": 64.7,
+        "return_10d_pct": 65.94,
+        "avg_trading_value_5d": 6809371826,
+        "last_trading_value": 9310847180,
+        "volume_change": null,
+        "foreign_flow": -351.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "피엠티, 투자주의→투자경고종목 지정 예고…주가 급등 영향",
+          "published_at": "Fri, 22 May 2026 20:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "피엠티(147760)가 최근 주가 급등세에 힘입어 투자주의종목으로 지정됐으며, 투자경고종목 지정 예고가 공시됐다"
+        },
+        {
+          "title": "[속보] 피엠티, 삼성차이나반도체와 66억원 규모 프로브카드 공급계약 ...",
+          "published_at": "Wed, 20 May 2026 15:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "AI가 생성"
+        },
+        {
+          "title": "반도체 재료·부품株 유니트론텍 네패스 피엠티 '불기둥'...무슨 호재 있...",
+          "published_at": "Thu, 21 May 2026 15:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "네이버 증권"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260520",
+          "importance": "important"
+        },
+        {
+          "title": "권리락              (유상증자)",
+          "published_at": "20260512",
+          "importance": "important"
+        },
+        {
+          "title": "[기재정정]주요사항보고서(유상증자결정)",
+          "published_at": "20260512",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "094170",
+      "name": "동운아나텍",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2015년 코스닥 상장한 시스템 반도체 전문 업체로, 반도체 칩 설계 후 파운드리에 위탁 생산하여 판매하고 있음. 스마트폰 카메라용 OIS IC, 자동차 전장용 HAPTIC IC 등을 주요 사업으로 하며, 반도체 기술 기반 헬스케어 사업 진출도 준비 중임. 고객 요구에 맞춘 고사양 제품 개발, 자율주행 로봇용 IC 영업 및 헬스케어 시장 진출을 위한 시스템 개발을 지속 추진하고 있음.",
+      "current_price": 44150,
+      "metrics": {
+        "return_5d_pct": -5.86,
+        "return_10d_pct": -13.6,
+        "avg_trading_value_5d": 6551673710,
+        "last_trading_value": 4831643550,
+        "volume_change": null,
+        "foreign_flow": -381.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "자화전자, 고배율 줌·손떨림 보정 기술력 부각… 전장 부품 성장 기대...",
+          "published_at": "Fri, 15 May 2026 13:28:00 +0900",
+          "source": "naver_search_news",
+          "summary": "동운아나텍은 반도체·센서 관련 차익실현 물량이 집중되며 약세 흐름을 보인다"
+        },
+        {
+          "title": "[더벨][피플 &amp; 보드] 감사위원회 대신 단독 감사…사외이사 출신 기용 늘...",
+          "published_at": "Mon, 18 May 2026 08:02:00 +0900",
+          "source": "naver_search_news",
+          "summary": "장상헌 동운아나텍 상근 감사는 2023년 3월부터 이 회사의 감사직을 맡고 있다"
+        },
+        {
+          "title": "글로벌 ESS 경쟁 본격화…서진시스템 대형 수주 확보 '눈에 띄네'",
+          "published_at": "Mon, 18 May 2026 15:24:00 +0900",
+          "source": "naver_search_news",
+          "summary": "카메라 렌즈 구동 칩셋 전문 동운아나텍과 고기능성 자성 소재 제조사 아모그린텍도 제품 단가 인하 압력에 직면해 거래 중이다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "317330",
+      "name": "덕산테코피아",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2006년 전자부품 제조업을 위해 설립되어 2019년에 코스닥 상장, 계열사로 (주)덕산퓨처셀 등을 보유함. OLED 핵심구성요소인 유기재료와 반도체 전자재료 등을 생산하는 Fine Chemical 부문, 반도체용 증착소재 및 고분자 촉매를 생산하는 부문을 운영하고 있음. 기술력과 고객사 관계, 전용 설비 보유로 공급 안정과 품질 향상을 추구하며, 폴리이미드 소재 사업과 신규 반도체 소재 연구개발을 하고 있음.",
+      "current_price": 22350,
+      "metrics": {
+        "return_5d_pct": -8.02,
+        "return_10d_pct": -25.5,
+        "avg_trading_value_5d": 6436133260,
+        "last_trading_value": 7793668500,
+        "volume_change": null,
+        "foreign_flow": 1906.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[박정식의 국내 주식시황] 반도체가 이끄는 반등장 오나…오늘 증시, 삼...",
+          "published_at": "Thu, 21 May 2026 08:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "삼성전자 노사 임금협상 잠정 합의 기대감에 덕산테코피아, 롯데에너지머티리얼즈 등 일부 반도체 관련주도 상승했다"
+        },
+        {
+          "title": "이수스페셜티케미컬·대주전자재료 급등…전고체 기대감에 2차전지주 탄...",
+          "published_at": "Fri, 22 May 2026 11:16:00 +0900",
+          "source": "naver_search_news",
+          "summary": "천보는 5.54% 상승했고, 덕산테코피아는 6.16% 올랐다"
+        },
+        {
+          "title": "포장재부터 첨단 배터리 부품까지… 테이팩스, 거침없는 질주 시작되나",
+          "published_at": "Mon, 18 May 2026 14:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "1차전지 및 2차전지 부품사 에스코넥과 정밀화학의 덕산테코피아, 분리막 제조사 SK아이이테크놀로지 역시 공급 과잉에 따른 단가 압박이 하락 이유로 작용하며 약세다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "322310",
+      "name": "오로스테크놀로지",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "오버레이(정렬) 계측 장비 국산화",
+      "current_price": 29050,
+      "metrics": {
+        "return_5d_pct": 4.31,
+        "return_10d_pct": -18.05,
+        "avg_trading_value_5d": 6393101620,
+        "last_trading_value": 8571667300,
+        "volume_change": null,
+        "foreign_flow": -294.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[특징주] 삼성전자 파업 리스크 해소·엔비디아 호실적…반도체株 급등",
+          "published_at": "Thu, 21 May 2026 10:31:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이외 라온로보틱스(28.34%), 엠케이전자(20.27%), 지아이에스(19.96%), 네패스(19.09%), 에이엘티(17.86%), 아이텍(16.67%), 이오테크닉스(15.15%), SFA반도체(14.14%), 오로스테크놀로지(12.40%), 테크윙(11.04%), 오픈엣지테크놀로지(8...."
+        },
+        {
+          "title": "SK하이닉스·삼성전자 고영 급등, 이오테크닉스도 껑충…HBM 기대감에 반...",
+          "published_at": "Thu, 21 May 2026 11:22:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이와 함께 HBM 공정과 연관성이 거론되는 이오테크닉스는 53만4000원으로 15.58% 상승했고, 테크윙은 11.67%, 오로스테크놀로지는 12.40%, 레이저쎌은 12.24% 각각 상승했다"
+        },
+        {
+          "title": "한미반도체, 싱가포르 법인 신설로 글로벌 AI 기업 공략 박차",
+          "published_at": "Thu, 21 May 2026 15:18:00 +0900",
+          "source": "naver_search_news",
+          "summary": "오로스테크놀로지는 반도체 계측 장비 수요 확대 기대가 반영되며 상승 흐름을 유지하고 있고, 아이엠티는 HBM 공정 관련 신규 장비 기대감으로 강세가 이어지고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "017510",
+      "name": "세명전기",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1962년 설립, 1984년 법인전환 후 1991년 코스닥시장 상장됨. 송배변전선로 금구류를 한국전력공사에 납품하고, 전철용 금구류를 철도공사에 제공하며, 섬유직기용 섹셔날빔과 자동차부품을 관련 업체에 공급하고 있음. 4차 산업혁명 전력수요 증가와 청정에너지 관련 설비 증설에 대응해 HVDC 500kV 송전선 금구류 개발로 국내외 시장을 확대하고 있음.",
+      "current_price": 11900,
+      "metrics": {
+        "return_5d_pct": 0.59,
+        "return_10d_pct": -28.18,
+        "avg_trading_value_5d": 6373533194,
+        "last_trading_value": 5128662000,
+        "volume_change": null,
+        "foreign_flow": -404.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[리스트] MVP 상위 20선...인피니트헬스, 세명전기 등 - 19일",
+          "published_at": "Tue, 19 May 2026 07:24:00 +0900",
+          "source": "naver_search_news",
+          "summary": "com)는 실적과 밸류에이션, 수급 매력을 두루 갖춘 국내 20개 종목을 추려낸 결과, 인피니트헬스케어와 세명전기 등이 포함됐다고 밝혔다"
+        },
+        {
+          "title": "산일전기, 154kV 초고압 변압기 증설로 2500억 매출 날개 단다",
+          "published_at": "Thu, 21 May 2026 09:12:00 +0900",
+          "source": "naver_search_news",
+          "summary": "위너스일렉과 세명전기 역시 전력 설비 관련 수혜 기대감 속에서 상승 흐름을 이어가고 있다"
+        },
+        {
+          "title": "신재생 에너지 타고 흐르는 온기… 선도전기, 글로벌 인프라 시장 '정조...",
+          "published_at": "Thu, 21 May 2026 15:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "보성파워텍과 세명전기는 전력망 투자 확대 기대 속에서 거래가 활발히 이어지고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "102710",
+      "name": "이엔에프테크놀로지",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2000년 반도체/디스플레이 프로세스케미칼 제조 및 판매를 위해 설립되고, 2009년 코스닥시장에 상장함. 전자재료 사업부문은 특수 화학제품의 연구개발, 제조, 판매로 이뤄져 있으며, 프로세스케미칼, 화인케미칼, 칼라페이스트, 반도체 CMP용 Slurry로 구분됨. 식각액과 반도체용 BOE 분야에서 확고한 위치를 달성하고, 신너, 박리액을 통해 시장 경쟁력을 유지하며 세정제 등 신규 품목으로 시장 점유율을 확대하고 있음.",
+      "current_price": 50400,
+      "metrics": {
+        "return_5d_pct": 9.8,
+        "return_10d_pct": -9.84,
+        "avg_trading_value_5d": 6201023230,
+        "last_trading_value": 5661986400,
+        "volume_change": null,
+        "foreign_flow": 633.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "이엔에프테크놀로지, 팸테크놀로지 자회사 편입…日 모리타 지분 전량 ...",
+          "published_at": "Mon, 18 May 2026 16:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이엔에프테크놀로지가 일본 모리타케미칼과의 합작 사업을 정리했다"
+        },
+        {
+          "title": "이엔에프테크놀로지, 1분기 영업익 249억원…전년비 16% 증가",
+          "published_at": "Thu, 14 May 2026 17:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이엔에프테크놀로지의 올해 1분기 매출과 영업이익이 모두 증가했다"
+        },
+        {
+          "title": "반도체 생산 필수소재 불화수소 공급난. 삼성.SK하이닉스 타격 우려",
+          "published_at": "Fri, 15 May 2026 08:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "중국산 원료 의존도가 높은 솔브레인·이엔에프테크놀로지·후성의 조달비 상승이 칩 제조사로 전가될 가능성이 커졌다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "489500",
+      "name": "엘케이켐",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2007년 설립돼 2025년 코스닥 상장한 반도체 박막 증착 소재 전문기업임. 주력 제품으로 ALD용 High-k 소재(CP, PCP 리간드), Low-k 소재(DIS 프리커서)와 전하수송층 소재, 메탈 프리커서 등을 보유함. 리간드 및 프리커서 신소재 연구개발을 추진하며 HfCl4 국산화 사업, 신규 페로브스카이트 소재 개발 등 기술 혁신을 추구하고 있음.",
+      "current_price": 39750,
+      "metrics": {
+        "return_5d_pct": 23.26,
+        "return_10d_pct": 23.64,
+        "avg_trading_value_5d": 6139666210,
+        "last_trading_value": 13466385750,
+        "volume_change": null,
+        "foreign_flow": 2067.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "엘케이켐, '조 단위' 수주 시대 서막 ...1 Q 어닝 서프라이즈",
+          "published_at": "Mon, 18 May 2026 12:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "기업 엘케이켐(489500)이 2026년 1분기 어닝 서프라이즈를 기록했다"
+        },
+        {
+          "title": "엘케이켐, 올 1분기 매출 61억원…전년비 79.6% 증가",
+          "published_at": "Mon, 18 May 2026 14:07:00 +0900",
+          "source": "naver_search_news",
+          "summary": "엘케이켐이 올해 1분기 실적으로 매출액 61억원, 영업이익 11억원을 기록했다고 18일 밝혔다"
+        },
+        {
+          "title": "엘케이켐, 1분기 영업이익 11억…전년比 130.7%↑",
+          "published_at": "Mon, 18 May 2026 10:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 프리커서 소재 양산 전문 기업 엘케이켐은 1분기 연결 영업이익이 11억원을 기록해 전년 동기 대비.."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260514",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "039440",
+      "name": "에스티아이",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "약품공급장치 및 세정 장비",
+      "current_price": 31550,
+      "metrics": {
+        "return_5d_pct": 4.47,
+        "return_10d_pct": -16.53,
+        "avg_trading_value_5d": 6135916990,
+        "last_trading_value": 5272068100,
+        "volume_change": null,
+        "foreign_flow": -669.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "에스티아이, 이우석 대표 장내매수…책임경영 강화",
+          "published_at": "Wed, 20 May 2026 15:26:00 +0900",
+          "source": "naver_search_news",
+          "summary": "사진=에스티아이 에스티아이는 이우석 대표이사가 장내매수를 통해 보통주 5000주를 추가 취득했다고 20일 밝혔다"
+        },
+        {
+          "title": "삼성전자 출신 초격차 유통 미래반도체…세계 유일 AS센터로 신뢰 굳혔...",
+          "published_at": "Mon, 11 May 2026 15:06:00 +0900",
+          "source": "naver_search_news",
+          "summary": "에스티아이와 넥스틴, 제우스 역시 단기 과열 부담이 반영되며 약세 흐름을 나타낸다"
+        },
+        {
+          "title": "한국증시 HBM · CXL주 '장중 뚝'...엔비디아가 변수?",
+          "published_at": "Mon, 18 May 2026 10:02:00 +0900",
+          "source": "naver_search_news",
+          "summary": "같은 시각 한미반도체(-17.75%), 미래반도체(-17.56%), 피에스케이홀딩스(-10.83%), 에스티아이(-7.95%), 와이씨켐(-7.50%), 테크윙(-7.04%) 등도 급락 거래 중이다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "459510",
+      "name": "나우로보틱스",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 2016년 설립되어 산업용 로봇 및 자율주행 물류로봇, 로봇 자동화 시스템을 개발·제조·공급하며, 2025년 코스닥 기술성장기업으로 상장함. 자체 개발한 직교로봇, 다관절 로봇, 스카라 로봇, 무인이동로봇 등을 기반으로 여러 산업에 자동화 솔루션을 제공함. 로봇 SW 및 HW 기술을 바탕으로 사업 영역을 확대하여 토탈 로봇 솔루션 제공 기업으로 성장하고 있음.",
+      "current_price": 26150,
+      "metrics": {
+        "return_5d_pct": -7.92,
+        "return_10d_pct": -16.98,
+        "avg_trading_value_5d": 5901537370,
+        "last_trading_value": 3699832750,
+        "volume_change": null,
+        "foreign_flow": 3.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "나우로보틱스, 에이피알과 로봇 자동화 설비 공급 계약 체결",
+          "published_at": "Mon, 18 May 2026 16:37:00 +0900",
+          "source": "naver_search_news",
+          "summary": "지능형 로봇 전문기업 나우로보틱스가 글로벌 뷰티 기업 에이피알에 로봇 자동화 설비를 공급하며 K뷰티 산업 내 자동화 시장 확대에 나선다"
+        },
+        {
+          "title": "[더벨][i-point] 나우로보틱스, APR과 로봇 자동화 설비 공급 계약 체결",
+          "published_at": "Mon, 18 May 2026 16:58:00 +0900",
+          "source": "naver_search_news",
+          "summary": "뷰티·소비재 산업에서 요구되는 ‘고속·고정밀·고반복’ 운영 환경에 최적화된 자동화 설비를 제공할 예정이다"
+        },
+        {
+          "title": "나우로보틱스, 에이피알과 로봇 자동화 설비 공급 계약 체결",
+          "published_at": "Tue, 19 May 2026 11:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "뷰티·소비재 산업에서 요구되는 '고속·고정밀·고반복' 운영 환경에 최적화된 자동화 설비를 제공할 예정이다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결(자율공시)",
+          "published_at": "20260518",
+          "importance": "important"
+        },
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결",
+          "published_at": "20260515",
+          "importance": "important"
+        },
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결",
+          "published_at": "20260429",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "119830",
+      "name": "아이텍",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2005년 설립돼 2010년 코스닥 상장된 반도체 테스트 전문기업임. 반도체 기술서비스, 소프트웨어 개발, 전자 엔지니어링 서비스를 제공하며, 비메모리 반도체 테스트와 그래핀 제조, 반도체 시설 운영 및 유지보수, 콜드체인 솔루션 등을 제공하고 있음. 동사는 팹리스 회사와 동반 성장 전략을 추구하고, 고객별 Needs 파악을 통한 맞춤형 개발로 영업을 확대하고 있음.",
+      "current_price": 8550,
+      "metrics": {
+        "return_5d_pct": 25.37,
+        "return_10d_pct": 15.54,
+        "avg_trading_value_5d": 5776428704,
+        "last_trading_value": 6944540850,
+        "volume_change": null,
+        "foreign_flow": 345.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "아이텍, 특허보세구역 지위 취득…AI 칩 수요 증가 수혜",
+          "published_at": "Fri, 15 May 2026 11:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "턴어라운드(TAT) 단축…한국 OSAT 산업의 글로벌 위상 제고 기여 시스템 반도체 테스트 전문 기업 아이텍이 '특허보세구역' 지위를 획득하며 글로벌 AI 반도체 테스트 시장의 패권 장악에 나섰다"
+        },
+        {
+          "title": "고려아이텍, 안내삽입렌즈 eyelike KPL 개발...렌즈삽입술 후 야간 빛번...",
+          "published_at": "Thu, 21 May 2026 17:30:00 +0900",
+          "source": "naver_search_news",
+          "summary": "고려아이텍이 국산 안내삽입렌즈 eyelike KPL을 개발하며 렌즈삽입술을 고려하는 고도근시 환자들의 야간.."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]주요사항보고서(유상증자결정)",
+          "published_at": "20260514",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "160980",
+      "name": "싸이맥스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2005년 설립되어 2015년 코스닥에 상장한 반도체 장비 전문기업으로, 웨이퍼 이송장비 CTS, EFEM, LPM을 제조하며 국내 매출 비중이 85%로 높음. 글로벌 최고 수준의 생산 능력과 유연한 제조 인프라로 고객의 납기와 품질 요구를 만족시킴. 자체 하드웨어 및 소프트웨어, 로봇 엔지니어를 통한 지속적인 연구개발로 신규 장비 개발 속도와 수준에서 글로벌 경쟁력을 갖추고 있음.",
+      "current_price": 34700,
+      "metrics": {
+        "return_5d_pct": -5.32,
+        "return_10d_pct": -6.34,
+        "avg_trading_value_5d": 5536196390,
+        "last_trading_value": 3570074800,
+        "volume_change": null,
+        "foreign_flow": 548.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "세정부터 친환경 배기까지… 뉴파워프라즈마, 반도체 공정의 '심장' 책...",
+          "published_at": "Tue, 12 May 2026 14:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "디아이와 큐알티, 미코, HPSP, 네패스아크, 싸이맥스, 에이디테크놀로지, 와이씨, 제너셈 등도 AI 반도체 투자 사이클 둔화 우려 속에 약세를 면치 못하고 있다"
+        },
+        {
+          "title": "제조혁신 주도 두산로보틱스 주가 다시 펄펄 끓네...글로벌 자동화 투자...",
+          "published_at": "Fri, 15 May 2026 11:08:00 +0900",
+          "source": "naver_search_news",
+          "summary": "오늘이엔엠과 러셀, 아이엘, 에브리봇, 싸이맥스도 오름세를 이어간다"
+        },
+        {
+          "title": "[박정식의 국내 주식시황] 6% 급락한 코스피, 오늘 반등 모색…반도체 ...",
+          "published_at": "Mon, 18 May 2026 09:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반면 씨앤지하이테크, 싸이맥스, SFA반도체, 위드텍, 아모텍 등은 1분기 실적 부진 여파로 하락했다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "094820",
+      "name": "일진파워",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1990년 설립되어 2014년 화공 및 플랜트 사업을 분리하고, 연료전지발전소 건설을 위해 진천그린에너지와 고양그린에너지를 신설함. 발전사업본부는 화력 및 복합발전소 정비를, 원자력사업본부는 원자력 정비를, 신성장사업본부는 재생에너지 사업을 발굴함. 재생에너지 사업을 확대하고 연료전지발전소 건설로 친환경 전력 기반을 마련하며, 신규 사업목적 추가로 중장기 성장 기반을 구축하고 있음.",
+      "current_price": 16150,
+      "metrics": {
+        "return_5d_pct": -4.72,
+        "return_10d_pct": -21.98,
+        "avg_trading_value_5d": 5525164754,
+        "last_trading_value": 4843385000,
+        "volume_change": null,
+        "foreign_flow": -1249.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "두산에너빌리티 7% 강세…일진파워·비츠로테크·모비스까지 원전 핵융...",
+          "published_at": "Thu, 21 May 2026 11:18:00 +0900",
+          "source": "naver_search_news",
+          "summary": "일진파워 역시 1만5720원으로 5.86% 상승했고, 비츠로테크도 1만4470원으로 6.16% 오르며 원전 및 전력 인프라 테마 강세에 동참했다"
+        },
+        {
+          "title": "두산에너빌리티·우리기술·오르비텍·비에이치아이·한전기술·한전산...",
+          "published_at": "Thu, 21 May 2026 15:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "일진파워도 1만5610원으로 5.12% 강세를 기록했으며, 우진은 2만1550원으로 6.68% 상승했다"
+        },
+        {
+          "title": "에스에프에이, '인공태양' 핵융합 장비 투자 확대에 수주 대박 기대",
+          "published_at": "Fri, 22 May 2026 14:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "일진파워는 원자력 및 에너지 설비 유지보수 경험을 기반으로 차세대 에너지 전환 수혜 기대가 반영되며 상승 흐름을 이어가고 있고, 두산에너빌리티는 11만 1,700원에 거래중으로 원전 및 대형 에너지 설비 중심 사업..."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결(자율공시)",
+          "published_at": "20260520",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "102120",
+      "name": "어보브반도체",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2006년 비메모리반도체 개발 및 제조를 목적으로 설립되었으며, 2009년 코스닥시장에 상장함. 주요종속회사인 (주)윈팩을 통해 반도체 후공정 패키징&테스트 외주사업을 영위하고 있음. 가전용 전자기기 및 산업용 전자기기에 적용되는 MCU 공급, Touch Sensor, Ambient Light Sensor 등의 각종 Sensor 제품 및 High Voltage소자가 적용되는 Power반도체 공급.",
+      "current_price": 13580,
+      "metrics": {
+        "return_5d_pct": 6.18,
+        "return_10d_pct": -5.83,
+        "avg_trading_value_5d": 5417467472,
+        "last_trading_value": 8224319600,
+        "volume_change": null,
+        "foreign_flow": 1803.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "힘펠, 어보브반도체 온디바이스 AI 적용으로 환기가전 고도화… 사용자...",
+          "published_at": "Wed, 13 May 2026 17:32:00 +0900",
+          "source": "naver_search_news",
+          "summary": "환기가전 전문기업 힘펠이 비메모리 반도체 기업 어보브반도체의 온디바이스 AI 음성인식 기술을 자사 욕실·주방 환기가전에 적용하고 한국표준협회(KSA)의 AI+ 인증을 획득했다고 13일 밝혔다"
+        },
+        {
+          "title": "[산업 HOT 뉴스] &quot;이제 '욕실·주방 환기가전'에게도 명령하세요!&quot;…힘펠...",
+          "published_at": "Thu, 14 May 2026 04:28:00 +0900",
+          "source": "naver_search_news",
+          "summary": "14일 관련 업계에 따르면 환기가전 전문기업 힘펠은 최근 비메모리 반도체 전문기업 어보브반도체의 온디바이스 AI 음성인식 기술을 적용해 환기가전을 한 단계 고도화했다"
+        },
+        {
+          "title": "힘펠, 환기가전에 온디바이스 AI 음성인식 도입",
+          "published_at": "Wed, 13 May 2026 10:05:00 +0900",
+          "source": "naver_search_news",
+          "summary": "어보브반도체의 AI-ADAM-100은 스마트 가전과 산업기기에서 필요한 AI 기능을 기기 내부에서 직접 처리할 수 있도록 개발된 저전력 AI MCU다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "자기주식처분결과보고서",
+          "published_at": "20260513",
+          "importance": "important"
+        },
+        {
+          "title": "주요사항보고서(자기주식처분결정)",
+          "published_at": "20260508",
+          "importance": "important"
+        },
+        {
+          "title": "자기주식처분결과보고서",
+          "published_at": "20260506",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "036810",
+      "name": "에프에스티",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "펠리클 및 칠러(온도조절장치) 제조",
+      "current_price": 36150,
+      "metrics": {
+        "return_5d_pct": 5.7,
+        "return_10d_pct": -14.34,
+        "avg_trading_value_5d": 5397585590,
+        "last_trading_value": 5145591000,
+        "volume_change": null,
+        "foreign_flow": 1043.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "가전 넘어 반도체·전장으로…한솔테크닉스, 거침없는 M&amp;A 행보",
+          "published_at": "Mon, 11 May 2026 11:16:00 +0900",
+          "source": "naver_search_news",
+          "summary": "AI 반도체 확대 과정에서 고부가 소재 공급 가능성이 재평가되고 있다는 분석이다"
+        },
+        {
+          "title": "글로벌 반도체 공정 러시…주성엔지니어링, 대규모 수주 모멘텀 부각",
+          "published_at": "Mon, 18 May 2026 10:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "러셀, 퓨릿, 에프에스티, 네오셈, 뉴파워프라즈마, 케이엔제이 등은 차익실현 매물이 유입되며 약세 흐름을 보인다"
+        },
+        {
+          "title": "[공멸위기 자초 삼전노조]③ '성과급 논란'…소부장 협력사 1700곳 긴장",
+          "published_at": "Mon, 11 May 2026 15:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "저스템, 에프에스티(FST) 등 국내 장비사들이 직접 수혜권에 들어간다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "059270",
+      "name": "해성에어로보틱스",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 1997년 감속기 전문 제조기업으로 설립되어 2021년 코스닥시장에 상장함. 승강기용 권상기를 주력으로 생산하며, Worm Gear 독자기술로 효율 및 내구성에서 우수성을 인정받고, 일본·미국·중국·동남아 등 해외시장을 개척 중임. 동사는 제조로봇용 고정밀 Cycloid 감속기 사업을 추진하여 국내 유일 양산시스템을 구축하고, 기술플랫폼의 변화와 혁신을 추구하고 있음.",
+      "current_price": 11160,
+      "metrics": {
+        "return_5d_pct": 10.6,
+        "return_10d_pct": 10.82,
+        "avg_trading_value_5d": 5363002528,
+        "last_trading_value": 4245565320,
+        "volume_change": null,
+        "foreign_flow": -266.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[메자닌 투자파일] 해성에어로보틱스, 로봇감속기로 적자 탈출 승부수",
+          "published_at": "Fri, 22 May 2026 10:32:00 +0900",
+          "source": "naver_search_news",
+          "summary": "감속기 제조 기업 해성에어로보틱스가 전환사채(CB)를 활용해 로봇용 감속기 사업 확대에 나선다"
+        },
+        {
+          "title": "해성에어로보틱스, 200억 CB 조달…&quot;로봇 감속기 양산 확대&quot;",
+          "published_at": "Wed, 20 May 2026 09:56:00 +0900",
+          "source": "naver_search_news",
+          "summary": "산업용 감속기 전문기업 해성에어로보틱스(059270)가 로봇용 감속기 사업 확대를 위해 200억원 규모 자금 조달에 나선다"
+        },
+        {
+          "title": "직각좌표부터 AMR까지... 로보스타, 산업용 로봇 풀라인업으로 승부수",
+          "published_at": "Fri, 15 May 2026 09:56:00 +0900",
+          "source": "naver_search_news",
+          "summary": "로봇 플랫폼과 산업 자동화 솔루션 기업들이 동반 상승하며 시장의 중심축을 형성하고 있다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]주요사항보고서(전환사채권발행결정)",
+          "published_at": "20260522",
+          "importance": "important"
+        },
+        {
+          "title": "[첨부정정]주요사항보고서(전환사채권발행결정)",
+          "published_at": "20260520",
+          "importance": "important"
+        },
+        {
+          "title": "주요사항보고서(전환사채권발행결정)",
+          "published_at": "20260519",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "024850",
+      "name": "HLB이노베이션",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1978년 반도체 부품 제조업으로 설립되어 2001년 코스닥 상장함. 반도체 IC와 TR용, 파워모듈용 프리몰드형 리드프레임, 테스트 소켓 컨택핀을 스탬핑 방식으로 생산하며, KIR-CAR 플랫폼 기술로 고형암 및 혈액암 치료제를 개발 중임. 전기차, 친환경 에너지, 가전 산업에 기여하는 전장 및 산업용 부품을 공급하고, AI 기술 확산과 자율주행, 전기차 산업 성장에 따라 제품 경쟁력을 강화하고 있음.",
+      "current_price": 18290,
+      "metrics": {
+        "return_5d_pct": -15.13,
+        "return_10d_pct": -12.49,
+        "avg_trading_value_5d": 5335466110,
+        "last_trading_value": 7710442140,
+        "volume_change": null,
+        "foreign_flow": -82.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "HLB이노베이션, 1분기 영업익 흑자전환…매출 24.5% 증가",
+          "published_at": "Fri, 15 May 2026 16:45:00 +0900",
+          "source": "naver_search_news",
+          "summary": "HLB이노베이션은 인공지능(AI) 산업 발전에 따른 메모리 반도체 수요 증가와 전기차·하이브리드차 중심의 전동화 전환이 실적 개선에 영향을 미쳤다고 설명했다"
+        },
+        {
+          "title": "HLB이노베이션, 1분기 매출 24% 증가…&quot;반도체 본업 성장세 지속&quot;",
+          "published_at": "Fri, 15 May 2026 17:39:00 +0900",
+          "source": "naver_search_news",
+          "summary": "HLB이노베이션 관계자는 &quot;AI, 전기차, 하이브리드, 자율주행 등 전방산업의 구조적 성장에 따라 당사 반도체 부품사업의 성장 기회가 확대되고 있다&quot;며 &quot;생산 및 검사 인프라 투자를 통해 품질과 납기 경쟁력을 높이고..."
+        },
+        {
+          "title": "HLB이노베이션, 반도체 사업 성장세에…1분기 별도 매출 24%↑",
+          "published_at": "Fri, 15 May 2026 17:46:00 +0900",
+          "source": "naver_search_news",
+          "summary": "HLB이노베이션(024850)의 1분기 별도 기준 실적이 반도체 사업의 성장세로 전년 대비 개선됐다..."
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "주요사항보고서(전환사채권발행결정)",
+          "published_at": "20260506",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "160190",
+      "name": "하이젠알앤엠",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 2007년 설립 후 오티스엘리베이터코리아의 산업용 모터사업부 인수로 시작함. 중국 청도 공장 인수로 가격 경쟁력과 본사 기술력을 결합한 생산체제 구축하여 산업용전동기, 서보모터/드라이브, 로봇/SI, EV모터/인버터 사업을 영위하고 있음. 동사는 슈퍼프리미엄 전동기 개발, 로봇 액추에이터 및 구동모듈을 핵심기술로 연구개발을 통해 글로벌 기업으로 성장하고 있음.",
+      "current_price": 36000,
+      "metrics": {
+        "return_5d_pct": -6.37,
+        "return_10d_pct": -13.15,
+        "avg_trading_value_5d": 5227756850,
+        "last_trading_value": 3999564000,
+        "volume_change": null,
+        "foreign_flow": -1028.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "직각좌표부터 AMR까지... 로보스타, 산업용 로봇 풀라인업으로 승부수",
+          "published_at": "Fri, 15 May 2026 09:56:00 +0900",
+          "source": "naver_search_news",
+          "summary": "케이엔알시스템과 하이젠알앤엠은 각각 산업용 장비 및 전장 모듈 수요 확대 기대가 반영되며 안정적인 흐름을 보인다"
+        },
+        {
+          "title": "코스피 200, GS건설·세방전지 OUT, HD건설기계·달바글로벌 IN",
+          "published_at": "Fri, 22 May 2026 17:03:00 +0900",
+          "source": "naver_search_news",
+          "summary": "정기변경에 앞서 거래소는 하이젠알앤엠·메지온·HD현대인프라코어가 수시변경으로 KRX 300에서는 편출한 바 있다"
+        },
+        {
+          "title": "피지컬 AI 모메텀 기대…로봇주 동반 상승",
+          "published_at": "Fri, 15 May 2026 09:32:00 +0900",
+          "source": "naver_search_news",
+          "summary": "로보스타(13.86%), 앤로보틱스(12.13%), 유진로봇(9.92%), 휴림로봇(9.9%), 코스모로보틱스(7.78%), 유일로보틱스(7.55%), SJG세종(7.29%), 로보티즈(6.89%), 하이젠알앤엠(6.84%), 레인보우로보틱스(6.18%), 클로봇(6.14%) 등도..."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "094940",
+      "name": "푸른기술",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 1997년 설립되어 2007년 코스닥 상장 후 금융자동화, 역무자동화, 협동로봇 제조 및 판매를 영위하고 있음. 금융자동화 부문에서 보급형 CD와 북미시장 ATM을 공급하며, 역무자동화 부문에서는 승차권 발매기, 자동충전기 등의 시스템을 제공함. 동사는 협동로봇과 의료로봇 개발로 사업을 확장하고, 인천공항 자동출입국심사대 및 스마트패스 사업 참여로 기술 혁신을 추구하고 있음.",
+      "current_price": 12030,
+      "metrics": {
+        "return_5d_pct": -7.46,
+        "return_10d_pct": 11.29,
+        "avg_trading_value_5d": 4761114612,
+        "last_trading_value": 2893142820,
+        "volume_change": null,
+        "foreign_flow": 216.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "푸른기술, 글로벌 산업 자동화 트렌드 맞물려 스마트 물류 핵심 기술 부...",
+          "published_at": "Fri, 15 May 2026 15:40:00 +0900",
+          "source": "naver_search_news",
+          "summary": "가장 눈에 띄는 종목은 푸른기술이다"
+        },
+        {
+          "title": "푸른기술, 상호변경 결정→푸른로보틱스 28일 상장",
+          "published_at": "Fri, 22 May 2026 17:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "푸른기술(094940)이 상호를 '푸른로보틱스'로 변경한다고 공시했다"
+        },
+        {
+          "title": "푸른기술, 메타넷디지털과 34억 원 규모 계약→매출 성장 기대",
+          "published_at": "Tue, 19 May 2026 18:06:00 +0900",
+          "source": "naver_search_news",
+          "summary": "푸른기술(094940)이 메타넷디지털(주)와 신안산선 복선전철 역무자동화설비 구매 및 설치에 관한 단일판매·공급계약을 체결했다고 공시했다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260519",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "046120",
+      "name": "오르비텍",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1991년 비파괴기술검사 목적으로 설립되어 2010년 코스닥시장에 상장하고, 2025년 파인테크닉스 지분 42.09% 취득으로 종속회사를 편입함. 원자력사업, ISI사업, 항공사업 등 3개 사업본부로 운영 중임. 원전해체시장 선점을 위해 분석센터 운영 및 R&D 과제를 수행하며, 항공사업에서 AS 9100 인증 획득 및 KF-21 부품 공급계약을 통해 기술력을 강화하고 있음.",
+      "current_price": 9610,
+      "metrics": {
+        "return_5d_pct": -1.44,
+        "return_10d_pct": -12.64,
+        "avg_trading_value_5d": 4678065306,
+        "last_trading_value": 5687841870,
+        "volume_change": null,
+        "foreign_flow": -1299.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "오르비텍 주가 더 내달린다... 방사선 관리와 원전 해체 관련 사업 부각",
+          "published_at": "Thu, 21 May 2026 11:12:00 +0900",
+          "source": "naver_search_news",
+          "summary": "한국거래소에 따르면 오르비텍은 이날 오전 11시4분 현재 11.90% 상승한 9870원에 거래중이다"
+        },
+        {
+          "title": "두산에너빌리티·우리기술·오르비텍·비에이치아이·한전기술·한전산...",
+          "published_at": "Thu, 21 May 2026 15:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "우리기술은 1만6760원으로 4.23% 상승했고, 오르비텍은 9670원으로 9.64% 급등했다"
+        },
+        {
+          "title": "[속보] 두산에너빌리티 우리기술 오르비텍 등 원전주 일제히 강세…코스...",
+          "published_at": "Thu, 21 May 2026 09:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "21일 오전 9시 38분 기준 원자력발전 테마에서는 오르비텍이 9600원으로 8.8% 상승하며 가장 강한 흐름을 나타냈다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "429270",
+      "name": "시지트로닉스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2012년 설립되어 실리콘 소재 기반 반도체 개발부터 생산까지 담당하는 기업임. ESD, Power, Sensor 등의 광·개별소자를 개발·생산·판매하고 있으며, 2017년부터 질화갈륨 전력반도체와 2020년부터 RF 소자 상용화를 추진 중임. Epi 공정 기술을 적용한 'Multi-project FAB' 파운드리를 통해 고부가가치 소자로 사업 집중도와 빠른 대응력을 강화하고 있음.",
+      "current_price": 8930,
+      "metrics": {
+        "return_5d_pct": 12.33,
+        "return_10d_pct": -13.47,
+        "avg_trading_value_5d": 4635355294,
+        "last_trading_value": 17654109920,
+        "volume_change": null,
+        "foreign_flow": -281.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "시지트로닉스, 글로벌向 초소형 광센서 공급…피지컬AI 수혜 부각",
+          "published_at": "Fri, 22 May 2026 08:39:00 +0900",
+          "source": "naver_search_news",
+          "summary": "차세대 특화반도체 전문기업 시지트로닉스(429270)가 글로벌 톱티어 고객사에 초소형 광센서 양산 공급을.."
+        },
+        {
+          "title": "시지트로닉스, 글로벌 톱티어향 광센서 양산 공급 소식에 18%↑[특징주]",
+          "published_at": "Fri, 22 May 2026 09:25:00 +0900",
+          "source": "naver_search_news",
+          "summary": "시지트로닉스(429270)가 장 초반 18%대 강세다"
+        },
+        {
+          "title": "[주식마감] 광통신주 살아나나... 빛과전자 상한가, 포톤·시지트로닉스...",
+          "published_at": "Fri, 22 May 2026 19:40:00 +0900",
+          "source": "naver_search_news",
+          "summary": "22일 삼화콘덴서, 미래산업, 삼화전자, 네이처셀, 빛과전자, 피델릭스, SGA솔루션즈, 시지트로닉스, 포톤.."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "172670",
+      "name": "에이엘티",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2003년 설립되어 비메모리 반도체 후공정 테스트를 전문적으로 수행하고, 종속회사 에이지피는 CIS 패키징 사업을 진행하고 있음. DDI, CIS, PMIC, MCU, M/C 테스트와 CIS Wafer Test 후 Reconstruct를 진행하고 있음. SoC 테스트 품목 확대 및 차세대 전력반도체 재료인 SiC의 Dicing 기술 개발을 하며, 최신 설비와 전문 엔지니어 확보로 매출 성장을 지속하고 있음.",
+      "current_price": 19550,
+      "metrics": {
+        "return_5d_pct": 8.85,
+        "return_10d_pct": 6.71,
+        "avg_trading_value_5d": 4410808016,
+        "last_trading_value": 3591452300,
+        "volume_change": null,
+        "foreign_flow": -497.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[특징주] 에이엘티, AI 데이터센터 수요 대응 나서자 '들썩'",
+          "published_at": "Mon, 11 May 2026 15:50:00 +0900",
+          "source": "naver_search_news",
+          "summary": "에이엘티 관계자는 &quot;AI, 데이터센터, 전장용 반도체 등 고성장 산업군 확대에 따라 고사양 반도체 테스트 수요가 지속 증가할 것으로 보고 있으며, 이에 맞춰 단계적 설비 투자 및 고객 대응 역량 강화를 지속 추진할..."
+        },
+        {
+          "title": "[더벨][Company Watch] '비수기' 관통 에이엘티, 실적 턴어라운드 시동",
+          "published_at": "Tue, 19 May 2026 08:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "전문기업 에이엘티의 실적이 2분기부터 점진적으로 개선될 것으로 관측된다"
+        },
+        {
+          "title": "[특징주] 삼성전자 파업 리스크 해소·엔비디아 호실적…반도체株 급등",
+          "published_at": "Thu, 21 May 2026 10:31:00 +0900",
+          "source": "naver_search_news",
+          "summary": "이외 라온로보틱스(28.34%), 엠케이전자(20.27%), 지아이에스(19.96%), 네패스(19.09%), 에이엘티(17.86%), 아이텍(16.67%), 이오테크닉스(15.15%), SFA반도체(14.14%), 오로스테크놀로지(12.40%), 테크윙(11.04%), 오픈엣지테크놀로지(8...."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "0001A0",
+      "name": "덕양에너젠",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 2020년 덕양에서 인적분할로 설립되었고, 2025년 민컴퍼니와 주식교환으로 종속회사 됨. 고도 정제공정을 통해 순도 99.99% 이상의 고순도 산업용 수소로 전환 생산하는 수소 정제 기업으로, 정유 및 석유화학 산업의 필수 공정가스를 국내 주요 정유사 및 석유화학 업체에 공급하고 있음. SMR 방식의 수소 생산 역량을 보유하고 사우디 아람코와 S-OIL의 프로젝트에 낙찰되며 기술 혁신을 추구하고 있음.",
+      "current_price": 14010,
+      "metrics": {
+        "return_5d_pct": -8.43,
+        "return_10d_pct": -30.3,
+        "avg_trading_value_5d": 4307885390,
+        "last_trading_value": 4637562180,
+        "volume_change": null,
+        "foreign_flow": 702.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "DKME, 최대주주 변경…덕양에너젠 외 3인 체제",
+          "published_at": "Wed, 20 May 2026 16:01:00 +0900",
+          "source": "naver_search_news",
+          "summary": "DKME의 최대주주가 기존 덕양에너젠·울프 공동 체제에서 덕양에너젠 외 3인 체제로 변경됐다"
+        },
+        {
+          "title": "분기 순익 1조 넘은 미래에셋증권, IB 실적만 저조 원인은",
+          "published_at": "Fri, 22 May 2026 08:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "서울시 청년주택 및 수도권 데이터센터 개발사업 금융주선 및 투자를 비롯해 덕양에너젠과 액스비스 기업공개(IPO), 에코마케팅 인수금융, 티웨이항공 유상증자 등을 성공적으로 수행하며 수익을 창출했다...."
+        },
+        {
+          "title": "SK 주가 더 내달린다...자회사 가치 재평가와 에너지 사업 실적 개선 가...",
+          "published_at": "Fri, 22 May 2026 09:36:00 +0900",
+          "source": "naver_search_news",
+          "summary": "덕양에너젠은 5.13% 오른 1만4350원에 거래중이다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "101160",
+      "name": "월덱스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2000년 반도체 및 전자부품 제조 목적으로 설립되어 2008년 코스닥에 상장하고 2009년 미국 WCQ를 인수하여 소재 전문기업으로 성장함. 실리콘 부품, 쿼츠 부품, 파인세라믹 제품을 제조 및 판매하며, 반도체 수율에 직접 영향 주는 핵심 부품 공급하고 있음. 반도체 고객과 긴밀한 소통을 통한 식각 공정 최적화 및 기술 이슈 해결 파트너로 성장하며 국내외 기업과 교류로 공정부품분야 전문성과 브랜드 가치 인정받고 있음.",
+      "current_price": 28450,
+      "metrics": {
+        "return_5d_pct": 2.52,
+        "return_10d_pct": -10.53,
+        "avg_trading_value_5d": 4205352540,
+        "last_trading_value": 2749066600,
+        "volume_change": null,
+        "foreign_flow": 352.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "연매출 3000억 '월덱스', 이사 보수한도는 현대차와 비슷 [넘버스]",
+          "published_at": "Thu, 14 May 2026 08:58:00 +0900",
+          "source": "naver_search_news",
+          "summary": "업체인 월덱스가 주주들의 반대로 좌초됐던 임원 보수 한도 상향에 재도전한다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "114810",
+      "name": "한솔아이원스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1993년 설립되어 2005년 법인전환 후 아이원스로 출범하였고 2013년 기업공개, 2022년 한솔그룹 편입에 따라 한솔아이원스로 사명을 변경함. 반도체 및 디스플레이 제조 장비 부품의 정밀 가공을 시작으로 반도체 장비 부품 초정밀 세정/코팅으로 사업을 확장하고 있음. 부품 가공-세정-코팅까지 통합 솔루션 체계를 완성하여 고객사의 원가절감과 생산 효율성 제고에 기여하고, 제조 경쟁력 강화를 위해 노력하고 있음.",
+      "current_price": 16190,
+      "metrics": {
+        "return_5d_pct": 7.22,
+        "return_10d_pct": -3.29,
+        "avg_trading_value_5d": 4175113822,
+        "last_trading_value": 4845116540,
+        "volume_change": null,
+        "foreign_flow": 729.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "한솔아이원스, 주식소각 변경상장→주주가치 제고 효과 주목",
+          "published_at": "Fri, 22 May 2026 16:58:00 +0900",
+          "source": "naver_search_news",
+          "summary": "한솔아이원스(114810)가 보통주 450,000주에 대한 주식소각을 실시하며 이에 따른 변경상장이 진행된다고 공시했다"
+        },
+        {
+          "title": "코미코, 100% 무상증자 발표… 반도체 세정 강자의 자신감",
+          "published_at": "Wed, 13 May 2026 13:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "티이엠씨씨엔에스와 한솔아이원스, 로체시스템즈도 전방 산업의 투자 확대 수혜 기대감에 오름세를 보이고 있다"
+        },
+        {
+          "title": "가전 넘어 반도체·전장으로…한솔테크닉스, 거침없는 M&amp;A 행보",
+          "published_at": "Mon, 11 May 2026 11:16:00 +0900",
+          "source": "naver_search_news",
+          "summary": "한솔테크닉스는 2021년 반도체 장비 부품 전문기업 한솔아이원스를 인수한 데 이어, 2025년에는 에스아이머트리얼즈와 한솔오리온텍의 지분을 잇달아 확보하며 보폭을 넓혔다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "연결재무제표기준영업(잠정)실적(공정공시)",
+          "published_at": "20260423",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "212710",
+      "name": "아이에스티이",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2013년 설립되어 반도체 장비를 중심으로 OLED, LCD, 자동차 등 다양한 산업의 장비 및 부품을 판매하는 장비사업과 수소에너지 중심의 에너지 사업을 하고 있음. 반도체 장비사업은 FOUP Cleaner를 주축으로 여러 장비를 판매하고, SK하이닉스 등 글로벌 고객을 확보하여 안정적 매출을 실현하고 있음. 반도체 장비 FOUP Cleaner의 세계화 추진과 PECVD 사업화를 통해 중·장기 성장 기반을 마련하고 있음.",
+      "current_price": 11420,
+      "metrics": {
+        "return_5d_pct": 7.63,
+        "return_10d_pct": 14.43,
+        "avg_trading_value_5d": 4126401492,
+        "last_trading_value": 4572476640,
+        "volume_change": null,
+        "foreign_flow": 1284.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "아이에스티이, 1분기 영업이익 74% 급증…“530억원 수주잔고로 퀀텀점...",
+          "published_at": "Thu, 14 May 2026 23:44:00 +0900",
+          "source": "naver_search_news",
+          "summary": "고부가가치 제품 중심 제품믹스 개선으로 수익성 대폭 강화 반도체 장비 전문기업 아이에스티이가 올해 1분기 영업이익이 전년 동기 대비 74% 증가하며 수익성 중심의 견조한 성장세를 기록했다.아이에스티이는 14일..."
+        },
+        {
+          "title": "[오늘의 IR] 기아ㆍ한국금융지주ㆍ누보 등",
+          "published_at": "Thu, 21 May 2026 07:26:00 +0900",
+          "source": "naver_search_news",
+          "summary": "진행 △아이에스티이, 2026년 1분기 경영실적 설명 및 투자자 이해 증진 △쿠콘, 2026년 1분기 경영실적 발표 △E8, 주요 경영 현황 설명 △바이오비쥬, 회사 주요 사업현황 설명 △현대건설, NH투자증권..."
+        },
+        {
+          "title": "코미코, 100% 무상증자 발표… 반도체 세정 강자의 자신감",
+          "published_at": "Wed, 13 May 2026 13:10:00 +0900",
+          "source": "naver_search_news",
+          "summary": "예스티, 피에스케이홀딩스, 러셀, 티엘비, 제이아이테크가 강세를 이어가고 있으며 이오테크닉스, 네패스, 아이에스티이, 다원넥스뷰 역시 상승 흐름에 동참하고 있다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "단일판매ㆍ공급계약체결",
+          "published_at": "20260422",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "445090",
+      "name": "에이직랜드",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2016년 설립된 시스템 반도체 디자인하우스로, 글로벌 1위 파운드리 TSMC의 국내 유일 공식 협력사임. 고객사의 반도체 회로 설계를 TSMC를 통해 제조 가능한 설계로 전환하며, AI 반도체, 모바일, 네트워킹 기기 등 다양한 분야에 대응하고 있음. SoC 아키텍처 설계부터 양산까지 지원하며, Arm의 ADP 자격을 바탕으로 5G, 엣지 메모리 컨트롤러, IoT 등 고성능 SoC 개발을 전문으로 하고 있음.",
+      "current_price": 29150,
+      "metrics": {
+        "return_5d_pct": 7.17,
+        "return_10d_pct": -5.97,
+        "avg_trading_value_5d": 3813113990,
+        "last_trading_value": 1887171000,
+        "volume_change": null,
+        "foreign_flow": 638.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "에이직랜드, 1분기 연결 매출 540억…창사 이래 최대",
+          "published_at": "Fri, 15 May 2026 13:52:00 +0900",
+          "source": "naver_search_news",
+          "summary": "에이직랜드(445090)가 AI 반도체 수요 확대에 힘입어 1분기 역대 최대 매출을 기록했다"
+        },
+        {
+          "title": "에이직랜드, 1분기 영업손실 29억…매출은 전년 대비 3배 급증",
+          "published_at": "Fri, 15 May 2026 14:02:00 +0900",
+          "source": "naver_search_news",
+          "summary": "에이직랜드는 지난 2월 미국 AI 반도체 기업 브레인칩과 차세대 AI 프로세서 개발 협력을 추진한다고 밝혔다"
+        },
+        {
+          "title": "에이직랜드, 1분기 매출액 540억…창사 이래 최대",
+          "published_at": "Fri, 15 May 2026 14:36:00 +0900",
+          "source": "naver_search_news",
+          "summary": "컨슈머타임스=김지훈 기자 | 에이직랜드는 1분기 연결 매출액이 540억원을 기록해 전년 동기 대비 242.4% 증가했다고 15일 공시했다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "[기재정정]단일판매ㆍ공급계약체결",
+          "published_at": "20260514",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "272110",
+      "name": "케이엔제이",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2005년 반도체 제조용 CVD-SiC Product 생산을 목적으로 설립되었음. 반도체 웨이퍼 에칭공정용 SiC Focus Ring 및 LED제조용 SiC 코팅제품을 CVD 방식으로 생산하며, 메모리반도체업체를 주요 목표시장으로, 비메모리 반도체 분야로 확대 예상함. CVD SiC 증착 및 가공기술 외에 CVD 증착 챔버를 개발하여 경쟁력을 보유하고, 4차 산업혁명에 대응하여 기술개발을 추구하고 있음.",
+      "current_price": 35950,
+      "metrics": {
+        "return_5d_pct": 4.05,
+        "return_10d_pct": -6.01,
+        "avg_trading_value_5d": 3797309260,
+        "last_trading_value": 2851410200,
+        "volume_change": null,
+        "foreign_flow": -571.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "케이엔제이, 1분기 호실적…'SiC 부품·자회사 편입' 쌍끌이",
+          "published_at": "Tue, 12 May 2026 13:38:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 전공정 핵심 소재 부품 제조 기업 케이엔제이가 2026년 1분기에도 반도체 공정 고도화에 따른 핵심.."
+        },
+        {
+          "title": "케이엔제이, 1분기 실적 성장세…영업익 전년比 35.4%↑",
+          "published_at": "Tue, 12 May 2026 13:45:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 전공정 핵심 소재·부품 기업 케이엔제이(272110)가 반도체 공정 고도화 수요와 자회사 편입 효과에 힘입어 1분기 실적 성장세를 이어갔다"
+        },
+        {
+          "title": "케이엔제이, 1분기 매출 80% 폭발 성장… 자회사 연결 효과 더해 외형 확...",
+          "published_at": "Thu, 14 May 2026 13:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "반도체 전공정 핵심 부품 전문기업 케이엔제이가 주력인 SiC(탄화규소) 부품의 견조한 수요와 자회사 연결 효과에 힘입어 견조한 성장세를 이어갔다고 12일 밝혔다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "자기주식처분결과보고서",
+          "published_at": "20260428",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "088130",
+      "name": "동아엘텍",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1999년 법인전환되어 2007년 코스닥시장에 상장되었으며, 2009년 (주)선익시스템을 인수하여 핵심장비 일관생산능력을 확보함. OLED/LCD 모듈 후공정 검사장비를 생산하고, OLED 증착장비를 제조하며, 벤처캐피탈 투자업무를 영위함. 업계 최초로 8.6세대 OLED 증착설비를 개발하여 중국 BOE로부터 수주를 받았으며, 소형 OLED 증착기 시장에서 M/S 1위를 유지하고 OLEDoS 증착기 시장에서 선두하고 있음.",
+      "current_price": 9360,
+      "metrics": {
+        "return_5d_pct": 0.32,
+        "return_10d_pct": -10.26,
+        "avg_trading_value_5d": 3722987048,
+        "last_trading_value": 6168576960,
+        "volume_change": null,
+        "foreign_flow": -270.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "&quot;OLED 패널 핵심 잡았다&quot;… 아나패스, 독자 특허 기술로 시장 선도",
+          "published_at": "Tue, 19 May 2026 16:04:00 +0900",
+          "source": "naver_search_news",
+          "summary": "동아엘텍은 검사 장비 계열사의 실적 둔화 우려에 내림세로 장을 마쳤다"
+        },
+        {
+          "title": "골프장 넘어 대형 작업장까지… 소룩스, 조명 시장 영토 확장 속도 낸다",
+          "published_at": "Thu, 14 May 2026 16:58:00 +0900",
+          "source": "naver_search_news",
+          "summary": "동아엘텍, 아이씨디, 톱텍, 제이엠티, 이엘피, 이엠앤아이 등 중소형 장비·부품주도 강세를 보였다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "060720",
+      "name": "KH바텍",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 1992년 비철금속 소형정밀 다이캐스팅 전문기업으로 설립되어 2002년 코스닥 상장 후 8개 비상장 종속회사를 보유하고 있음. 스마트폰·노트북·태블릿 등 IT 디바이스 부품을 중심으로 통신장비 및 로봇 부품까지 사업을 확장하고 있음. 다이캐스팅, CNC, VAW 공법 등을 활용해 원가 경쟁력을 확보하며, 자동차 부품사업에서는 칙소몰딩과 박막 캐스팅을 적용해 고객 기반을 확대하고 있음.",
+      "current_price": 13380,
+      "metrics": {
+        "return_5d_pct": 6.87,
+        "return_10d_pct": -4.63,
+        "avg_trading_value_5d": 3606465318,
+        "last_trading_value": 5634879960,
+        "volume_change": null,
+        "foreign_flow": 1190.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "KH바텍, 스마트폰 중심 포트폴리오가 자동차·로봇으로 전환…'매수'-대...",
+          "published_at": "Tue, 19 May 2026 07:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "대신증권이 KH바텍(060720)에 대해 투자의견 ‘매수’를 유지하되 목표주가는 기존 1만 8000원에서 1만 7000원으로 하향 조정한다고 19일 밝혔다"
+        },
+        {
+          "title": "대신증권 KH바텍 목표가 하향 매수 유지",
+          "published_at": "Tue, 19 May 2026 13:52:00 +0900",
+          "source": "naver_search_news",
+          "summary": "대신증권,KH바텍 대신증권은 19일 KH바텍의 목표주가를 1만7000원으로 하향했다"
+        },
+        {
+          "title": "글로벌 ESS 경쟁 본격화…서진시스템 대형 수주 확보 '눈에 띄네'",
+          "published_at": "Mon, 18 May 2026 15:24:00 +0900",
+          "source": "naver_search_news",
+          "summary": "진동 모터 기술력을 보유한 이엠텍과 힌지 부문 강자인 KH바텍은 폴더블폰 판매 성장세 둔화 흐름에 영향을 받아 하락세를 겪고 있다"
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "088280",
+      "name": "쏘닉스",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2000년 설립되어 RF 부품인 SAW 필터를 설계, 생산, 판매하던 회사로 시작함. 2015년 이후 5G 스마트폰 성능 향상으로 RF 프론트 엔드모듈용 필터 파운드리 전문 회사로 전환하고 있음. 글로벌 통신반도체 수요 기업과 압전반도체 TF-SAW를 공동 개발, 현재 5G 스마트폰용 RF 필터 제조 및 판매를 확대하고 있고, 스위스 포토닉스 전문회사와 협력하여 미래 기술 연구개발을 지속하며 성장하고 있음.",
+      "current_price": 5240,
+      "metrics": {
+        "return_5d_pct": 2.34,
+        "return_10d_pct": -24.06,
+        "avg_trading_value_5d": 3560097274,
+        "last_trading_value": 9901063840,
+        "volume_change": null,
+        "foreign_flow": -210.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "035890",
+      "name": "서희건설",
+      "sector_keys": [
+        "power_technology"
+      ],
+      "business_summary": "동사는 1982년 운송전문업체로 설립 후 1994년 건설업으로 전환, 1999년 코스닥에 상장함. 포스코 토건정비공사 및 다수 관급공사 수주로 안정적 매출기반을 통해 지역주택사업으로 차별화된 수익모델을 추구하는 중견건설업체임. 지역주택조합 분야에서 브랜드 및 상품 경쟁력을 가지고 원가 절감을 통해 시장을 선도하며, 주택경기 하강에 대비해 임대주택사업 등으로 사업모델을 다각화하고 있음.",
+      "current_price": 2130,
+      "metrics": {
+        "return_5d_pct": -3.18,
+        "return_10d_pct": -23.52,
+        "avg_trading_value_5d": 3500756456,
+        "last_trading_value": 1942630290,
+        "volume_change": null,
+        "foreign_flow": 100.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "'오너 리스크' 서희건설, 흔들리는 실적… 연간 1조 매출 깨지나",
+          "published_at": "Wed, 20 May 2026 13:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "시사위크=권정두 기자 지난해 중대 오너리스크를 비롯한 여러 불미스런 변수에 직면했던 서희건설의 실적이 눈에 띄게 흔들리고 있다"
+        },
+        {
+          "title": "영업이익 80% 급감… ‘실적 부진’ 서희건설, 금융수익 의존 높아졌다",
+          "published_at": "Tue, 19 May 2026 14:40:00 +0900",
+          "source": "naver_search_news",
+          "summary": "건설경기 침체와 내부통제 리스크로 내홍을 겪은 서희건설이 올해 1분기 본업 부진 속에서도 금융수익에 힘입어 당기순이익을 늘린 것으로 나타났다"
+        },
+        {
+          "title": "인력 전략도 양극화…대형사 줄이고 중상위권 늘리고",
+          "published_at": "Wed, 20 May 2026 07:42:00 +0900",
+          "source": "naver_search_news",
+          "summary": "20일 데일리안이 금융감독원 전자공시시스템에 올라온 분기보고서를 토대로 시공능력평가 30위권 건설사 중 올 1분기 직원 현황을 공시한 현대건설·롯데건설·SK에코플랜트·계룡건설산업·서희건설·코오롱글로벌..."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "357580",
+      "name": "아모센스",
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "business_summary": "동사는 2008년 설립되어 2021년 코스닥에 상장함. 2025년 자회사 아모에스넷 지분 취득으로 연결대상 종속회사를 보유하게 됨. 동사는 무선충전 차폐시트, 차량 전장모듈, Lighting 모듈, IoT 디바이스 등 다양한 제품을 제공하는 소재부품 전문기업임. 세라믹 기판 사업과 무선전력전송, AI 음성인식 모듈 등 신규 사업을 통해 전장, 로봇, 산업 자동화 등 다양한 분야로 확대하고 있음.",
+      "current_price": 14800,
+      "metrics": {
+        "return_5d_pct": -3.9,
+        "return_10d_pct": -24.18,
+        "avg_trading_value_5d": 3448088976,
+        "last_trading_value": 3659699600,
+        "volume_change": null,
+        "foreign_flow": -595.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "케스피온 주가 덩실덩실...AI 서버·전기차 필수 부품 '페라이트' 시장 ...",
+          "published_at": "Fri, 15 May 2026 15:00:00 +0900",
+          "source": "naver_search_news",
+          "summary": "아모센스와 삼화전기도 약세 흐름을 이어간다"
+        },
+        {
+          "title": "북미 공급망 진입에 XR 모멘텀까지…제이앤티씨, 쌍두마차 달고 씽씽",
+          "published_at": "Mon, 18 May 2026 10:26:00 +0900",
+          "source": "naver_search_news",
+          "summary": "나무가와 드림텍, 아모센스, 코아시아씨엠도 급락 흐름을 보인다"
+        },
+        {
+          "title": "오늘의 메모[5월 22일]",
+          "published_at": "Thu, 21 May 2026 10:48:00 +0900",
+          "source": "naver_search_news",
+          "summary": "오늘이엔엠·파인테크닉스·에이프로·KBI메탈·현우산업·아모센스(국내CB) 유아이디(유상 제3자배정) 디바이스(187870)(무상) 그린리소스(402490)(국내CB·BW) ▲액면변경=오션인더블유(052300)(5,000원→500원)..."
+        }
+      ],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "149950",
+      "name": "아바텍",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 2000년 Display용 진공박막코팅 제품 생산과 판매를 위해 설립되어, 2011년 구미공장 준공 후 Glass Slimming, ITO 코팅제품 및 MLCC를 생산하고 있음. 코팅 및 식각 기술로 디스플레이 관련제품과 가전제품의 부품을 공급하며, MLCC는 전자기기, 자동차 전장 등 다양한 분야에 제공하고 있음. 동사는 매출 확대와 지속 가능 성장을 위해 주력제품의 부가기능 향상 및 신규제품 발굴에 주력하고 있음.",
+      "current_price": 15700,
+      "metrics": {
+        "return_5d_pct": 25.9,
+        "return_10d_pct": 21.24,
+        "avg_trading_value_5d": 3355707058,
+        "last_trading_value": 12883498500,
+        "volume_change": null,
+        "foreign_flow": 1381.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "104830",
+      "name": "원익머트리얼즈",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "반도체용 고순도 특수 가스",
+      "current_price": 47650,
+      "metrics": {
+        "return_5d_pct": 2.58,
+        "return_10d_pct": -5.08,
+        "avg_trading_value_5d": 3039757080,
+        "last_trading_value": 3528148950,
+        "volume_change": null,
+        "foreign_flow": 227.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [
+        {
+          "title": "[수탁자책임 레이더] 배당 800원 늘린 하이닉스…VIP가 반대한 이유",
+          "published_at": "Thu, 21 May 2026 09:02:00 +0900",
+          "source": "naver_search_news",
+          "summary": "원익머트리얼즈의 오동근 CFO 사내이사 선임 안건에 반대하며 &quot;2024년 9월 계열사 케어랩스로부터 불필요한 부동산을 매수해 보유 현금을 낭비한 것에 CFO로서 책임이 있다&quot;고 공시에 직접 명시했다"
+        },
+        {
+          "title": "[단독] 원익홀딩스, 자산운용업 진출...'오르카자산운용' 인수",
+          "published_at": "Tue, 19 May 2026 10:20:00 +0900",
+          "source": "naver_search_news",
+          "summary": "원익투자파트너스는 원익아이피에스, 원익머트리얼즈 등 반도체 장비·소재 계열사를 거느린 원익그룹에서 유일한 금융투자 계열사다"
+        },
+        {
+          "title": "[특징주] 반도체 '메기' 엔비디아 등장에 LPDDR 몸값 폭등… 삼성·SK·피...",
+          "published_at": "Fri, 15 May 2026 11:34:00 +0900",
+          "source": "naver_search_news",
+          "summary": "소재 분야에서는 TSMC 등 글로벌 파운드리 공급망에 진입한 씨엠티엑스와 원익머트리얼즈 등이 주요 관심 종목으로 거론됐다"
+        }
+      ],
+      "recent_disclosures": [
+        {
+          "title": "연결재무제표기준영업(잠정)실적(공정공시)",
+          "published_at": "20260507",
+          "importance": "important"
+        }
+      ],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "ok",
+        "disclosure": "ok"
+      },
+      "collect_errors": []
+    },
+    {
+      "ticker": "036200",
+      "name": "유니셈",
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "business_summary": "동사는 1988년 설립하고 1999년 코스닥에 상장한 반도체 장비 전문기업임. 국내 최초 Scrubber 개발 업체로, 반도체/디스플레이 제조 공정의 유해가스 정화장치인 스크러버와 온도조절 장치 칠러를 주력으로 하고 있음. 전문기술개발과 혁신적 생산시스템 구축, 원가경쟁력 향상 등으로 사업 경쟁력을 강화하며, 창조적 R&D와 고객사별 타겟 전략으로 시장지배력을 확대하고 있음.",
+      "current_price": 11410,
+      "metrics": {
+        "return_5d_pct": 4.2,
+        "return_10d_pct": -9.94,
+        "avg_trading_value_5d": 3008229518,
+        "last_trading_value": 3254679680,
+        "volume_change": null,
+        "foreign_flow": 636.0,
+        "institution_flow": null
+      },
+      "warnings": {
+        "investment_caution": false,
+        "risk_notes": []
+      },
+      "recent_news": [],
+      "recent_disclosures": [],
+      "data_availability": {
+        "price": true,
+        "flow": true,
+        "news": true,
+        "disclosure": true
+      },
+      "collect_status": {
+        "price": "ok",
+        "flow": "ok",
+        "news": "empty",
+        "disclosure": "empty"
+      },
+      "collect_errors": []
+    }
+  ]
+}

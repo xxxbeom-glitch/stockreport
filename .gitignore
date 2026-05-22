@@ -1,27 +1,8 @@
-# 환경변수
-.env
+﻿.env
 .env.*
-
-# Firebase 서비스 계정 키
-*.json
-!package.json
-!package-lock.json
-!data/kr_watchlist.json
-!data/candidates/temporary_watch_candidates.json
-!template/kr_market/sample_data.json
-
-# 출력물
-outputs/
+!.env.example
+node_modules/
+dist/
+build/
 __pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-
-# 가상환경
-venv/
-.venv/
-
-# IDE
-.cursor/
-.vscode/
-.idea/
+*.log

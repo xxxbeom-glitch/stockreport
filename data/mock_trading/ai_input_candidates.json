@@ -1,0 +1,3222 @@
+{
+  "generated_at": "2026-05-22T20:23:03+09:00",
+  "selection_rule": {
+    "market": "KOSDAQ",
+    "market_check": "verified",
+    "max_price": 59000,
+    "min_avg_trading_value_5d": 3000000000,
+    "risk_exclusion_applied": true,
+    "source_file": "candidate_universe.json"
+  },
+  "summary": {
+    "base_candidate_count": 113,
+    "ai_input_candidate_count": 76,
+    "excluded_from_base_count": 37,
+    "sector_counts": {
+      "ai_semiconductor_material_equipment": 57,
+      "power_technology": 12,
+      "industrial_robot_equipment": 7
+    },
+    "sector_labels": {
+      "ai_semiconductor_material_equipment": "AI 반도체·소재·장비",
+      "power_technology": "전력·에너지 기술",
+      "industrial_robot_equipment": "산업 자동화·로봇 장비"
+    }
+  },
+  "candidates": [
+    {
+      "ticker": "036540",
+      "name": "SFA반도체",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1998년 설립되어 2001년 코스닥 상장한 반도체 후공정 전문기업으로, 삼성전자, Micron, SK하이닉스 등에 최첨단 패키징 솔루션을 제공하고 있음. 필리핀 법인 SSP 준공으로 원가경쟁력을 확보하였고, R&D역량 강화와 해외마케팅을 통한 거래선 다변화를 추구하고 있음. 메모리 반도체 중심에서 반도체 시장의 80%를 차지하는 S-LSI분야 진입을 통해 안정적인 성장기반을 구축하고 있음.",
+      "current_price": 10250,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 19.05,
+        "return_10d_pct": 21.88,
+        "volume_change": null,
+        "trading_value_change": 205816198064,
+        "avg_trading_value_5d": 205816198064,
+        "last_trading_value": 702354149000,
+        "liquidity_rank": 1,
+        "foreign_flow": 9385.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체 후공정, 반도체, 패키징 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "403870",
+      "name": "HPSP",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "고압 수소 어닐링 장비",
+      "current_price": 54700,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 10.51,
+        "return_10d_pct": 1.48,
+        "volume_change": null,
+        "trading_value_change": 104917453260,
+        "avg_trading_value_5d": 104917453260,
+        "last_trading_value": 92330153900,
+        "liquidity_rank": 2,
+        "foreign_flow": 20442.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "선단 공정·HBM 밸류체인. 5만 원대 중반 가격대.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "043260",
+      "name": "성호전자",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1973년 진영전자로 설립 후 2000년 성호전자주식회사로 사명을 변경하고, 2001년 코스닥에 상장함. 2024년 중 ㈜제이케이아이홀딩스 등 7개 자회사를 신규 편입해 연결대상 종속회사를 16개로 확대함. 전원공급장치, 필름콘덴서, 증착필름을 제조하며 파워사업은 프린터, 전기차 등으로, 콘덴서사업은 디지털 TV, 데이터 센터 등 고부가가치 시장을 개척하고 있음.",
+      "current_price": 41250,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 1.48,
+        "return_10d_pct": -5.71,
+        "volume_change": null,
+        "trading_value_change": 104660822660,
+        "avg_trading_value_5d": 104660822660,
+        "last_trading_value": 93858765000,
+        "liquidity_rank": 3,
+        "foreign_flow": 11653.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 증착 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "032820",
+      "name": "우리기술",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1993년 설립된 제어계측 전문기업으로 2000년 코스닥 상장하였으며, 2024년 소각재 자원순환사업 목적법인 ㈜이엘씨를 공동설립해 지분 53.3%를 취득함. 원자력발전소 감시제어시스템, 철도용 승강장안전문 및 신호열차제어시스템 등 다양한 사업을 영위하고 있음. 국내외 원전사업 수주 확대, 철도시스템 SIL4 인증을 통한 안전제어 기술력 강화, 친환경 그린에너지 사업 다각화를 추구하고 있음.",
+      "current_price": 16800,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -1.93,
+        "return_10d_pct": -16.63,
+        "volume_change": null,
+        "trading_value_change": 83409730762,
+        "avg_trading_value_5d": 83409730762,
+        "last_trading_value": 75290292000,
+        "liquidity_rank": 4,
+        "foreign_flow": -12052.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 원자력, 원전 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "098460",
+      "name": "고영",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2002년 검사 및 측정 자동화 시스템 제조 목적으로 설립되고 2008년 코스닥 상장함. 메카트로닉스, 광학, 비전, SW, AI 기술을 보유하며 3D 납도포 검사장비, 3D 광학 검사장비, 3D 반도체후공정 패키징 검사장비를 다양한 제조업체에 공급하고 있음. 3D 측정 기반 검사 기술에 AI 솔루션을 결합해 스마트팩토리를 지원하며, 뇌수술용 의료로봇의 인허가 획득으로 글로벌 시장 진출을 추진하고 있음.",
+      "current_price": 39400,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 8.24,
+        "return_10d_pct": -3.19,
+        "volume_change": null,
+        "trading_value_change": 76847610160,
+        "avg_trading_value_5d": 76847610160,
+        "last_trading_value": 102647756200,
+        "liquidity_rank": 5,
+        "foreign_flow": 12773.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체, 패키징 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "125020",
+      "name": "티씨머티리얼즈",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1995년 설립되어 전력인프라, 전장, 가전 소재 및 모터 관련 제품과 서비스를 생산하는 기업임. 전도성과 경제성 뛰어난 구리를 활용해 발전기, 케이블 및 배전시설에 제품을 공급하고 전력기기용 권선 제품을 생산하며 권선시장을 확장함. 30년 이상의 절연 기술과 노하우로 소재 생산부터 제품 제작, 수리까지 일괄 공정 및 효율적 부품 공급망으로 고부가가치를 창출하고 있음.",
+      "current_price": 9190,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 37.57,
+        "return_10d_pct": 20.76,
+        "volume_change": null,
+        "trading_value_change": 55833990214,
+        "avg_trading_value_5d": 55833990214,
+        "last_trading_value": 113654503670,
+        "liquidity_rank": 6,
+        "foreign_flow": 3486.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 배전, 전력기기, 발전기 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "089030",
+      "name": "테크윙",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "메모리 테스트 핸들러",
+      "current_price": 53700,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 6.55,
+        "return_10d_pct": -9.44,
+        "volume_change": null,
+        "trading_value_change": 47172068430,
+        "avg_trading_value_5d": 47172068430,
+        "last_trading_value": 33469062000,
+        "liquidity_rank": 7,
+        "foreign_flow": 2099.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "테스트 핸들러. 메모리 CAPEX·검증 장비.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "417200",
+      "name": "LS머트리얼즈",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 2021년 LS엠트론 울트라캐패시터 사업부문 물적분할로 설립되었음. 신재생에너지, 스마트팩토리 AGV, 전기차 분야 중대형 울트라캐패시터 생산·판매, 알루미늄 부품 제조 및 경관재 시설물 제공 사업을 하고 있음. AI 데이터센터 전력 안정화 사업 진출 위해 2024년 버티브 社와 MOU 체결 및 신재생에너지 전력망 안정화 제품 개발을 완료하고 글로벌 전력설비기업과 UC 공급을 논의 중임.",
+      "current_price": 23650,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 6.05,
+        "return_10d_pct": -11.09,
+        "volume_change": null,
+        "trading_value_change": 39500446110,
+        "avg_trading_value_5d": 39500446110,
+        "last_trading_value": 48320615750,
+        "liquidity_rank": 8,
+        "foreign_flow": -3327.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 전력망 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "417840",
+      "name": "저스템",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2016년 설립 후 2022년 코스닥 상장을 승인받고 2023년 종속회사 플람을 인수했음. 반도체 제조 공정의 핵심인 N₂ Purge System 분야에서 독보적 기술을 보유한 글로벌 리더이자, 반도체 장비 사업이 전체 매출의 85%를 차지함. 독자적인 N₂ 치환 기술과 정밀 기류제어 기술로 초저습도 환경 구현, AI 기반 자율 판단 시스템 적용으로 지능형 장비 체계로 고도화하고 있음.",
+      "current_price": 18790,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 16.71,
+        "return_10d_pct": 31.4,
+        "volume_change": null,
+        "trading_value_change": 31178207164,
+        "avg_trading_value_5d": 31178207164,
+        "last_trading_value": 25605940970,
+        "liquidity_rank": 9,
+        "foreign_flow": -902.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "049080",
+      "name": "기가레인",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2000년 설립되어 반도체 장비를 제조하며, 2012년 합병을 통해 RF 통신부품 사업을 확장함. 2024년 중국 우시에 반도체 장비 대응역량 확대를 위한 법인을 신설하고, 다양한 RF 장비 및 식각장비를 개발·제조하고 있음. AI 기반 네트워크 최적화 등 성장 동력 확보를 위해 O-RU 개발을 완료하고, 세계 유일의 토탈 솔루션 라인업을 완성하고 있음.",
+      "current_price": 1458,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": "investment_caution",
+        "risk_notes": [
+          "투자주의(mrkt_warn_cls_code=01)"
+        ]
+      },
+      "metrics": {
+        "return_5d_pct": -10.83,
+        "return_10d_pct": -18.95,
+        "volume_change": null,
+        "trading_value_change": 26623942894,
+        "avg_trading_value_5d": 26623942894,
+        "last_trading_value": 54218194020,
+        "liquidity_rank": 10,
+        "foreign_flow": 4607.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, 식각, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "038500",
+      "name": "삼표시멘트",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1990년 설립하여 2001년 코스닥시장에 상장하였고, 2010년 동양시멘트 흡수합병 후 2017년 삼표시멘트로 변경함. 강원도 삼척시 소재 공장에서 시멘트를 생산, 전국 출하기지 통해 시멘트 및 2차 제품 판매, 2021년 설립한 삼표레미콘 통해 레미콘 제조 및 판매 중임. ESG 경영체제로 전환 위해 친환경 사업 추가 및 온실가스 저감을 위한 순환자원 처리시설, 폐열발전설비 보강 등 친환경 투자를 지속하고 있음.",
+      "current_price": 13190,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -3.37,
+        "return_10d_pct": -12.59,
+        "volume_change": null,
+        "trading_value_change": 25110106330,
+        "avg_trading_value_5d": 25110106330,
+        "last_trading_value": 15929760850,
+        "liquidity_rank": 11,
+        "foreign_flow": 547.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 발전설비 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "030530",
+      "name": "원익홀딩스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1991년 반도체 장비 제조 및 판매 목적으로 설립되어 1996년 코스닥시장 상장하였고 2025년 기준 15개 종속회사 보유한 사업형 지주회사임. 반도체·디스플레이 제조공정 원료 가스 공급 장치사업과 배관공사 사업 자체 영위하며, 주요 자회사로는 원익아이피에스, 원익피앤이, 원익큐엔씨가 있음. 동사는 인공지능, 로보틱스 등 미래 기술에 대한 연구개발 통해 혁신 추구하고 사업 포트폴리오 관리 역할 수행하고 있음.",
+      "current_price": 28050,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -0.53,
+        "return_10d_pct": -17.01,
+        "volume_change": null,
+        "trading_value_change": 23618679990,
+        "avg_trading_value_5d": 23618679990,
+        "last_trading_value": 20569962600,
+        "liquidity_rank": 12,
+        "foreign_flow": 278.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "064290",
+      "name": "인텍플러스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1995년 제어계측기기 및 컴퓨터 응용기기 제조를 목적으로 설립되었으며, 2011년 코스닥에 상장함. 머신비전기술로 3D/2D 자동외관검사장비 및 모듈을 개발하여 반도체 후공정 및 다양한 검사장비를 공급하고 있음. 3차원 측정 기술로 최적화된 검사솔루션을 제공하며, 핵심기술을 자체 개발·보유하고 산업 선도 기업들과 파트너십을 통해 사업 다각화하고 있음.",
+      "current_price": 35850,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 33.02,
+        "return_10d_pct": 16.78,
+        "volume_change": null,
+        "trading_value_change": 21640630880,
+        "avg_trading_value_5d": 21640630880,
+        "last_trading_value": 58925211000,
+        "liquidity_rank": 13,
+        "foreign_flow": -4940.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체 후공정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "006910",
+      "name": "보성파워텍",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1970년 설립, 1994년 코스닥시장 상장한 전력기자재 전문 제조업체임. 국내 전력시장을 중심으로 송배전 자재 및 발전소, 변전소 철골 등 전력 기자재 개발, 제작, 판매를 주된 사업으로 영위하고 있으며, 철구조사업과 중전기사업으로 운영하고 있음. 가스개폐기, 주상변압기, 송전철탑, 발전소, 변전소용 철구조물 등을 충북 충주공장 및 전남 나주공장에서 직접 생산하고 있음.",
+      "current_price": 11040,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -3.41,
+        "return_10d_pct": -22.85,
+        "volume_change": null,
+        "trading_value_change": 19603768436,
+        "avg_trading_value_5d": 19603768436,
+        "last_trading_value": 20003961120,
+        "liquidity_rank": 14,
+        "foreign_flow": -2873.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 변압기, 송배전, 송전, 배전 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "330860",
+      "name": "네패스아크",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2019년 네패스 반도체사업부 내 Test 사업부문이 물적 분할되어 설립되고 2020년 코스닥시장에 상장됨. 시스템반도체 후공정 테스트 솔루션을 제공하며, 전력반도체(PMIC), DDI, SoC, RF 등의 주요 제품을 테스트하고 있음. 고가의 테스트 장비 투자 기반 장치산업 특성과 다양한 칩 테스트 프로그램 개발 능력을 보유하여 반도체 고집적화 및 소형화 추세에 맞춰 성장 추구하고 있음.",
+      "current_price": 42850,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -5.93,
+        "return_10d_pct": 7.39,
+        "volume_change": null,
+        "trading_value_change": 19092317660,
+        "avg_trading_value_5d": 19092317660,
+        "last_trading_value": 8644130500,
+        "liquidity_rank": 15,
+        "foreign_flow": 840.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 테스트 장비, 반도체 후공정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "080580",
+      "name": "오킨스전자",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1998년 반도체 검사용 소켓 제조를 목적으로 설립되어 2014년 코스닥에 상장하고, 2006년 반도체 사업부를 설립하여 후공정 테스트 사업을 영위하고 있음. 반도체 검사용 소켓 제조와 테스트 용역 사업을 주력으로 하며, 다양한 제품을 개발 및 생산하고 있음. AI, HPC, 클라우드 서비스 확산에 따른 데이터센터와 서버 시장 성장에 대응, 고성능 메모리 수요에 맞추어 기술 집약적 고부가가치 산업으로 전환을 추구하고 있음.",
+      "current_price": 22650,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 13.42,
+        "return_10d_pct": -15.8,
+        "volume_change": null,
+        "trading_value_change": 18666131690,
+        "avg_trading_value_5d": 18666131690,
+        "last_trading_value": 13231541100,
+        "liquidity_rank": 16,
+        "foreign_flow": -780.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체 검사, 반도체, 테스트 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "083450",
+      "name": "GST",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2001년 설립 후 2006년 코스닥에 상장했으며, 글로벌 거점 확대로 해외 판매망 강화 중임. 반도체 및 디스플레이 제조공정에서 배출되는 유해가스를 정화하는 Scrubber와 공정 온도를 유지하는 Chiller를 주요 제품으로 생산하고 있음. 국내 최초 Burn Wet 방식 Scrubber를 공급하며, 플라즈마 방식 Scrubber 등 신제품 개발 및 신사업 고도화를 통해 기술혁신을 지속하고 있음.",
+      "current_price": 59000,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -0.17,
+        "return_10d_pct": 0.51,
+        "volume_change": null,
+        "trading_value_change": 17977900580,
+        "avg_trading_value_5d": 17977900580,
+        "last_trading_value": 18455436000,
+        "liquidity_rank": 17,
+        "foreign_flow": 2025.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 플라즈마, Scrubber, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "052900",
+      "name": "KX하이텍",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1997년 범일엔지니어링으로 설립되었고, 2005년 코스닥에 상장, 2022년 케이엑스하이텍으로 이름을 변경함. 반도체 제조 전후공정 부품 소재와 SSD 외관 CASE, 방송수신기 제조 및 판매 사업을 영위하고 있으며, 한국, 중국, 필리핀, 베트남에 생산거점을 보유함. AI 인프라 확대와 고성능 반도체 수요 증가에 대응하여 첨단 패키징 소재 개발과 스토리지 제품 포트폴리오 다변화로 공급망 경쟁력을 강화하고 있음.",
+      "current_price": 2045,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 34.89,
+        "return_10d_pct": 61.66,
+        "volume_change": null,
+        "trading_value_change": 17412391881,
+        "avg_trading_value_5d": 17412391881,
+        "last_trading_value": 10910643510,
+        "liquidity_rank": 18,
+        "foreign_flow": 105.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체, 패키징 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "033640",
+      "name": "네패스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1990년 반도체 및 전자관련 부품 제조·판매를 목적으로 설립되어 1999년 코스닥시장에 상장함. 시스템 반도체의 소형화·고성능화에 기여하는 첨단 후공정 파운드리 사업과 이차전지 부품·소재 사업을 영위하며 다양한 시장에서 국내외 확고한 입지를 구축함. AI반도체 기반 HPC 및 자율주행 등 첨단 패키징 기술 수요 급증에 대응하고, 전자재료와 이차전지 분야에서 국산화를 통한 영역 확대를 추진하고 있음.",
+      "current_price": 36950,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 18.24,
+        "return_10d_pct": 12.48,
+        "volume_change": null,
+        "trading_value_change": 17057396930,
+        "avg_trading_value_5d": 17057396930,
+        "last_trading_value": 19053637000,
+        "liquidity_rank": 19,
+        "foreign_flow": -2619.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체, 패키징, 파운드리 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "125490",
+      "name": "한라캐스트",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 2005년 설립되어 알루미늄 등 소재를 적용한 부품제조를 하며, 2025년 코스닥시장에 상장함. LG전자 등 대기업을 1차 고객사로 두고 글로벌 완성차 기업을 최종 고객사로 확보하여 모바일, 가전, 등으로 사업 확장함. 2024년부터 대형 다이캐스팅 설비 도입과 첨단 기술 개발을 통해 글로벌 AI 자동차회사 협력사 계약 및 로봇 부품 수주에 성공, ESG 경영과 스마트팩토리 구축으로 미래 성장동력을 강화하고 있음.",
+      "current_price": 15910,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -0.75,
+        "return_10d_pct": -15.6,
+        "volume_change": null,
+        "trading_value_change": 16237215780,
+        "avg_trading_value_5d": 16237215780,
+        "last_trading_value": 12584507710,
+        "liquidity_rank": 20,
+        "foreign_flow": 531.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: 로봇 부품, 로봇 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "252990",
+      "name": "샘씨엔에스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2016년 설립되어 2021년 코스닥시장에 상장된 반도체 테스트 장비 핵심부품 제조기업임. 프로브카드용 세라믹STF를 제작하여 납품하며, 전기적 신호를 PCB로 전달하여 웨이퍼의 양·불량품 판정을 담당하는 부품을 제조하고 있음. 소재부터 제품화까지 자체 개발로 경쟁 우위를 확보하고, 다층 세라믹 기판 시장점유율을 확대하며, 신사업 진출로 매출 확대 및 사업다각화를 추진하고 있음.",
+      "current_price": 14940,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 27.47,
+        "return_10d_pct": 9.45,
+        "volume_change": null,
+        "trading_value_change": 14876469466,
+        "avg_trading_value_5d": 14876469466,
+        "last_trading_value": 40656700080,
+        "liquidity_rank": 21,
+        "foreign_flow": 8791.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 웨이퍼, 테스트 장비, 반도체, 테스트 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "402490",
+      "name": "그린리소스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2023년 코스닥 상장 후 (주)위드엘씨를 합병하고, 반도체 및 디스플레이 공정 장비용 부품의 내식성·내플라즈마성 제고 소재 제조 및 코팅 사업을 영위함. PVD 방식 초고밀도 코팅을 개발·제조하여 부품에 적용 가능한 코팅층을 제작하고 오염된 부품을 세정 및 코팅하고 있음. 희토류 소재 및 코팅기술 응용 지식재산권 보유하며, 2028년까지 (주)래티스를 통해 초전도선재를 양산하여 산업에 진입할 계획하고 있음.",
+      "current_price": 17450,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 6.4,
+        "return_10d_pct": -22.96,
+        "volume_change": null,
+        "trading_value_change": 13387072724,
+        "avg_trading_value_5d": 13387072724,
+        "last_trading_value": 14788683050,
+        "liquidity_rank": 22,
+        "foreign_flow": -963.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 세정, PVD, 플라즈마, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "232140",
+      "name": "와이씨",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1991년 설립, 2012년 메모리 테스터 부문 인수, 2015년 에이티테크놀로지 인수로 장비 유지보수 역량 확보함. DRAM 및 NAND 메모리 전공정 웨이퍼 상태 검사, 불량 분석, 메모리 Cell 수리 기능 포함한 자동검사 장비 제조 및 판매 사업을 영위 중임. 삼성전자와 차세대 메모리 테스터 공동개발을 지속하며 HBM, DDR5 등 고부가 메모리 수요 증가에 대응, 고효율 웨이퍼 테스터 개발에 주력하고 있음.",
+      "current_price": 19090,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 3.75,
+        "return_10d_pct": -11.42,
+        "volume_change": null,
+        "trading_value_change": 13007316926,
+        "avg_trading_value_5d": 13007316926,
+        "last_trading_value": 14962169300,
+        "liquidity_rank": 23,
+        "foreign_flow": 1762.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 웨이퍼, HBM, 전공정 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "074600",
+      "name": "원익QnC",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "식각 공정용 쿼츠웨어 제조",
+      "current_price": 38000,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 7.19,
+        "return_10d_pct": -4.52,
+        "volume_change": null,
+        "trading_value_change": 12960868370,
+        "avg_trading_value_5d": 12960868370,
+        "last_trading_value": 12025822000,
+        "liquidity_rank": 24,
+        "foreign_flow": 1237.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "식각 쿼츠웨어. 5만 원대 이하 밸류체인.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "083500",
+      "name": "에프엔에스테크",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2002년 평판디스플레이 관련 장비와 반도체 제조용 부품소재 제조 및 판매를 목적으로 설립됨. 동사는 대만 회사 지분을 2025년 취득하여 연결대상 종속회사를 확대하고, 식각기, 박리기, 세정기 등의 디스플레이장비를 생산함. 동사는 플렉서블 디스플레이 시장 확대에 대응 및 스마트팩토리 4.0 기술로 제조 디지털화를 추진하며, 초순수 장치 및 CMP PAD 기술을 혁신하고 있음.",
+      "current_price": 23200,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 18.97,
+        "return_10d_pct": 14.57,
+        "volume_change": null,
+        "trading_value_change": 12005535250,
+        "avg_trading_value_5d": 12005535250,
+        "last_trading_value": 9368693600,
+        "liquidity_rank": 25,
+        "foreign_flow": -1656.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 식각, 세정, CMP, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "321260",
+      "name": "프로이천",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2006년 설립되어 코스닥시장에 상장됨. 세계 최초 필름형 프로브 블록 특허를 기반으로 디스플레이 및 반도체 검사장치를 제조하며, 삼성디스플레이 등 글로벌 패널 제조사의 1차 협력사로서 독보적 위치를 확보하고 있음. 미세 간극 제조 기술력으로 DDI 칩 검사용 프로브카드를 공급하고, OLEDoS용 신호기 사업 인수를 통해 기술 역량을 내재화함으로써 CIS 및 SoC 시장 진입과 점유율 확대를 추진하고 있음.",
+      "current_price": 4195,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 12.92,
+        "return_10d_pct": 11.57,
+        "volume_change": null,
+        "trading_value_change": 11777247526,
+        "avg_trading_value_5d": 11777247526,
+        "last_trading_value": 11329872780,
+        "liquidity_rank": 26,
+        "foreign_flow": 320.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 검사, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "092870",
+      "name": "엑시콘",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2001년 반도체 메모리 테스트 시스템 개발·제조·판매를 목적으로 설립되어 2014년 코넥스와 2015년 코스닥에 상장하였고, 일본 법인이 있음. 반도체 검사장비 제조 및 검사 용역 사업을 영위하며, DDR5 메모리 테스터 등 다양한 제품 포트폴리오를 구축하고 있음. 20년 이상의 개발 노하우로 차세대 메모리반도체 테스터 기술을 확보하고, 비메모리 테스트 장비로 사업을 확장하고 있음.",
+      "current_price": 35300,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 22.15,
+        "return_10d_pct": -5.99,
+        "volume_change": null,
+        "trading_value_change": 11230637160,
+        "avg_trading_value_5d": 11230637160,
+        "last_trading_value": 18639988500,
+        "liquidity_rank": 27,
+        "foreign_flow": 3174.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 메모리 테스트, 테스트 장비, 반도체 검사, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "200710",
+      "name": "에이디테크놀로지",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2002년 설립되어 반도체 설계 및 개발에 특화된 국내 시스템 반도체 디자인하우스 선도기업임. TSMC의 가치사슬협력자로 시작해 2020년 삼성 파운드리의 공식 DSP로 전환하였으며, 2023년 Arm의 토탈디자인프로그램 파트너로 선정되어 글로벌 시장 진출 기반을 마련함. 주문형 반도체 설계 및 판매를 주력으로 하며, 팹리스 기업과 IT set 기업을 대상으로 양산 서비스와 개발 용역 서비스를 제공함.",
+      "current_price": 42600,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -5.02,
+        "return_10d_pct": -17.12,
+        "volume_change": null,
+        "trading_value_change": 11228700890,
+        "avg_trading_value_5d": 11228700890,
+        "last_trading_value": 9870760800,
+        "liquidity_rank": 28,
+        "foreign_flow": 1037.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 파운드리 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "089010",
+      "name": "켐트로닉스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1983년 설립되어 2007년 코스닥에 상장한 반도체·전자·전장 소재 및 부품 전문기업임. 반도체 PR/세정 공정용 소재, 유리기판 가공, 웨이퍼 가공, 전자부품, 무선충전 모듈, 디스플레이 식각, 전장 통신제어, EV 유무선 충전기기 등을 영위함. 초고순도 PGMEA 국산화 및 양산, TGV 기술 기반 유리기판 구축 등 핵심 기술력으로 AI·전기차·디스플레이 시장 진출을 가속화하고 있음.",
+      "current_price": 39250,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 6.66,
+        "return_10d_pct": -4.38,
+        "volume_change": null,
+        "trading_value_change": 10462056130,
+        "avg_trading_value_5d": 10462056130,
+        "last_trading_value": 8812135250,
+        "liquidity_rank": 29,
+        "foreign_flow": 687.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 웨이퍼, 식각, 세정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "253590",
+      "name": "네오셈",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2002년 반도체 후공정 검사장비 업체로 설립되어 2019년 대신밸런스제3호기업인수목적(주)와의 합병을 통해 코스닥 시장에 등록됨. 메모리반도체 제조 공정 중 제품 성능과 신뢰성을 검사하는 장비사업을 영위하며, 주력 제품으로는 SSD 검사장비, CXL 메모리 검사장비, 메모리 번인 검사장비 등이 있음. SSD 및 CXL 메모리 검사장비 분야 GLOBAL M/S 1위의 기술 선도 기업임.",
+      "current_price": 16310,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 10.58,
+        "return_10d_pct": -8.37,
+        "volume_change": null,
+        "trading_value_change": 9919856106,
+        "avg_trading_value_5d": 9919856106,
+        "last_trading_value": 14718584370,
+        "liquidity_rank": 30,
+        "foreign_flow": -604.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체 후공정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "482630",
+      "name": "삼양엔씨켐",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2008년 설립된 반도체용 정밀화학 소재 전문 기업으로, 2025년 코스닥시장에 상장하였음. 반도체 제조 공정 중 노광 및 세정 공정에 사용되는 Polymer, PAG, PERR 중간체 등을 생산·판매하고 있음. EUV 공정용 고부가가치 제품 비중 확대와 차세대 패키징 공정 대응 소재 개발을 통해 다변화하며, 글로벌 고객사 확대를 추진하여 매출 구조 안정성을 제고하고 있음.",
+      "current_price": 22350,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": "investment_caution",
+        "risk_notes": [
+          "투자주의(mrkt_warn_cls_code=01)"
+        ]
+      },
+      "metrics": {
+        "return_5d_pct": 17.02,
+        "return_10d_pct": 20.75,
+        "volume_change": null,
+        "trading_value_change": 9846254894,
+        "avg_trading_value_5d": 9846254894,
+        "last_trading_value": 13085857950,
+        "liquidity_rank": 31,
+        "foreign_flow": 1598.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체용, 세정, 노광, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "170920",
+      "name": "엘티씨",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2007년 설립되어 2013년 코스닥시장에 상장하고, 디스플레이 및 반도체용 PR 박리액 개발 및 제조를 주력사업으로 함. 종속회사 엘티씨에이엠을 통해 반도체 제조 과정의 세정액, 식각액 등 화학재료와 시스템을 국내외에 공급하며, 엘에스이를 통해 웨이퍼세정장비를 직접 공급함. 중소형 OLED향 PR, 전해질 재료, 폴리이미드 필름 제조용 단량체 등 국책과제를 통해 기술플랫폼의 변화를 추구하고 있음.",
+      "current_price": 47200,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 22.92,
+        "return_10d_pct": 5.01,
+        "volume_change": null,
+        "trading_value_change": 9422351180,
+        "avg_trading_value_5d": 9422351180,
+        "last_trading_value": 14514849600,
+        "liquidity_rank": 32,
+        "foreign_flow": -630.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체용, 웨이퍼, 식각, 세정 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "187870",
+      "name": "디바이스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2002년 반도체 및 디스플레이 장비 제조를 목적으로 설립되었고, 2017년 코스닥에 상장됨. 주요 사업으로 OLED 증착 공정용 디스플레이 세정장비, 광학검사 장비, 반도체 웨이퍼용 FOUP 오염제거장비를 제조하고 있음. 반도체 Wafer 공정 중 최고 수준의 평탄 식각이 가능한 장비를 개발하여 주요 반도체 제조업체와 성능 평가 후 양산기 시장에 진출하고 있음.",
+      "current_price": 23800,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -15.3,
+        "return_10d_pct": 10.44,
+        "volume_change": null,
+        "trading_value_change": 9347656150,
+        "avg_trading_value_5d": 9347656150,
+        "last_trading_value": 20670204800,
+        "liquidity_rank": 33,
+        "foreign_flow": 924.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 웨이퍼, 식각, 증착, 세정 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "112290",
+      "name": "와이씨켐",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2001년 설립되어 반도체 공정 재료 사업을 영위하며 2022년 코스닥에 상장됨. 특수 Surfactant 및 polymer로 ArF·EUV 공정용 패턴 쓰러짐 방지 용액, 현상액, 세정액 등 반도체 재료를 생산하고 있음. 성주일반산업단지에 200억 설비투자로 토탈 솔루션 기업으로 진화하며, HBM용 TSV 포토레지스트 국산화 등 지속적인 기술 혁신을 추구하고 있음.",
+      "current_price": 15020,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 5.26,
+        "return_10d_pct": 0.94,
+        "volume_change": null,
+        "trading_value_change": 9186731398,
+        "avg_trading_value_5d": 9186731398,
+        "last_trading_value": 8384314200,
+        "liquidity_rank": 34,
+        "foreign_flow": 2090.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 세정, HBM, 포토레지스트, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "204270",
+      "name": "제이앤티씨",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1996년 설립, 2020년 코스닥 상장된 첨단소재 및 고정밀 부품 제조업체로, 100% 자회사인 베트남 법인 운영 중임. 강화유리를 포함한 첨단소재사업과 커넥터 사업을 영위하며, 모바일용 커버글라스, 자동차용 강화글라스, 반도체용 TGV유리기판 등을 생산함. 제품 포트폴리오 다변화와 함께 베트남 4공장 생산라인 확대 및 국내 전용 공장 완공으로 AI 산업 핵심부품 양산체계를 구축하고 있음.",
+      "current_price": 21400,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 16.94,
+        "return_10d_pct": 3.13,
+        "volume_change": null,
+        "trading_value_change": 8823184010,
+        "avg_trading_value_5d": 8823184010,
+        "last_trading_value": 6563444200,
+        "liquidity_rank": 35,
+        "foreign_flow": 2624.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체용, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "078130",
+      "name": "국일제지",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1978년 설립된 특수지 제조·판매 기업으로, 2018년 그래핀 및 신소재 연구개발을 위해 자회사 국일그래핀(주)를 설립함. 산업용 기능지와 특수지를 독보적으로 생산하며, 박엽지, 크라프트지 제품 판매 및 임가공 사업을 영위하고 있음. CVD 성장기술 기반 초경량·고강도·고전도성 복합소재 개발을 추진하며 수익성 강화와 고부가가치 지종 개발에 박차를 가하고 있음.",
+      "current_price": 3865,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -11.35,
+        "return_10d_pct": -11.35,
+        "volume_change": null,
+        "trading_value_change": 8567952523,
+        "avg_trading_value_5d": 8567952523,
+        "last_trading_value": 1615059820,
+        "liquidity_rank": 36,
+        "foreign_flow": 202.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: CVD (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "059090",
+      "name": "미코",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1999년 설립, 2002년 코스닥 상장한 중견기업으로, 2025년 금오테크놀로지 등 21개 종속기업 신규 연결하며 사업 확장함. 반도체·디스플레이 장비 부품 제작 및 세정·코팅 서비스, 고체산화물 연료전지, 산업용 보일러 등의 사업을 보유함. 세라믹 히터 국산화로 반도체 소재부품 전문기업으로 자리매김, 철강·물류·환경 신성장 산업으로 사업을 확대하고 있음.",
+      "current_price": 21400,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -3.82,
+        "return_10d_pct": -11.75,
+        "volume_change": null,
+        "trading_value_change": 8527743650,
+        "avg_trading_value_5d": 8527743650,
+        "last_trading_value": 7599589400,
+        "liquidity_rank": 37,
+        "foreign_flow": -2160.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 세정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "098120",
+      "name": "마이크로컨텍솔",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1999년 반도체 검사용 아이씨소켓 제조를 목적으로 설립되었으며, 2022년 ㈜엠에스엘 지분 98.41% 취득으로 역량을 강화함. 반도체 검사용 소켓과 어플라이언스 부문을 운영하며, 다품종 소량생산을 통해 고객 맞춤형 제품 공급함. 동사는 정밀 소켓 기술을 선도 개발하고, 2023년부터 LS ELECTRIC과 협력하여 사업부문 확장하며 혁신을 추구하고 있음.",
+      "current_price": 37100,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 23.05,
+        "return_10d_pct": -0.27,
+        "volume_change": null,
+        "trading_value_change": 8496407560,
+        "avg_trading_value_5d": 8496407560,
+        "last_trading_value": 12275722200,
+        "liquidity_rank": 38,
+        "foreign_flow": 4333.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 검사, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "199820",
+      "name": "제일일렉트릭",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1980년 설립되어 배선기구와 분전반 등을 제조하며 2020년 코스닥시장에 상장됨. 종속법인인 쟈베스코리아전자와 JABEZ VINA COMPANY LIMITED는 자동차용 통신 Cable과 전기차용 와이어 하네스를 제조함. 동사는 IoT 기반 스마트홈 구현에 필요한 배선기구, 차단기 등을 제조하며 국내 스마트홈 네트워크 분야 최고 시장점유율을 확보하고 있음.",
+      "current_price": 14200,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -1.39,
+        "return_10d_pct": -17.73,
+        "volume_change": null,
+        "trading_value_change": 8063036826,
+        "avg_trading_value_5d": 8063036826,
+        "last_trading_value": 6532639000,
+        "liquidity_rank": 39,
+        "foreign_flow": -552.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 차단기 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "147830",
+      "name": "제룡산업",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 2011년 제룡전기㈜로부터 인적분할되어 설립되고, 2012년 코스닥에 상장함. 송전·배전·지중선 관련 전기기자재와 통신기자재, 철도자재 제조 판매를 하며, 금속제품과 합성수지제품 사업부문으로 운영함. 시장 친화적 기술 선도 강소기업으로 고객 니즈에 맞춘 고부가가치 신제품 개발, 품질 최우선 전략으로 전력기자재 시장에서 높은 브랜드 인지도를 확보하고 있음.",
+      "current_price": 10140,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -0.1,
+        "return_10d_pct": -26.15,
+        "volume_change": null,
+        "trading_value_change": 7287476788,
+        "avg_trading_value_5d": 7287476788,
+        "last_trading_value": 4411670640,
+        "liquidity_rank": 40,
+        "foreign_flow": -50.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 송전, 배전 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "306620",
+      "name": "지아이에스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2000년 반도체, 디스플레이, MLCC용 절단장비 제조 및 판매를 목적으로 설립되었으며, 2020년 경영효율성 및 인력유치 재무 개선을 추진함. 반도체 및 디스플레이 분야 Dicing, Singulator 장비를 개발하고 있으며, MLCC Cutter, 카메라 모듈 세정 장비도 공급하고 있음. 로봇 분야 설비 기술을 바탕으로 AI 시스템 사업 추진 중이며, 푸드테크 시장 진출 위해 '보글봇' 개발 완료하고 있음.",
+      "current_price": 3420,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 26.67,
+        "return_10d_pct": 0.0,
+        "volume_change": null,
+        "trading_value_change": 6869865312,
+        "avg_trading_value_5d": 6869865312,
+        "last_trading_value": 12656291400,
+        "liquidity_rank": 41,
+        "foreign_flow": 2075.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 세정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "147760",
+      "name": "피엠티",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2004년 설립되어 MEMS 기술 기반 3D MEMS 프로브 카드를 개발 상용화하고, 2016년 코스닥에 상장함. 반도체 웨이퍼 테스트용 프로브 카드를 제조 판매하며, 2023년부터 2D MEMS 프로브 카드를 삼성전자 등 고객사에 공급 중임. 독자적 MEMS 공정기술로 12인치 세라믹 기판을 적용하고 무본딩·적층식 기술로 높은 기술력을 보유하고 있음.",
+      "current_price": 9470,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 64.7,
+        "return_10d_pct": 65.94,
+        "volume_change": null,
+        "trading_value_change": 6809371826,
+        "avg_trading_value_5d": 6809371826,
+        "last_trading_value": 9310847180,
+        "liquidity_rank": 42,
+        "foreign_flow": -351.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 웨이퍼, 반도체, 테스트 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "094170",
+      "name": "동운아나텍",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2015년 코스닥 상장한 시스템 반도체 전문 업체로, 반도체 칩 설계 후 파운드리에 위탁 생산하여 판매하고 있음. 스마트폰 카메라용 OIS IC, 자동차 전장용 HAPTIC IC 등을 주요 사업으로 하며, 반도체 기술 기반 헬스케어 사업 진출도 준비 중임. 고객 요구에 맞춘 고사양 제품 개발, 자율주행 로봇용 IC 영업 및 헬스케어 시장 진출을 위한 시스템 개발을 지속 추진하고 있음.",
+      "current_price": 44150,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -5.86,
+        "return_10d_pct": -13.6,
+        "volume_change": null,
+        "trading_value_change": 6551673710,
+        "avg_trading_value_5d": 6551673710,
+        "last_trading_value": 4831643550,
+        "liquidity_rank": 43,
+        "foreign_flow": -381.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 파운드리 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "317330",
+      "name": "덕산테코피아",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2006년 전자부품 제조업을 위해 설립되어 2019년에 코스닥 상장, 계열사로 (주)덕산퓨처셀 등을 보유함. OLED 핵심구성요소인 유기재료와 반도체 전자재료 등을 생산하는 Fine Chemical 부문, 반도체용 증착소재 및 고분자 촉매를 생산하는 부문을 운영하고 있음. 기술력과 고객사 관계, 전용 설비 보유로 공급 안정과 품질 향상을 추구하며, 폴리이미드 소재 사업과 신규 반도체 소재 연구개발을 하고 있음.",
+      "current_price": 22350,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -8.02,
+        "return_10d_pct": -25.5,
+        "volume_change": null,
+        "trading_value_change": 6436133260,
+        "avg_trading_value_5d": 6436133260,
+        "last_trading_value": 7793668500,
+        "liquidity_rank": 44,
+        "foreign_flow": 1906.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체용, 증착, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "322310",
+      "name": "오로스테크놀로지",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "오버레이(정렬) 계측 장비 국산화",
+      "current_price": 29050,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 4.31,
+        "return_10d_pct": -18.05,
+        "volume_change": null,
+        "trading_value_change": 6393101620,
+        "avg_trading_value_5d": 6393101620,
+        "last_trading_value": 8571667300,
+        "liquidity_rank": 45,
+        "foreign_flow": -294.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "오버레이 계측 국산화. 선단 공정 품질 관련.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "017510",
+      "name": "세명전기",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1962년 설립, 1984년 법인전환 후 1991년 코스닥시장 상장됨. 송배변전선로 금구류를 한국전력공사에 납품하고, 전철용 금구류를 철도공사에 제공하며, 섬유직기용 섹셔날빔과 자동차부품을 관련 업체에 공급하고 있음. 4차 산업혁명 전력수요 증가와 청정에너지 관련 설비 증설에 대응해 HVDC 500kV 송전선 금구류 개발로 국내외 시장을 확대하고 있음.",
+      "current_price": 11900,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 0.59,
+        "return_10d_pct": -28.18,
+        "volume_change": null,
+        "trading_value_change": 6373533194,
+        "avg_trading_value_5d": 6373533194,
+        "last_trading_value": 5128662000,
+        "liquidity_rank": 46,
+        "foreign_flow": -404.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 송전, HVDC (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "102710",
+      "name": "이엔에프테크놀로지",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2000년 반도체/디스플레이 프로세스케미칼 제조 및 판매를 위해 설립되고, 2009년 코스닥시장에 상장함. 전자재료 사업부문은 특수 화학제품의 연구개발, 제조, 판매로 이뤄져 있으며, 프로세스케미칼, 화인케미칼, 칼라페이스트, 반도체 CMP용 Slurry로 구분됨. 식각액과 반도체용 BOE 분야에서 확고한 위치를 달성하고, 신너, 박리액을 통해 시장 경쟁력을 유지하며 세정제 등 신규 품목으로 시장 점유율을 확대하고 있음.",
+      "current_price": 50400,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 9.8,
+        "return_10d_pct": -9.84,
+        "volume_change": null,
+        "trading_value_change": 6201023230,
+        "avg_trading_value_5d": 6201023230,
+        "last_trading_value": 5661986400,
+        "liquidity_rank": 47,
+        "foreign_flow": 633.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체용, 식각, 세정, CMP (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "489500",
+      "name": "엘케이켐",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2007년 설립돼 2025년 코스닥 상장한 반도체 박막 증착 소재 전문기업임. 주력 제품으로 ALD용 High-k 소재(CP, PCP 리간드), Low-k 소재(DIS 프리커서)와 전하수송층 소재, 메탈 프리커서 등을 보유함. 리간드 및 프리커서 신소재 연구개발을 추진하며 HfCl4 국산화 사업, 신규 페로브스카이트 소재 개발 등 기술 혁신을 추구하고 있음.",
+      "current_price": 39750,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 23.26,
+        "return_10d_pct": 23.64,
+        "volume_change": null,
+        "trading_value_change": 6139666210,
+        "avg_trading_value_5d": 6139666210,
+        "last_trading_value": 13466385750,
+        "liquidity_rank": 48,
+        "foreign_flow": 2067.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 증착, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "039440",
+      "name": "에스티아이",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "약품공급장치 및 세정 장비",
+      "current_price": 31550,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 4.47,
+        "return_10d_pct": -16.53,
+        "volume_change": null,
+        "trading_value_change": 6135916990,
+        "avg_trading_value_5d": 6135916990,
+        "last_trading_value": 5272068100,
+        "liquidity_rank": 49,
+        "foreign_flow": -669.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "약품·세정 장비. 라인 증설·리필 주기.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "459510",
+      "name": "나우로보틱스",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 2016년 설립되어 산업용 로봇 및 자율주행 물류로봇, 로봇 자동화 시스템을 개발·제조·공급하며, 2025년 코스닥 기술성장기업으로 상장함. 자체 개발한 직교로봇, 다관절 로봇, 스카라 로봇, 무인이동로봇 등을 기반으로 여러 산업에 자동화 솔루션을 제공함. 로봇 SW 및 HW 기술을 바탕으로 사업 영역을 확대하여 토탈 로봇 솔루션 제공 기업으로 성장하고 있음.",
+      "current_price": 26150,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -7.92,
+        "return_10d_pct": -16.98,
+        "volume_change": null,
+        "trading_value_change": 5901537370,
+        "avg_trading_value_5d": 5901537370,
+        "last_trading_value": 3699832750,
+        "liquidity_rank": 50,
+        "foreign_flow": 3.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: 산업용 로봇, 직교로봇, 스카라, 로봇 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "119830",
+      "name": "아이텍",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2005년 설립돼 2010년 코스닥 상장된 반도체 테스트 전문기업임. 반도체 기술서비스, 소프트웨어 개발, 전자 엔지니어링 서비스를 제공하며, 비메모리 반도체 테스트와 그래핀 제조, 반도체 시설 운영 및 유지보수, 콜드체인 솔루션 등을 제공하고 있음. 동사는 팹리스 회사와 동반 성장 전략을 추구하고, 고객별 Needs 파악을 통한 맞춤형 개발로 영업을 확대하고 있음.",
+      "current_price": 8550,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 25.37,
+        "return_10d_pct": 15.54,
+        "volume_change": null,
+        "trading_value_change": 5776428704,
+        "avg_trading_value_5d": 5776428704,
+        "last_trading_value": 6944540850,
+        "liquidity_rank": 51,
+        "foreign_flow": 345.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 테스트 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "160980",
+      "name": "싸이맥스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2005년 설립되어 2015년 코스닥에 상장한 반도체 장비 전문기업으로, 웨이퍼 이송장비 CTS, EFEM, LPM을 제조하며 국내 매출 비중이 85%로 높음. 글로벌 최고 수준의 생산 능력과 유연한 제조 인프라로 고객의 납기와 품질 요구를 만족시킴. 자체 하드웨어 및 소프트웨어, 로봇 엔지니어를 통한 지속적인 연구개발로 신규 장비 개발 속도와 수준에서 글로벌 경쟁력을 갖추고 있음.",
+      "current_price": 34700,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -5.32,
+        "return_10d_pct": -6.34,
+        "volume_change": null,
+        "trading_value_change": 5536196390,
+        "avg_trading_value_5d": 5536196390,
+        "last_trading_value": 3570074800,
+        "liquidity_rank": 52,
+        "foreign_flow": 548.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, 웨이퍼, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "094820",
+      "name": "일진파워",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1990년 설립되어 2014년 화공 및 플랜트 사업을 분리하고, 연료전지발전소 건설을 위해 진천그린에너지와 고양그린에너지를 신설함. 발전사업본부는 화력 및 복합발전소 정비를, 원자력사업본부는 원자력 정비를, 신성장사업본부는 재생에너지 사업을 발굴함. 재생에너지 사업을 확대하고 연료전지발전소 건설로 친환경 전력 기반을 마련하며, 신규 사업목적 추가로 중장기 성장 기반을 구축하고 있음.",
+      "current_price": 16150,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -4.72,
+        "return_10d_pct": -21.98,
+        "volume_change": null,
+        "trading_value_change": 5525164754,
+        "avg_trading_value_5d": 5525164754,
+        "last_trading_value": 4843385000,
+        "liquidity_rank": 53,
+        "foreign_flow": -1249.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 원자력 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "102120",
+      "name": "어보브반도체",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2006년 비메모리반도체 개발 및 제조를 목적으로 설립되었으며, 2009년 코스닥시장에 상장함. 주요종속회사인 (주)윈팩을 통해 반도체 후공정 패키징&테스트 외주사업을 영위하고 있음. 가전용 전자기기 및 산업용 전자기기에 적용되는 MCU 공급, Touch Sensor, Ambient Light Sensor 등의 각종 Sensor 제품 및 High Voltage소자가 적용되는 Power반도체 공급.",
+      "current_price": 13580,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 6.18,
+        "return_10d_pct": -5.83,
+        "volume_change": null,
+        "trading_value_change": 5417467472,
+        "avg_trading_value_5d": 5417467472,
+        "last_trading_value": 8224319600,
+        "liquidity_rank": 54,
+        "foreign_flow": 1803.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체 후공정, 반도체, 패키징 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "036810",
+      "name": "에프에스티",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "펠리클 및 칠러(온도조절장치) 제조",
+      "current_price": 36150,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 5.7,
+        "return_10d_pct": -14.34,
+        "volume_change": null,
+        "trading_value_change": 5397585590,
+        "avg_trading_value_5d": 5397585590,
+        "last_trading_value": 5145591000,
+        "liquidity_rank": 55,
+        "foreign_flow": 1043.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "펠리클·칠러. 공정 안정화 소부장.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "059270",
+      "name": "해성에어로보틱스",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 1997년 감속기 전문 제조기업으로 설립되어 2021년 코스닥시장에 상장함. 승강기용 권상기를 주력으로 생산하며, Worm Gear 독자기술로 효율 및 내구성에서 우수성을 인정받고, 일본·미국·중국·동남아 등 해외시장을 개척 중임. 동사는 제조로봇용 고정밀 Cycloid 감속기 사업을 추진하여 국내 유일 양산시스템을 구축하고, 기술플랫폼의 변화와 혁신을 추구하고 있음.",
+      "current_price": 11160,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 10.6,
+        "return_10d_pct": 10.82,
+        "volume_change": null,
+        "trading_value_change": 5363002528,
+        "avg_trading_value_5d": 5363002528,
+        "last_trading_value": 4245565320,
+        "liquidity_rank": 56,
+        "foreign_flow": -266.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: 감속기, 로봇 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "024850",
+      "name": "HLB이노베이션",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1978년 반도체 부품 제조업으로 설립되어 2001년 코스닥 상장함. 반도체 IC와 TR용, 파워모듈용 프리몰드형 리드프레임, 테스트 소켓 컨택핀을 스탬핑 방식으로 생산하며, KIR-CAR 플랫폼 기술로 고형암 및 혈액암 치료제를 개발 중임. 전기차, 친환경 에너지, 가전 산업에 기여하는 전장 및 산업용 부품을 공급하고, AI 기술 확산과 자율주행, 전기차 산업 성장에 따라 제품 경쟁력을 강화하고 있음.",
+      "current_price": 18290,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -15.13,
+        "return_10d_pct": -12.49,
+        "volume_change": null,
+        "trading_value_change": 5335466110,
+        "avg_trading_value_5d": 5335466110,
+        "last_trading_value": 7710442140,
+        "liquidity_rank": 57,
+        "foreign_flow": -82.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 테스트 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "160190",
+      "name": "하이젠알앤엠",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 2007년 설립 후 오티스엘리베이터코리아의 산업용 모터사업부 인수로 시작함. 중국 청도 공장 인수로 가격 경쟁력과 본사 기술력을 결합한 생산체제 구축하여 산업용전동기, 서보모터/드라이브, 로봇/SI, EV모터/인버터 사업을 영위하고 있음. 동사는 슈퍼프리미엄 전동기 개발, 로봇 액추에이터 및 구동모듈을 핵심기술로 연구개발을 통해 글로벌 기업으로 성장하고 있음.",
+      "current_price": 36000,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -6.37,
+        "return_10d_pct": -13.15,
+        "volume_change": null,
+        "trading_value_change": 5227756850,
+        "avg_trading_value_5d": 5227756850,
+        "last_trading_value": 3999564000,
+        "liquidity_rank": 58,
+        "foreign_flow": -1028.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: 서보모터, 로봇, 액추에이터 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "094940",
+      "name": "푸른기술",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 1997년 설립되어 2007년 코스닥 상장 후 금융자동화, 역무자동화, 협동로봇 제조 및 판매를 영위하고 있음. 금융자동화 부문에서 보급형 CD와 북미시장 ATM을 공급하며, 역무자동화 부문에서는 승차권 발매기, 자동충전기 등의 시스템을 제공함. 동사는 협동로봇과 의료로봇 개발로 사업을 확장하고, 인천공항 자동출입국심사대 및 스마트패스 사업 참여로 기술 혁신을 추구하고 있음.",
+      "current_price": 12030,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -7.46,
+        "return_10d_pct": 11.29,
+        "volume_change": null,
+        "trading_value_change": 4761114612,
+        "avg_trading_value_5d": 4761114612,
+        "last_trading_value": 2893142820,
+        "liquidity_rank": 59,
+        "foreign_flow": 216.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: 협동로봇, 로봇 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "046120",
+      "name": "오르비텍",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1991년 비파괴기술검사 목적으로 설립되어 2010년 코스닥시장에 상장하고, 2025년 파인테크닉스 지분 42.09% 취득으로 종속회사를 편입함. 원자력사업, ISI사업, 항공사업 등 3개 사업본부로 운영 중임. 원전해체시장 선점을 위해 분석센터 운영 및 R&D 과제를 수행하며, 항공사업에서 AS 9100 인증 획득 및 KF-21 부품 공급계약을 통해 기술력을 강화하고 있음.",
+      "current_price": 9610,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -1.44,
+        "return_10d_pct": -12.64,
+        "volume_change": null,
+        "trading_value_change": 4678065306,
+        "avg_trading_value_5d": 4678065306,
+        "last_trading_value": 5687841870,
+        "liquidity_rank": 60,
+        "foreign_flow": -1299.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 원자력, 원전 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "429270",
+      "name": "시지트로닉스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2012년 설립되어 실리콘 소재 기반 반도체 개발부터 생산까지 담당하는 기업임. ESD, Power, Sensor 등의 광·개별소자를 개발·생산·판매하고 있으며, 2017년부터 질화갈륨 전력반도체와 2020년부터 RF 소자 상용화를 추진 중임. Epi 공정 기술을 적용한 'Multi-project FAB' 파운드리를 통해 고부가가치 소자로 사업 집중도와 빠른 대응력을 강화하고 있음.",
+      "current_price": 8930,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 12.33,
+        "return_10d_pct": -13.47,
+        "volume_change": null,
+        "trading_value_change": 4635355294,
+        "avg_trading_value_5d": 4635355294,
+        "last_trading_value": 17654109920,
+        "liquidity_rank": 61,
+        "foreign_flow": -281.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 파운드리 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "172670",
+      "name": "에이엘티",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2003년 설립되어 비메모리 반도체 후공정 테스트를 전문적으로 수행하고, 종속회사 에이지피는 CIS 패키징 사업을 진행하고 있음. DDI, CIS, PMIC, MCU, M/C 테스트와 CIS Wafer Test 후 Reconstruct를 진행하고 있음. SoC 테스트 품목 확대 및 차세대 전력반도체 재료인 SiC의 Dicing 기술 개발을 하며, 최신 설비와 전문 엔지니어 확보로 매출 성장을 지속하고 있음.",
+      "current_price": 19550,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 8.85,
+        "return_10d_pct": 6.71,
+        "volume_change": null,
+        "trading_value_change": 4410808016,
+        "avg_trading_value_5d": 4410808016,
+        "last_trading_value": 3591452300,
+        "liquidity_rank": 62,
+        "foreign_flow": -497.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 후공정, 반도체 후공정, 반도체, 패키징 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "0001A0",
+      "name": "덕양에너젠",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 2020년 덕양에서 인적분할로 설립되었고, 2025년 민컴퍼니와 주식교환으로 종속회사 됨. 고도 정제공정을 통해 순도 99.99% 이상의 고순도 산업용 수소로 전환 생산하는 수소 정제 기업으로, 정유 및 석유화학 산업의 필수 공정가스를 국내 주요 정유사 및 석유화학 업체에 공급하고 있음. SMR 방식의 수소 생산 역량을 보유하고 사우디 아람코와 S-OIL의 프로젝트에 낙찰되며 기술 혁신을 추구하고 있음.",
+      "current_price": 14010,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -8.43,
+        "return_10d_pct": -30.3,
+        "volume_change": null,
+        "trading_value_change": 4307885390,
+        "avg_trading_value_5d": 4307885390,
+        "last_trading_value": 4637562180,
+        "liquidity_rank": 63,
+        "foreign_flow": 702.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: SMR (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "101160",
+      "name": "월덱스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2000년 반도체 및 전자부품 제조 목적으로 설립되어 2008년 코스닥에 상장하고 2009년 미국 WCQ를 인수하여 소재 전문기업으로 성장함. 실리콘 부품, 쿼츠 부품, 파인세라믹 제품을 제조 및 판매하며, 반도체 수율에 직접 영향 주는 핵심 부품 공급하고 있음. 반도체 고객과 긴밀한 소통을 통한 식각 공정 최적화 및 기술 이슈 해결 파트너로 성장하며 국내외 기업과 교류로 공정부품분야 전문성과 브랜드 가치 인정받고 있음.",
+      "current_price": 28450,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 2.52,
+        "return_10d_pct": -10.53,
+        "volume_change": null,
+        "trading_value_change": 4205352540,
+        "avg_trading_value_5d": 4205352540,
+        "last_trading_value": 2749066600,
+        "liquidity_rank": 64,
+        "foreign_flow": 352.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 식각, 쿼츠, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "114810",
+      "name": "한솔아이원스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1993년 설립되어 2005년 법인전환 후 아이원스로 출범하였고 2013년 기업공개, 2022년 한솔그룹 편입에 따라 한솔아이원스로 사명을 변경함. 반도체 및 디스플레이 제조 장비 부품의 정밀 가공을 시작으로 반도체 장비 부품 초정밀 세정/코팅으로 사업을 확장하고 있음. 부품 가공-세정-코팅까지 통합 솔루션 체계를 완성하여 고객사의 원가절감과 생산 효율성 제고에 기여하고, 제조 경쟁력 강화를 위해 노력하고 있음.",
+      "current_price": 16190,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 7.22,
+        "return_10d_pct": -3.29,
+        "volume_change": null,
+        "trading_value_change": 4175113822,
+        "avg_trading_value_5d": 4175113822,
+        "last_trading_value": 4845116540,
+        "liquidity_rank": 65,
+        "foreign_flow": 729.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, 세정, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "212710",
+      "name": "아이에스티이",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2013년 설립되어 반도체 장비를 중심으로 OLED, LCD, 자동차 등 다양한 산업의 장비 및 부품을 판매하는 장비사업과 수소에너지 중심의 에너지 사업을 하고 있음. 반도체 장비사업은 FOUP Cleaner를 주축으로 여러 장비를 판매하고, SK하이닉스 등 글로벌 고객을 확보하여 안정적 매출을 실현하고 있음. 반도체 장비 FOUP Cleaner의 세계화 추진과 PECVD 사업화를 통해 중·장기 성장 기반을 마련하고 있음.",
+      "current_price": 11420,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 7.63,
+        "return_10d_pct": 14.43,
+        "volume_change": null,
+        "trading_value_change": 4126401492,
+        "avg_trading_value_5d": 4126401492,
+        "last_trading_value": 4572476640,
+        "liquidity_rank": 66,
+        "foreign_flow": 1284.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, CVD, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "445090",
+      "name": "에이직랜드",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2016년 설립된 시스템 반도체 디자인하우스로, 글로벌 1위 파운드리 TSMC의 국내 유일 공식 협력사임. 고객사의 반도체 회로 설계를 TSMC를 통해 제조 가능한 설계로 전환하며, AI 반도체, 모바일, 네트워킹 기기 등 다양한 분야에 대응하고 있음. SoC 아키텍처 설계부터 양산까지 지원하며, Arm의 ADP 자격을 바탕으로 5G, 엣지 메모리 컨트롤러, IoT 등 고성능 SoC 개발을 전문으로 하고 있음.",
+      "current_price": 29150,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 7.17,
+        "return_10d_pct": -5.97,
+        "volume_change": null,
+        "trading_value_change": 3813113990,
+        "avg_trading_value_5d": 3813113990,
+        "last_trading_value": 1887171000,
+        "liquidity_rank": 67,
+        "foreign_flow": 638.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 파운드리 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "272110",
+      "name": "케이엔제이",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2005년 반도체 제조용 CVD-SiC Product 생산을 목적으로 설립되었음. 반도체 웨이퍼 에칭공정용 SiC Focus Ring 및 LED제조용 SiC 코팅제품을 CVD 방식으로 생산하며, 메모리반도체업체를 주요 목표시장으로, 비메모리 반도체 분야로 확대 예상함. CVD SiC 증착 및 가공기술 외에 CVD 증착 챔버를 개발하여 경쟁력을 보유하고, 4차 산업혁명에 대응하여 기술개발을 추구하고 있음.",
+      "current_price": 35950,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 4.05,
+        "return_10d_pct": -6.01,
+        "volume_change": null,
+        "trading_value_change": 3797309260,
+        "avg_trading_value_5d": 3797309260,
+        "last_trading_value": 2851410200,
+        "liquidity_rank": 68,
+        "foreign_flow": -571.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 웨이퍼, 증착, CVD, 반도체 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "088130",
+      "name": "동아엘텍",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1999년 법인전환되어 2007년 코스닥시장에 상장되었으며, 2009년 (주)선익시스템을 인수하여 핵심장비 일관생산능력을 확보함. OLED/LCD 모듈 후공정 검사장비를 생산하고, OLED 증착장비를 제조하며, 벤처캐피탈 투자업무를 영위함. 업계 최초로 8.6세대 OLED 증착설비를 개발하여 중국 BOE로부터 수주를 받았으며, 소형 OLED 증착기 시장에서 M/S 1위를 유지하고 OLEDoS 증착기 시장에서 선두하고 있음.",
+      "current_price": 9360,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 0.32,
+        "return_10d_pct": -10.26,
+        "volume_change": null,
+        "trading_value_change": 3722987048,
+        "avg_trading_value_5d": 3722987048,
+        "last_trading_value": 6168576960,
+        "liquidity_rank": 69,
+        "foreign_flow": -270.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 증착, 후공정 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "060720",
+      "name": "KH바텍",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 1992년 비철금속 소형정밀 다이캐스팅 전문기업으로 설립되어 2002년 코스닥 상장 후 8개 비상장 종속회사를 보유하고 있음. 스마트폰·노트북·태블릿 등 IT 디바이스 부품을 중심으로 통신장비 및 로봇 부품까지 사업을 확장하고 있음. 다이캐스팅, CNC, VAW 공법 등을 활용해 원가 경쟁력을 확보하며, 자동차 부품사업에서는 칙소몰딩과 박막 캐스팅을 적용해 고객 기반을 확대하고 있음.",
+      "current_price": 13380,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 6.87,
+        "return_10d_pct": -4.63,
+        "volume_change": null,
+        "trading_value_change": 3606465318,
+        "avg_trading_value_5d": 3606465318,
+        "last_trading_value": 5634879960,
+        "liquidity_rank": 70,
+        "foreign_flow": 1190.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: CNC, 로봇 부품, 로봇 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "088280",
+      "name": "쏘닉스",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2000년 설립되어 RF 부품인 SAW 필터를 설계, 생산, 판매하던 회사로 시작함. 2015년 이후 5G 스마트폰 성능 향상으로 RF 프론트 엔드모듈용 필터 파운드리 전문 회사로 전환하고 있음. 글로벌 통신반도체 수요 기업과 압전반도체 TF-SAW를 공동 개발, 현재 5G 스마트폰용 RF 필터 제조 및 판매를 확대하고 있고, 스위스 포토닉스 전문회사와 협력하여 미래 기술 연구개발을 지속하며 성장하고 있음.",
+      "current_price": 5240,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 2.34,
+        "return_10d_pct": -24.06,
+        "volume_change": null,
+        "trading_value_change": 3560097274,
+        "avg_trading_value_5d": 3560097274,
+        "last_trading_value": 9901063840,
+        "liquidity_rank": 71,
+        "foreign_flow": -210.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체, 파운드리 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "035890",
+      "name": "서희건설",
+      "market": "KOSDAQ",
+      "sector_group": "power_technology",
+      "business_summary": "동사는 1982년 운송전문업체로 설립 후 1994년 건설업으로 전환, 1999년 코스닥에 상장함. 포스코 토건정비공사 및 다수 관급공사 수주로 안정적 매출기반을 통해 지역주택사업으로 차별화된 수익모델을 추구하는 중견건설업체임. 지역주택조합 분야에서 브랜드 및 상품 경쟁력을 가지고 원가 절감을 통해 시장을 선도하며, 주택경기 하강에 대비해 임대주택사업 등으로 사업모델을 다각화하고 있음.",
+      "current_price": 2130,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -3.18,
+        "return_10d_pct": -23.52,
+        "volume_change": null,
+        "trading_value_change": 3500756456,
+        "avg_trading_value_5d": 3500756456,
+        "last_trading_value": 1942630290,
+        "liquidity_rank": 72,
+        "foreign_flow": 100.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "power_technology"
+      ],
+      "inclusion_reason": "power_technology: 송전 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "357580",
+      "name": "아모센스",
+      "market": "KOSDAQ",
+      "sector_group": "industrial_robot_equipment",
+      "business_summary": "동사는 2008년 설립되어 2021년 코스닥에 상장함. 2025년 자회사 아모에스넷 지분 취득으로 연결대상 종속회사를 보유하게 됨. 동사는 무선충전 차폐시트, 차량 전장모듈, Lighting 모듈, IoT 디바이스 등 다양한 제품을 제공하는 소재부품 전문기업임. 세라믹 기판 사업과 무선전력전송, AI 음성인식 모듈 등 신규 사업을 통해 전장, 로봇, 산업 자동화 등 다양한 분야로 확대하고 있음.",
+      "current_price": 14800,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": -3.9,
+        "return_10d_pct": -24.18,
+        "volume_change": null,
+        "trading_value_change": 3448088976,
+        "avg_trading_value_5d": 3448088976,
+        "last_trading_value": 3659699600,
+        "liquidity_rank": 73,
+        "foreign_flow": -595.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "industrial_robot_equipment"
+      ],
+      "inclusion_reason": "industrial_robot_equipment: 로봇, 산업 자동화 (medium)",
+      "classification_confidence": "medium"
+    },
+    {
+      "ticker": "149950",
+      "name": "아바텍",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 2000년 Display용 진공박막코팅 제품 생산과 판매를 위해 설립되어, 2011년 구미공장 준공 후 Glass Slimming, ITO 코팅제품 및 MLCC를 생산하고 있음. 코팅 및 식각 기술로 디스플레이 관련제품과 가전제품의 부품을 공급하며, MLCC는 전자기기, 자동차 전장 등 다양한 분야에 제공하고 있음. 동사는 매출 확대와 지속 가능 성장을 위해 주력제품의 부가기능 향상 및 신규제품 발굴에 주력하고 있음.",
+      "current_price": 15700,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 25.9,
+        "return_10d_pct": 21.24,
+        "volume_change": null,
+        "trading_value_change": 3355707058,
+        "avg_trading_value_5d": 3355707058,
+        "last_trading_value": 12883498500,
+        "liquidity_rank": 74,
+        "foreign_flow": 1381.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 식각 (high)",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "104830",
+      "name": "원익머트리얼즈",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "반도체용 고순도 특수 가스",
+      "current_price": 47650,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 2.58,
+        "return_10d_pct": -5.08,
+        "volume_change": null,
+        "trading_value_change": 3039757080,
+        "avg_trading_value_5d": 3039757080,
+        "last_trading_value": 3528148950,
+        "liquidity_rank": 75,
+        "foreign_flow": 227.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "고순도 가스 공급. 메모리·파운드리 가동률 민감.",
+      "classification_confidence": "high"
+    },
+    {
+      "ticker": "036200",
+      "name": "유니셈",
+      "market": "KOSDAQ",
+      "sector_group": "ai_semiconductor_material_equipment",
+      "business_summary": "동사는 1988년 설립하고 1999년 코스닥에 상장한 반도체 장비 전문기업임. 국내 최초 Scrubber 개발 업체로, 반도체/디스플레이 제조 공정의 유해가스 정화장치인 스크러버와 온도조절 장치 칠러를 주력으로 하고 있음. 전문기술개발과 혁신적 생산시스템 구축, 원가경쟁력 향상 등으로 사업 경쟁력을 강화하며, 창조적 R&D와 고객사별 타겟 전략으로 시장지배력을 확대하고 있음.",
+      "current_price": 11410,
+      "price_updated_at": "2026-05-22T19:58:51+09:00",
+      "price_source": "kis",
+      "market_check_status": "verified",
+      "filters": {
+        "business_included": true,
+        "price_under_59000": true,
+        "tradable": true,
+        "liquidity_pass": true,
+        "risk_flag": null,
+        "risk_check_status": "verified",
+        "warning_flag": null
+      },
+      "metrics": {
+        "return_5d_pct": 4.2,
+        "return_10d_pct": -9.94,
+        "volume_change": null,
+        "trading_value_change": 3008229518,
+        "avg_trading_value_5d": 3008229518,
+        "last_trading_value": 3254679680,
+        "liquidity_rank": 76,
+        "foreign_flow": 636.0,
+        "institution_flow": null
+      },
+      "news_context": [],
+      "disclosure_context": [],
+      "risk_notes": [],
+      "sector_keys": [
+        "ai_semiconductor_material_equipment"
+      ],
+      "inclusion_reason": "ai_semiconductor_material_equipment: 반도체 장비, 스크러버, Scrubber, 반도체 (high)",
+      "classification_confidence": "high"
+    }
+  ],
+  "excluded_from_ai_input": [
+    {
+      "ticker": "083310",
+      "name": "엘오티베큠",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 2655256814
+    },
+    {
+      "ticker": "396470",
+      "name": "워트",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 2553008998
+    },
+    {
+      "ticker": "099440",
+      "name": "스맥",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 2525989190
+    },
+    {
+      "ticker": "457550",
+      "name": "우진엔텍",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 2378472740
+    },
+    {
+      "ticker": "089140",
+      "name": "넥스턴앤롤코리아",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1955244104
+    },
+    {
+      "ticker": "130740",
+      "name": "티피씨글로벌",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1934311387
+    },
+    {
+      "ticker": "217190",
+      "name": "제너셈",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1821564276
+    },
+    {
+      "ticker": "451220",
+      "name": "아이엠티",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1639783192
+    },
+    {
+      "ticker": "089790",
+      "name": "제이티",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1569519404
+    },
+    {
+      "ticker": "189860",
+      "name": "서전기전",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1522350186
+    },
+    {
+      "ticker": "405100",
+      "name": "큐알티",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1513507172
+    },
+    {
+      "ticker": "445180",
+      "name": "퓨릿",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1449091508
+    },
+    {
+      "ticker": "141000",
+      "name": "비아트론",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1331301784
+    },
+    {
+      "ticker": "294630",
+      "name": "서남",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1298833762
+    },
+    {
+      "ticker": "140430",
+      "name": "카티스",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1206983237
+    },
+    {
+      "ticker": "101330",
+      "name": "모베이스",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1171245429
+    },
+    {
+      "ticker": "146320",
+      "name": "비씨엔씨",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1110162276
+    },
+    {
+      "ticker": "241770",
+      "name": "메카로",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1104334520
+    },
+    {
+      "ticker": "217500",
+      "name": "러셀",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1086498488
+    },
+    {
+      "ticker": "273640",
+      "name": "와이엠텍",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1010087734
+    },
+    {
+      "ticker": "095190",
+      "name": "신화프리텍",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 1007325286
+    },
+    {
+      "ticker": "234030",
+      "name": "싸이닉솔루션",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 994795396
+    },
+    {
+      "ticker": "297890",
+      "name": "HB솔루션",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 980036077
+    },
+    {
+      "ticker": "192410",
+      "name": "오늘이엔엠",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 979642454
+    },
+    {
+      "ticker": "094970",
+      "name": "제이엠티",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 964380158
+    },
+    {
+      "ticker": "417970",
+      "name": "모델솔루션",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 918838958
+    },
+    {
+      "ticker": "054220",
+      "name": "비츠로시스",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 820168719
+    },
+    {
+      "ticker": "097800",
+      "name": "윈팩",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 805472146
+    },
+    {
+      "ticker": "311320",
+      "name": "지오엘리먼트",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 777390376
+    },
+    {
+      "ticker": "036190",
+      "name": "금화피에스시",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 752080110
+    },
+    {
+      "ticker": "234100",
+      "name": "폴라리스세원",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 729183137
+    },
+    {
+      "ticker": "432470",
+      "name": "케이엔에스",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 695986272
+    },
+    {
+      "ticker": "045970",
+      "name": "코아시아",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 689654471
+    },
+    {
+      "ticker": "424980",
+      "name": "마이크로투나노",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 589053174
+    },
+    {
+      "ticker": "171010",
+      "name": "램테크놀러지",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 549021616
+    },
+    {
+      "ticker": "463480",
+      "name": "모티브링크",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 519973098
+    },
+    {
+      "ticker": "043590",
+      "name": "웰킵스하이텍",
+      "reason": "avg_tv_below_3000000000",
+      "avg_trading_value_5d": 500116474
+    }
+  ]
+}

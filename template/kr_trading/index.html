@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#F5F6F6" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>모의 투자 시스템</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <link rel="stylesheet" href="styles.css?v=12" />
+    <script>
+      (function () {
+        var root = document.documentElement;
+        function applyScale() {
+          var w =
+            window.visualViewport && window.visualViewport.width
+              ? window.visualViewport.width
+              : window.innerWidth;
+          root.style.setProperty("--viewport-w", w + "px");
+        }
+        applyScale();
+        window.addEventListener("resize", applyScale);
+        window.addEventListener("orientationchange", applyScale);
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener("resize", applyScale);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="app">
+      <div class="page-stack">
+        <header class="page-header">
+          <h1 class="page-title">모의 투자 시스템</h1>
+          <p class="page-meta">
+            <span></span>
+            <span></span>
+            <span></span>
+          </p>
+        </header>
+
+        <main class="page-content">
+          <section class="section" aria-labelledby="rank-title">
+            <h2 id="rank-title" class="section-title">투자 성과 순위</h2>
+            <article class="card card--pad rank-card">
+              <div class="rank-table" role="table"></div>
+            </article>
+          </section>
+
+          <section class="section" aria-labelledby="holdings-title">
+            <div class="section-head">
+              <h2 id="holdings-title" class="section-title">보유 종목 상세</h2>
+              <button type="button" class="filter-pill" aria-label="전체모델 필터">
+                <span>전체모델</span>
+                <svg
+                  class="filter-pill__chevron"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <polyline
+                    points="19 9 12 16 5 9"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="holdings-list"></div>
+          </section>
+
+          <section class="section" aria-labelledby="agents-title">
+            <div class="section-head">
+              <h2 id="agents-title" class="section-title">에이전트 수익률</h2>
+              <button type="button" class="filter-pill" aria-label="전체모델 필터">
+                <span>전체모델</span>
+                <svg
+                  class="filter-pill__chevron"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <polyline
+                    points="19 9 12 16 5 9"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="agents-list"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script src="render.js?v=12" defer></script>
+  </body>
+</html>

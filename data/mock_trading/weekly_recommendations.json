@@ -1,0 +1,1108 @@
+{
+  "week_id": "2026-W21",
+  "generated_at": "2026-05-22T20:39:51+09:00",
+  "mode": "live-ai",
+  "input_source": "ai_candidate_context_compact.json",
+  "universe_summary": {
+    "ai_input_source": "ai_candidate_context_compact.json",
+    "ai_input_candidate_count": 76,
+    "selection_rule": {
+      "market": "KOSDAQ",
+      "market_check": "verified",
+      "max_price": 59000,
+      "min_avg_trading_value_5d": 3000000000,
+      "risk_exclusion_applied": true,
+      "source_file": "candidate_universe.json"
+    },
+    "compact_generated_at": "2026-05-22T20:23:03+09:00"
+  },
+  "agents": [
+    {
+      "agent_key": "gemini_pro_conviction",
+      "display_name": "Gemini Pro",
+      "perspective": "근거확신형",
+      "provider": "gemini",
+      "model_id": "gemini-3.1-pro-preview",
+      "recommendations": [
+        {
+          "rank": 1,
+          "ticker": "489500",
+          "name": "엘케이켐",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 39500,
+          "entry_range": "38,500원 ~ 40,000원 분할 매수",
+          "target_price": 47000,
+          "stop_loss_price": 35500,
+          "reasons": [
+            "'단일판매ㆍ공급계약체결' 공시를 통해 수주 기반의 명확한 실적 모멘텀 입증",
+            "1분기 매출액 전년 대비 79.6% 증가 등 어닝 서프라이즈 뉴스와 함께 외국인 수급(+2067) 동반 유입"
+          ],
+          "risk_factors": [
+            "최근 5일 수익률(23.26%) 상승에 따른 단기 차익실현 매물 출회 가능성"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "top_disclosure_titles",
+            "top_news_titles",
+            "foreign_flow",
+            "return_5d_pct"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 엘케이켐에 관심이 붙고 있어요.",
+          "plainRisk": "최근 엘케이켐 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 2,
+          "ticker": "125020",
+          "name": "티씨머티리얼즈",
+          "sector_group": "power_technology",
+          "entry_price": 9100,
+          "entry_range": "8,800원 ~ 9,300원 단기 눌림목 접근",
+          "target_price": 11000,
+          "stop_loss_price": 8000,
+          "reasons": [
+            "1분기 영업이익 169% 급증 및 1천억 매출 달성 등 펀더멘털 개선에 기반한 강력한 상승 동력",
+            "5일 평균 거래대금 약 558억원으로 유동성이 풍부하며 외국인 자금(+3486) 유입 지속"
+          ],
+          "risk_factors": [
+            "최근 급등(5일 37.57%)으로 인한 단기 변동성 확대 및 이격도 부담"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "top_news_titles",
+            "avg_trading_value_5d",
+            "foreign_flow",
+            "return_5d_pct"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 티씨머티리얼즈에 관심이 붙고 있어요. 외국인 투자자가 사는 흐름이 이어지고 있어요.",
+          "plainRisk": "최근 티씨머티리얼즈 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 3,
+          "ticker": "252990",
+          "name": "샘씨엔에스",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 14900,
+          "entry_range": "14,500원 ~ 15,200원 박스권 하단 매수",
+          "target_price": 17500,
+          "stop_loss_price": 13000,
+          "reasons": [
+            "'영업(잠정)실적(공정공시)'를 통한 어닝 서프라이즈 발표로 AI·HBM 관련 실질적 수혜 입증",
+            "후보군 중 상위권에 해당하는 강한 외국인 순매수(+8791)로 수급 신뢰도 우수"
+          ],
+          "risk_factors": [
+            "전방 IT 수요 변동 및 반도체 장비 섹터 전반의 투자심리 위축 시 연동 하락 위험"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "top_disclosure_titles",
+            "top_news_titles",
+            "foreign_flow"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 샘씨엔에스에 관심이 붙고 있어요. 외국인 투자자가 사는 흐름이 이어지고 있어요.",
+          "plainRisk": "샘씨엔에스 가격이 하루에 크게 흔들릴 수 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 4,
+          "ticker": "089030",
+          "name": "테크윙",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 53500,
+          "entry_range": "52,000원 ~ 54,000원 조정 시 분할 매수",
+          "target_price": 62000,
+          "stop_loss_price": 48500,
+          "reasons": [
+            "'단일판매ㆍ공급계약체결' 공시 발생으로 메모리 테스트 핸들러 사업의 가시적 수주 성과 확인",
+            "외국인 수급(+2099) 유입과 일평균 거래대금 471억원의 안정적인 유동성 환경"
+          ],
+          "risk_factors": [
+            "10일 누적 수익률 마이너스(-9.44%) 상태로 단기 하락 추세를 완전히 벗어나는지 확인 필요"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "top_disclosure_titles",
+            "foreign_flow",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "새 계약·수주 소식이 나와 테크윙에 기대감이 붙고 있어요. 외국인 투자자가 사는 흐름이 이어지고 있어요.",
+          "plainRisk": "최근 테크윙 주가가 많이 올라, 잠시 숨 고르기가 나올 수 있어요.",
+          "viewGuide": "좋은 소식이 이어지는지 보면서, 주가가 이미 많이 반영됐는지도 함께 체크해보세요."
+        },
+        {
+          "rank": 5,
+          "ticker": "212710",
+          "name": "아이에스티이",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 11300,
+          "entry_range": "11,100원 ~ 11,600원 현재가 부근 접근",
+          "target_price": 13500,
+          "stop_loss_price": 10200,
+          "reasons": [
+            "'단일판매ㆍ공급계약체결' 공시와 1분기 영업이익 74% 급증 소식으로 이중 펀더멘털 근거 확보",
+            "외국인 순매수(+1284) 뒷받침 하에 530억원 규모의 수주잔고를 바탕으로 한 퀀텀점프 기대감 유효"
+          ],
+          "risk_factors": [
+            "5일 평균 거래대금이 약 41억원 수준으로, 시장 급락 시 유동성 부족에 따른 호가 공백 리스크"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "top_disclosure_titles",
+            "top_news_titles",
+            "foreign_flow"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 아이에스티이에 관심이 붙고 있어요. 새 계약·수주 소식이 나와 아이에스티이에 기대감이 붙고 있어요.",
+          "plainRisk": "최근 아이에스티이 주가가 많이 올라, 잠시 숨 고르기가 나올 수 있어요.",
+          "viewGuide": "좋은 소식이 이어지는지 보면서, 주가가 이미 많이 반영됐는지도 함께 체크해보세요."
+        }
+      ],
+      "error": null,
+      "validation_errors": []
+    },
+    {
+      "agent_key": "gemini_25_momentum",
+      "display_name": "Gemini 2.5",
+      "perspective": "단기모멘텀형",
+      "provider": "gemini",
+      "model_id": "gemini-2.5-flash-lite",
+      "recommendations": [
+        {
+          "rank": 1,
+          "ticker": "052900",
+          "name": "KX하이텍",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 2045,
+          "entry_range": "2000 ~ 2090",
+          "target_price": 2800,
+          "stop_loss_price": 1800,
+          "reasons": [
+            "최근 10일 간 61.66% 상승하며 강한 단기 모멘텀 보유",
+            "최근 5일 평균 거래대금이 174억원을 기록하며 거래량 동반",
+            "SSD 공장 풀가동, 영업익 351% 급증 관련 긍정적 뉴스"
+          ],
+          "risk_factors": [
+            "단기 급등에 따른 차익 실현 매물 가능성"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_10d_pct",
+            "avg_trading_value_5d",
+            "top_news_titles"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 주가가 꽤 올라 KX하이텍을 눈여겨보는 사람이 많아요. 거래가 붙으면서 주목받는 흐름이에요.",
+          "plainRisk": "최근 KX하이텍 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 2,
+          "ticker": "147760",
+          "name": "피엠티",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 9470,
+          "entry_range": "9300 ~ 9800",
+          "target_price": 13000,
+          "stop_loss_price": 8500,
+          "reasons": [
+            "최근 10일 간 65.94% 상승하며 매우 강한 단기 모멘텀 보유",
+            "최근 5일 평균 거래대금이 68억원을 기록하며 거래량 증가",
+            "삼성차이나반도체와 66억원 규모 프로브카드 공급 계약 체결 뉴스"
+          ],
+          "risk_factors": [
+            "투자주의종목 지정 예고 상태로 변동성 확대 가능성"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_10d_pct",
+            "avg_trading_value_5d",
+            "top_news_titles"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 주가가 꽤 올라 피엠티을 눈여겨보는 사람이 많아요. 거래가 붙으면서 주목받는 흐름이에요.",
+          "plainRisk": "피엠티 가격이 하루에 크게 흔들릴 수 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 3,
+          "ticker": "064290",
+          "name": "인텍플러스",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 35850,
+          "entry_range": "35000 ~ 37000",
+          "target_price": 45000,
+          "stop_loss_price": 32000,
+          "reasons": [
+            "최근 5일 간 33.02% 상승하며 강한 단기 모멘텀 보유",
+            "최근 10일 간 16.78% 상승하며 긍정적인 가격 흐름",
+            "주가 급등과 함께 거래량도 동반 상승 추세"
+          ],
+          "risk_factors": [
+            "최근 급등으로 인한 단기 고점 형성 가능성"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 주가가 꽤 올라 인텍플러스을 눈여겨보는 사람이 많아요. 거래가 붙으면서 주목받는 흐름이에요.",
+          "plainRisk": "최근 인텍플러스 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 4,
+          "ticker": "036540",
+          "name": "SFA반도체",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 10250,
+          "entry_range": "10000 ~ 10500",
+          "target_price": 13000,
+          "stop_loss_price": 9000,
+          "reasons": [
+            "최근 5일 간 19.05% 상승하며 강한 단기 모멘텀 보유",
+            "최근 10일 간 21.88% 상승하며 긍정적인 가격 흐름",
+            "반도체 후공정 전문 기업으로 AI 반도체 성장 수혜 기대"
+          ],
+          "risk_factors": [
+            "단기 급등 후 조정 가능성"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "business_summary",
+            "top_news_titles"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 주가가 꽤 올라 SFA반도체을 눈여겨보는 사람이 많아요. 반도체·메모리 수요 관련 소식이 SFA반도체에 우호적으로 작용하고 있어요.",
+          "plainRisk": "최근 SFA반도체 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 5,
+          "ticker": "417840",
+          "name": "저스템",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 18790,
+          "entry_range": "18500 ~ 19500",
+          "target_price": 24000,
+          "stop_loss_price": 16000,
+          "reasons": [
+            "최근 10일 간 31.4% 상승하며 매우 강한 단기 모멘텀 보유",
+            "최근 5일 평균 거래대금이 311억원으로 거래량 증가",
+            "산업은행 300억 정책자금 유치 소식으로 성장 기대감 상승"
+          ],
+          "risk_factors": [
+            "급등 후 단기 과열 구간 진입 가능성"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "return_10d_pct",
+            "avg_trading_value_5d",
+            "top_news_titles"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 주가가 꽤 올라 저스템을 눈여겨보는 사람이 많아요. 거래가 붙으면서 주목받는 흐름이에요.",
+          "plainRisk": "최근 저스템 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        }
+      ],
+      "error": null,
+      "validation_errors": []
+    },
+    {
+      "agent_key": "deepseek_balance",
+      "display_name": "DeepSeek Balance",
+      "perspective": "균형판단형",
+      "provider": "deepseek",
+      "model_id": "deepseek-v4-pro",
+      "recommendations": [
+        {
+          "rank": 1,
+          "ticker": "403870",
+          "name": "HPSP",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 54700,
+          "entry_range": "54,000 ~ 55,000원",
+          "target_price": 60000,
+          "stop_loss_price": 51000,
+          "reasons": [
+            "외국인 순매수 강세(20,442백만원)로 수급 호조",
+            "DRAM 1d 개발투자 본격화 소식 등 실질적 기술 모멘텀 보유",
+            "5일 수익률 10.51%, 10일 1.48%로 급등 부담 없이 안정적 상승"
+          ],
+          "risk_factors": [
+            "글로벌 반도체 장비 투자 일정 지연 가능성",
+            "단기 과매수 구간 진입으로 차익실현 매물 출회 가능"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "foreign_flow",
+            "avg_trading_value_5d",
+            "return_5d_pct",
+            "return_10d_pct",
+            "top_news_titles",
+            "business_summary"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "외국인 투자자가 사는 흐름이 이어지고 있어요. DRAM 1d 개발투자 본격화 소식 등 실질적 기술 최근 오르는 흐름 보유요.",
+          "plainRisk": "글로벌 반도체 장비 투자 일정 지연 가능성요. 최근 HPSP 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 2,
+          "ticker": "112290",
+          "name": "와이씨켐",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 15020,
+          "entry_range": "14,800 ~ 15,200원",
+          "target_price": 16500,
+          "stop_loss_price": 14200,
+          "reasons": [
+            "유리기판용 포토레지스트 첫 공급으로 신규 성장 동력 확보",
+            "1분기 흑자전환, 포토 소재 매출 확대로 실적 턴어라운드 기대",
+            "외국인 순매수 2,090백만원, 5/10일 수익률 모두 플러스"
+          ],
+          "risk_factors": [
+            "신규 공급 계약의 매출 인식 시점 및 규모 불확실",
+            "소재 시장 경쟁 심화로 마진 압박 가능성"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "foreign_flow",
+            "return_5d_pct",
+            "return_10d_pct",
+            "top_news_titles",
+            "business_summary"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "새 계약·수주 소식이 나와 와이씨켐에 기대감이 붙고 있어요. 최근 실적·이익 쪽 좋은 소식이 나와 와이씨켐에 관심이 붙고 있어요.",
+          "plainRisk": "최근 와이씨켐 주가가 많이 올라, 잠시 숨 고르기가 나올 수 있어요. 소재 시장 경쟁 심화로 마진 압박 가능성요.",
+          "viewGuide": "좋은 소식이 이어지는지 보면서, 주가가 이미 많이 반영됐는지도 함께 체크해보세요."
+        },
+        {
+          "rank": 3,
+          "ticker": "098460",
+          "name": "고영",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 39400,
+          "entry_range": "39,000 ~ 40,000원",
+          "target_price": 43000,
+          "stop_loss_price": 37000,
+          "reasons": [
+            "외국인 대규모 순매수(12,773백만원), 수급 주도주 부각",
+            "반도체/전장 검사장비 수요 회복에 따른 실적 개선 기대",
+            "5일 상승률 8.24%로 단기 과열 없이 꾸준한 매수 유입"
+          ],
+          "risk_factors": [
+            "10일 수익률 소폭 마이너스로 최근 등락 흔적",
+            "뉴스가 주가 상승 기사에 집중되어 단기 재료 소멸 우려"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "foreign_flow",
+            "avg_trading_value_5d",
+            "return_5d_pct",
+            "return_10d_pct",
+            "top_news_titles"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "외국인 투자자가 사는 흐름이 이어지고 있어요. 최근 실적·이익 쪽 좋은 소식이 나와 고영에 관심이 붙고 있어요.",
+          "plainRisk": "10일 수익률 소폭 마이너스로 최근 등락 흔적요. 뉴스가 주가 상승 기사에 집중되어 단기 재료 소멸 우려요.",
+          "viewGuide": "좋은 소식이 이어지는지 보면서, 주가가 이미 많이 반영됐는지도 함께 체크해보세요."
+        },
+        {
+          "rank": 4,
+          "ticker": "074600",
+          "name": "원익QnC",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 38000,
+          "entry_range": "37,500 ~ 38,500원",
+          "target_price": 42000,
+          "stop_loss_price": 36000,
+          "reasons": [
+            "AI 반도체 핵심 소재(쿼츠웨어)로 재평가 전망 다수 보고",
+            "외국인 순매수 1,237백만원, 실적 공시로 투명성 높음",
+            "5일 수익률 +7.19%, 10일 -4.52%로 저점 매수 기회"
+          ],
+          "risk_factors": [
+            "분석 리포트 의존도가 높아 자체 촉매 부족",
+            "반도체 소재 수요 둔화 시 실적 민감도"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "foreign_flow",
+            "top_news_titles",
+            "top_disclosure_titles",
+            "return_5d_pct",
+            "return_10d_pct"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "반도체·메모리 수요 관련 소식이 원익QnC에 우호적으로 작용하고 있어요. 최근 실적·이익 쪽 좋은 소식이 나와 원익QnC에 관심이 붙고 있어요.",
+          "plainRisk": "분석 리포트 의존도가 높아 자체 촉매 부족요. 반도체 소재 수요 둔화 시 실적 민감도요.",
+          "viewGuide": "좋은 소식이 이어지는지 보면서, 주가가 이미 많이 반영됐는지도 함께 체크해보세요."
+        },
+        {
+          "rank": 5,
+          "ticker": "212710",
+          "name": "아이에스티이",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 11420,
+          "entry_range": "11,200 ~ 11,500원",
+          "target_price": 12600,
+          "stop_loss_price": 10700,
+          "reasons": [
+            "1분기 영업이익 74% 급증, 530억원 수주잔고로 실적 가시성",
+            "반도체 장비 및 수소에너지 사업 다각화로 성장 동력 확보",
+            "5일 +7.63%, 10일 +14.43%로 견조한 상승 추세"
+          ],
+          "risk_factors": [
+            "외국인 순매수 규모 1,284백만원으로 수급 강도 낮음",
+            "중소형주 변동성 확대 시 급락 위험"
+          ],
+          "confidence": "medium",
+          "evidence_fields": [
+            "foreign_flow",
+            "top_news_titles",
+            "return_5d_pct",
+            "return_10d_pct",
+            "business_summary"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 아이에스티이에 관심이 붙고 있어요. 반도체·메모리 수요 관련 소식이 아이에스티이에 우호적으로 작용하고 있어요.",
+          "plainRisk": "최근 아이에스티이 주가가 많이 올라, 잠시 숨 고르기가 나올 수 있어요. 아이에스티이 가격이 하루에 크게 흔들릴 수 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        }
+      ],
+      "error": null,
+      "validation_errors": []
+    },
+    {
+      "agent_key": "deepseek_mix",
+      "display_name": "DeepSeek Mix",
+      "perspective": "통합선정형",
+      "provider": "deepseek",
+      "model_id": "deepseek-v4-pro",
+      "recommendations": [
+        {
+          "rank": 1,
+          "ticker": "052900",
+          "name": "KX하이텍",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 2045,
+          "entry_range": "2000~2100",
+          "target_price": 2500,
+          "stop_loss_price": 1850,
+          "reasons": [
+            "SSD 공장 풀가동으로 영업이익 351% 급증",
+            "최근 10거래일 61.66% 상승 등 강한 모멘텀",
+            "AI 반도체 수요 확대에 따른 수혜 기대"
+          ],
+          "risk_factors": [
+            "저가주 변동성 확대 가능성",
+            "급등에 따른 차익실현 매물 출회"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "foreign_flow",
+            "top_news_titles",
+            "business_summary",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 KX하이텍에 관심이 붙고 있어요. 최근 주가가 꽤 올라 KX하이텍을 눈여겨보는 사람이 많아요.",
+          "plainRisk": "KX하이텍 가격이 하루에 크게 흔들릴 수 있어요. 최근 KX하이텍 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 2,
+          "ticker": "125020",
+          "name": "티씨머티리얼즈",
+          "sector_group": "power_technology",
+          "entry_price": 9190,
+          "entry_range": "9000~9300",
+          "target_price": 11000,
+          "stop_loss_price": 8300,
+          "reasons": [
+            "1분기 영업이익 169% 급증 및 매출 1014억 달성",
+            "전력인프라·전장·가전 소재 수요 증가로 실적 개선 지속",
+            "외국인 순매수 지속"
+          ],
+          "risk_factors": [
+            "전방산업 경기 둔화 가능성",
+            "급등 후 단기 숨고르기 진입"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "foreign_flow",
+            "top_news_titles",
+            "business_summary",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 티씨머티리얼즈에 관심이 붙고 있어요. 외국인 투자자가 사는 흐름이 이어지고 있어요.",
+          "plainRisk": "전방산업 경기 둔화 가능성요. 최근 티씨머티리얼즈 주가가 빠르게 올라, 이미 기대가 반영됐을 수 있어요. 추가 소식 없이 오르면 잠깐 팔려 나올 수도 있어요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 3,
+          "ticker": "489500",
+          "name": "엘케이켐",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 39750,
+          "entry_range": "39000~40500",
+          "target_price": 46000,
+          "stop_loss_price": 36000,
+          "reasons": [
+            "1분기 어닝 서프라이즈 및 전년비 매출 79.6% 증가",
+            "'조 단위' 수주 시대 서막으로 장기 성장 동력 확보",
+            "반도체 박막 증착 소재 전문기업으로 AI·HBM 확대 수혜"
+          ],
+          "risk_factors": [
+            "신규 상장주로서 유동성 변동성",
+            "조 단위 수주가 실제 매출로 이어지기까지 시간 필요"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "foreign_flow",
+            "top_news_titles",
+            "business_summary",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 엘케이켐에 관심이 붙고 있어요. 새 계약·수주 소식이 나와 엘케이켐에 기대감이 붙고 있어요.",
+          "plainRisk": "엘케이켐 가격이 하루에 크게 흔들릴 수 있어요. 조 단위 수주가 실제 매출로 이어지기까지 시간 필요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 4,
+          "ticker": "252990",
+          "name": "샘씨엔에스",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 14940,
+          "entry_range": "14700~15200",
+          "target_price": 17500,
+          "stop_loss_price": 13500,
+          "reasons": [
+            "1Q 어닝 서프라이즈 및 연매출 1000억원 가시화",
+            "프로브카드 핵심 밸류체인으로 증권사 리레이팅 기대",
+            "외국인 강력 순매수(8791억)"
+          ],
+          "risk_factors": [
+            "반도체 후공정 투자 사이클 변동",
+            "경쟁 심화 가능성"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "foreign_flow",
+            "top_news_titles",
+            "business_summary",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "최근 실적·이익 쪽 좋은 소식이 나와 샘씨엔에스에 관심이 붙고 있어요. 프로브카드 핵심 밸류체인으로 증권사 주가 평가가 다시 매겨지는 흐름 기대요.",
+          "plainRisk": "샘씨엔에스 가격이 하루에 크게 흔들릴 수 있어요. 경쟁 심화 가능성요.",
+          "viewGuide": "관심 종목으로 보되, 장 초반에 급하게 오르면 바로 따라 사기보다 가격이 잠시 안정되는지 확인해보세요."
+        },
+        {
+          "rank": 5,
+          "ticker": "204270",
+          "name": "제이앤티씨",
+          "sector_group": "ai_semiconductor_material_equipment",
+          "entry_price": 21400,
+          "entry_range": "21000~21800",
+          "target_price": 25000,
+          "stop_loss_price": 19500,
+          "reasons": [
+            "유리 플랫폼 기업으로 진화 중 및 XR 모멘텀 확보",
+            "북미 공급망 진입 가시화",
+            "외국인 순매수로 긍정적 수급"
+          ],
+          "risk_factors": [
+            "신사업(유리기판) 초기 단계 불확실성",
+            "북미 매출 본격화 지연 가능성"
+          ],
+          "confidence": "high",
+          "evidence_fields": [
+            "return_5d_pct",
+            "return_10d_pct",
+            "foreign_flow",
+            "top_news_titles",
+            "business_summary",
+            "avg_trading_value_5d"
+          ],
+          "missing_data_memo": "기관 수급 미수집",
+          "plainReason": "유리 플랫폼 기업으로 진화 중 및 XR 최근 오르는 흐름 확보요. 새 계약·수주 소식이 나와 제이앤티씨에 기대감이 붙고 있어요.",
+          "plainRisk": "신사업(유리기판) 초기 단계 불확실성요. 북미 매출 본격화 지연 가능성요.",
+          "viewGuide": "좋은 소식이 이어지는지 보면서, 주가가 이미 많이 반영됐는지도 함께 체크해보세요."
+        }
+      ],
+      "error": null,
+      "validation_errors": []
+    }
+  ],
+  "grok_validation": [
+    {
+      "ticker": "489500",
+      "name": "엘케이켐",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "2026년 5월 18일 1분기 실적 발표: 매출 61억원(+79.6% YoY), 영업이익 11억원(+130.7%), 당기순이익 13억원(+207.4%). 5월 14일 유피케미칼과 반도체 소재(DIS) 연간 공급계약 212억원 체결(최근 매출 대비 105%).",
+      "positive_signals": [
+        "강한 1분기 실적 성장",
+        "대형 장기 공급계약으로 수주 가시성 확보"
+      ],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "뉴시스, 뉴스핌 등 주요 미디어 실적·공시 보도",
+        "DART 공시 기반 계약 확인"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "125020",
+      "name": "티씨머티리얼즈",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "1Q 실적(매출 +49.3%, 영업이익 +169.4%) 공시 후 전력인프라(변압기 CTC·초고압 케이블) 수요 회복 테마로 주가 상승, 최근 52주 신고가 경신. X상 공식 계정(언론·증권사·IR) 다수 확인된 내용 없음.",
+      "positive_signals": [
+        "1Q 개별 실적 대폭 개선(매출 1014억, OP 64억)",
+        "전력인프라 부문 매출 +73.5%",
+        "52주 신고가 경신"
+      ],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "5월 14일 실적 공시",
+        "5월 22일 52주 신고가 관련 뉴스",
+        "전력인프라 테마 언급"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 2,
+        "x_search_calls": 1,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "252990",
+      "name": "샘씨엔에스",
+      "status": "completed",
+      "validation_label": "no_extra_signal",
+      "summary": "X에서 공식 계정(언론사·증권사·IR) 언급 부족. 개인·주식 특화 계정 중심 게시물로 규칙상 반영 불가. 실적 분석 등 언급 있으나 신뢰 계정 중복 확인 안 됨.",
+      "positive_signals": [],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 1,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "089030",
+      "name": "테크윙",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "테크윙, 삼성전자 HBM 검사장비 97억원 규모 공급계약 체결 및 1분기 영업이익 전년비 444% 급증 등 긍정적 실적·수주 이슈 확인. 부동산 처분 공시는 자산 효율화 목적으로 단기 주가 영향 제한적.",
+      "positive_signals": [
+        "삼성전자 HBM 검사장비 공급계약 (97.2억원, 매출액 대비 6.11%)",
+        "1Q 영업이익 97억원 (전년비 +444%)",
+        "큐브 프로버 등 HBM 테스트 장비 성장 기대"
+      ],
+      "warning_signals": [
+        "화성 부동산 595억원 처분 공시 (자산 효율화 목적)"
+      ],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "Naver Finance, Investing.com, Thinkpool 등 증권·뉴스 사이트 공시·실적 보도 (2026년 5월 기준)",
+        "X(트위터) 공식·신뢰 계정 언급 데이터 불충분"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 2,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "212710",
+      "name": "아이에스티이",
+      "status": "completed",
+      "validation_label": "no_extra_signal",
+      "summary": "최근 뉴스에서 SK하이닉스·앰코테크놀로지코리아 등으로부터 FOUP Cleaner·복합장비 수주 공시(2026년 2~5월경). 2025년 실적 매출 감소·적자 지속이나 수주 잔고 기반 2026년 턴어라운드 기대 언급. X상 언급 극소수(개인 매매 언급 1~2건), 공식 계정·반복 신뢰 정보 없음.",
+      "positive_signals": [
+        "SK하이닉스·앰코 수주 공시(장비 판매 계약)"
+      ],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "한국경제·내외경제TV 등 수주 공시 보도",
+        "씽크풀·한경 등 실적·수주 관련 언급"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "052900",
+      "name": "KX하이텍",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "2026년 1분기 실적 발표(매출 +35.8%, 영업이익 +351.3%)로 반도체 수퍼사이클 및 SSD 수요 확대 수혜 확인. 최근 주가 급등(기관·외국인 순매수 동반) 관찰.",
+      "positive_signals": [
+        "1Q26 실적 대폭 개선 (매출 357억, OP 74.9억)",
+        "반도체·SSD 관련 수요 증가 언급 (회사 IR 및 다수 증권 미디어 보도)"
+      ],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "KX이노베이션 회사 공시 및 IR 자료 (2026.05.18)",
+        "조선비즈·뉴스핌 등 증권 미디어 실시간 보도 (최근 1~2일)"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 2,
+        "x_search_calls": 3,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "147760",
+      "name": "피엠티",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "피엠티(147760)는 삼성차이나세미컨덕터와 반도체 검사장치(PROBE CARD) 65.52억원 규모 단일 공급계약 체결 공시(2026.5.19~8.13, 중국 공급). 최근 매출 대비 약 26% 규모로, 주가 급등 및 VI 발동(예: +9.93% 등) 동반. X(트위터) 신뢰 계정(언론·IR) 언급 데이터 부족.",
+      "positive_signals": [
+        "삼성 중국법인 프로브카드 공급계약 공시 (다수 언론 보도)",
+        "계약 규모 최근 매출 25.91% 수준"
+      ],
+      "warning_signals": [
+        "단기 주가 급등 및 다수 VI 발동으로 변동성 확대"
+      ],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "edaily, digitaltoday, bloter, nate 등 다수 미디어 계약 보도 (2026.5.20~21경)",
+        "조선비즈 VI 발동 보도"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 3,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "064290",
+      "name": "인텍플러스",
+      "status": "completed",
+      "validation_label": "no_extra_signal",
+      "summary": "X(트위터)에서 인텍플러스(064290) 관련 공식 계정(언론·증권사·IR) 언급 거의 없음. 트레이더 요약 게시물과 일반 계정에서 반도체 검사장비 테마로 주가 급등 언급되나 반복·신뢰 계정 다수 확인 어려움. 유안타증권 등 증권사 리포트(5월 8일경)는 웹 뉴스에서 확인되나 X 확산 미미.",
+      "positive_signals": [],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "웹: 유안타증권 리포트 '어차피 마지막은 검사!' (5/8/2026경, CoWoS·FC-BGA 등 검사장비 포트폴리오 확장 언급)",
+        "웹: LS증권 리포트 (2025.8, 고객사 회복 기대)",
+        "X: @datatooza 등 데이터 계정에서 리포트 공유 1건",
+        "X: 트레이더 요약 (@samseongdo1004 등)에서 반도체 소부장 강세 종목으로 1~2건 언급 (5/21~22)"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 2,
+        "x_search_calls": 3,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "036540",
+      "name": "SFA반도체",
+      "status": "completed",
+      "validation_label": "no_extra_signal",
+      "summary": "최근 반도체 섹터 강세(메모리·AI 수요) 속 SFA반도체 주가 급등(5/21~22일 +14~18%대). 5/15 Q1 실적: 매출 1,073억(+43% YoY)이나 영업적자 지속(-618억). X상 공식 계정(언론·IR) 언급 거의 없고, 개인 트레이더 중심의 일반 섹터 언급만 다수. 특정 신규 호재·루머 확인 안 됨.",
+      "positive_signals": [],
+      "warning_signals": [
+        "Q1 영업적자 지속",
+        "주가 단기 급등 후 변동성"
+      ],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "네이버증권·Fn뉴스 등 시장체크(5/22 섹터 강세 언급)",
+        "씽크풀·이데일리 등 Q1 실적 보도(5/15)"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "417840",
+      "name": "저스템",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "저스템(417840)은 2026년 5월 13-14일 1분기 역대 최대 실적 발표(매출 176.9억원 YoY +67%, 영업이익 40.7억원 YoY +147%)와 5월 18일 한국산업은행으로부터 반도체 정책자금 300억원 유치(제3공장 건설 가속화, 초저금리·10년 상환 조건)를 공시·보도. 반도체 습도제어 솔루션 경쟁력 및 삼성전자·SK하이닉스 공급 확대 기대감 반영.",
+      "positive_signals": [
+        "1분기 사상 최대 실적 (매출·영업이익 대폭 증가, 다수 공시·뉴스 보도)",
+        "산업은행 반도체 정책자금 300억원 유치 (제3공장 투자, 다수 신뢰 언론 보도)"
+      ],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "THELEC, 디지털데일리, IT조선 등 1분기 실적 관련 보도 (5월 13-14일)",
+        "서울경제, 디지털데일리, THELEC 등 300억 정책자금 유치 보도 (5월 18일경)",
+        "네이버증권·다음 등 종합 뉴스 집계"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 4,
+        "x_search_calls": 1,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "403870",
+      "name": "HPSP",
+      "status": "completed",
+      "validation_label": "no_extra_signal",
+      "summary": "최근 Macquarie의 Outperform 유지 및 목표가 70,000원 제시(5/18) 등 증권사 분석은 긍정적이나, X상 공식 계정·신뢰 계정 다수 언급된 실시간 반응이나 신규 이슈 확인되지 않음. X 데이터 불충분.",
+      "positive_signals": [],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "Macquarie analyst note (May 18, 2026)",
+        "Stock price movement reports (Investing.com, Yahoo Finance)",
+        "Company notices (thehpsp.com)"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "112290",
+      "name": "와이씨켐",
+      "status": "completed",
+      "validation_label": "no_extra_signal",
+      "summary": "X 데이터 불충분",
+      "positive_signals": [],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 1,
+        "x_search_calls": 3,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "098460",
+      "name": "고영",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "고영테크놀러지, 2026년 5월 13~14일 자기주식 45만542주(약 191억원 규모) 소각 결정 공시. 개정상법 따른 이익소각으로 주주가치 제고 목적. 잔여 자사주는 신사업 투자 재원 확보용 처분 예정. 다수 언론 보도 확인.",
+      "positive_signals": [
+        "공식 공시 기반 자사주 소각 결정 (주주가치 제고)",
+        "여러 신뢰 언론사(조선비즈, 디일렉, 뉴시스 등)에서 동일 내용 보도"
+      ],
+      "warning_signals": [
+        "소각 발표 후 초기 주가 하락 또는 혼조세 관측 (시장 반응 제한적)"
+      ],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "네이버증권/이데일리 공시 뉴스 (5월 13~14일)",
+        "조선비즈, THE ELEC, 디지털투데이 등 보도 (5월 14일경)",
+        "X: 개인 트레이더 중심 언급, 공식 계정 대량 확산 미확인 → X 데이터 제한적 반영"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "074600",
+      "name": "원익QnC",
+      "status": "completed",
+      "validation_label": "caution",
+      "summary": "2026년 1분기 실적 발표: 매출 2,562억원(+10.7% YoY), 영업이익 219억원(+14.6% YoY)으로 성장했으나 컨센서스(약 241억원) 소폭 미스. 순이익은 144억원(-6.1% YoY). 쿼츠 부문 성장세 확인되나 MT Holding(자회사) 회복 지연이 주요 원인으로 분석됨. X상 공식 계정(언론·증권사·IR) 다수 동시 언급 없음.",
+      "positive_signals": [
+        "1Q 매출·영업이익 전년 대비 증가",
+        "반도체 쿼츠 소모성 부품 수요 확대 언급 (북미·대만 고객사)"
+      ],
+      "warning_signals": [
+        "영업이익 컨센서스 미스",
+        "MT Holding 수익성 회복 속도 지연",
+        "TTM 순이익 변동성(자회사 손실 영향)"
+      ],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "연합뉴스(2026.5.11) 1Q 실적 공시 요약",
+        "Investing.com/애널리스트 리포트(목표가 41,000~60,000원 매수 의견)",
+        "X: 개별 투자자/분석 계정 1~2건 상세 분석 외 공식 다수 확인 불가"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 2,
+        "x_search_calls": 1,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    },
+    {
+      "ticker": "204270",
+      "name": "제이앤티씨",
+      "status": "completed",
+      "validation_label": "positive_support",
+      "summary": "AI 유리기판(TGV)·HDD 유리플래터 양산 본격화 및 4000억 매출 기대 관련 스몰인사이트리서치 등 긍정 리서치 다수. X상 공식·신뢰 계정 반복 언급 부족으로 X 데이터 불충분.",
+      "positive_signals": [
+        "스몰인사이트리서치 \"AI 유리기판·HDD 양산 본격화...4000억 매출 기대\" (2026.05.10~11)",
+        "HDD 유리플래터 글로벌 Top Tier 제조사 첫 출하 및 양산 준비 (회사 IR)",
+        "데이터센터 HDD 수요 확대 배경 기술 설명"
+      ],
+      "warning_signals": [],
+      "checked_at": "2026-05-22T20:45:58+09:00",
+      "sources_summary": [
+        "스몰인사이트리서치 보고서",
+        "제이앤티씨 IR/공시",
+        "네이버증권·다음금융 뉴스"
+      ],
+      "grok_meta": {
+        "mode": "grok+web+x_search",
+        "model": "grok-4.3",
+        "web_search_enabled": true,
+        "x_search_enabled": true,
+        "web_search_calls": 3,
+        "x_search_calls": 2,
+        "web_search_used": true,
+        "x_search_used": true
+      }
+    }
+  ],
+  "pipeline_errors": [],
+  "provider_audit": {
+    "agents": [
+      {
+        "agent_key": "gemini_pro_conviction",
+        "provider": "gemini",
+        "model_id": "gemini-3.1-pro-preview",
+        "ready": true,
+        "error": null
+      },
+      {
+        "agent_key": "gemini_25_momentum",
+        "provider": "gemini",
+        "model_id": "gemini-2.5-flash-lite",
+        "ready": true,
+        "error": null
+      },
+      {
+        "agent_key": "deepseek_balance",
+        "provider": "deepseek",
+        "model_id": "deepseek-v4-pro",
+        "ready": true,
+        "error": null
+      },
+      {
+        "agent_key": "deepseek_mix",
+        "provider": "deepseek",
+        "model_id": "deepseek-v4-pro",
+        "ready": true,
+        "error": null
+      }
+    ],
+    "grok": {
+      "agent_key": "grok_issue_validator",
+      "model_id": "grok-4.3",
+      "ready": true,
+      "error": null
+    }
+  },
+  "ai_executed": true
+}
