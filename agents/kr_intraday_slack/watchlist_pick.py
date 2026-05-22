@@ -18,7 +18,10 @@ def _score_row(
 ) -> float | None:
     if not row.get("data_complete"):
         return None
-    vol = float(row.get("volume_ratio") or 0)
+    vol = float(row.get("volume_ratio_20d") or row.get("volume_ratio") or 0)
+    tv_r = float(row.get("trading_value_ratio_20d") or 0)
+    if tv_r > 0 and tv_r < 0.85:
+        return None
     foreign = float(row.get("foreign_net_eok") or 0)
     inst = float(row.get("inst_net_eok") or 0)
     current = float(row.get("current_price") or 0)

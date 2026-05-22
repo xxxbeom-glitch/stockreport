@@ -80,6 +80,8 @@ def run_intraday_scan(
     tickers: list[str] | None = None,
     max_messages: int | None = None,
     send_empty_summary: bool = False,
+    include_temp_watch: bool = False,
+    use_morning_slack_format: bool = False,
 ) -> IntradayScanResult:
     """
     시간대별 관심종목 스캔.
@@ -88,7 +90,7 @@ def run_intraday_scan(
     3) SendFilter → 종목별 Gemini polish → 메인 요약 + 섹터별 쓰레드
     """
     if slot not in SCAN_SLOTS:
-        raise ValueError(f"Unknown slot: {slot}. Use one of {list(SCAN_SLOTS)}")
+        raise ValueError(f"Unknown slot: {slot}. Use one of {list(SCAN_SLOTS.keys())}")
 
     clock, label = SCAN_SLOTS[slot]
     ai_enabled = is_ai_configured()
@@ -104,6 +106,7 @@ def run_intraday_scan(
         slot=slot,
         live=live,
         tickers=tickers,
+        include_temp_watch=include_temp_watch,
     )
     try:
         from utils.safe_stdio import ensure_stdio
@@ -134,6 +137,10 @@ def run_intraday_scan(
         logger.info("[KR INTRADAY] %s", ai_errors[0])
     else:
         picks = [enrich_intraday_entry(p, slot=slot) for p in picks]
+        if use_morning_slack_format:
+            from agents.market_metrics.quant_filter_morning import passes_morning_quant_filter
+
+            picks = [p for p in picks if passes_morning_quant_filter(p)[0]]
         evaluated, ai_errors = run_ai_judgments(picks, mood, slot=slot)
         if ai_errors and not evaluated:
             logger.error("[KR INTRADAY] LLM 판단 실패: %s", "; ".join(ai_errors))
@@ -198,13 +205,23 @@ def run_intraday_scan(
 
             bundle = None
             if polished_rows or pass_rows:
-                bundle = build_intraday_slack_thread_bundle(
-                    polished_rows,
-                    slot=slot,
-                    allow_empty=False,
-                    pass_rows=pass_rows,
-                    evaluated=evaluated,
-                )
+                if use_morning_slack_format:
+                    from agents.morning_buy.slack_message import build_morning_buy_slack
+
+                    main_message = build_morning_buy_slack(
+                        slot=slot,
+                        send_rows=polished_rows,
+                        scanned=len(stocks),
+                    )
+                    bundle = {"main": main_message, "threads": []} if main_message else None
+                else:
+                    bundle = build_intraday_slack_thread_bundle(
+                        polished_rows,
+                        slot=slot,
+                        allow_empty=False,
+                        pass_rows=pass_rows,
+                        evaluated=evaluated,
+                    )
             if bundle is not None:
                 if not bundle.get("main"):
                     ai_errors.append("슬랙 메인·쓰레드 메시지 생성 실패")
@@ -231,11 +248,19 @@ def run_intraday_scan(
         and ai_enabled
     ):
         qualified = len(send_rows)
-        main_message = compose_daily_pick_zero_message(
-            slot=slot,
-            scanned=len(stocks),
-            qualified_count=qualified,
-        )
+        if use_morning_slack_format:
+            from agents.morning_buy.slack_message import build_morning_buy_empty_slack
+
+            main_message = build_morning_buy_empty_slack(
+                slot=slot,
+                scanned=len(stocks),
+            )
+        else:
+            main_message = compose_daily_pick_zero_message(
+                slot=slot,
+                scanned=len(stocks),
+                qualified_count=qualified,
+            )
         if main_message:
             messages = [main_message]
             zero_pick_notice = True

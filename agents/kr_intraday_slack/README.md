@@ -32,7 +32,7 @@ python scripts/run_kr_intraday_slack.py --slot 1350 --live --send
 
 ```env
 AI_PROVIDER=deepseek
-AI_MODEL=deepseek-chat
+AI_MODEL=deepseek-v4-pro
 DEEPSEEK_API_KEY=...
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 ```
@@ -46,7 +46,7 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 
 ```env
 AI_SOCIAL_PROVIDER=grok
-AI_SOCIAL_MODEL=grok-3
+AI_SOCIAL_MODEL=grok-4.3
 GROK_API_KEY=
 ```
 
@@ -58,7 +58,7 @@ GROK_API_KEY=
 
 ```env
 AI_SUMMARY_PROVIDER=gemini
-AI_SUMMARY_MODEL=gemini-1.5-flash
+AI_SUMMARY_MODEL=gemini-3.1-pro-preview
 GEMINI_API_KEY=
 ```
 

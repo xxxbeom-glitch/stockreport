@@ -54,7 +54,8 @@ def _dummy_row(entry: dict[str, Any], slot: str) -> dict[str, Any]:
         "high_52w_fmt": _fmt_won(high_52),
         "pullback_from_high_pct": round(pullback, 2),
         "volume_ratio": round(vol_ratio, 2),
-        "trading_value_vs_3m": round(vol_ratio * 0.9, 2),
+        "volume_ratio_20d": round(vol_ratio, 2),
+        "trading_value_ratio_20d": round(vol_ratio * 0.95, 2),
         "foreign_net_eok": foreign_eok,
         "inst_net_eok": inst_eok,
         "target_price": int(base * 1.1),
@@ -76,7 +77,11 @@ def _normalize_live_row(row: dict[str, Any]) -> dict[str, Any]:
         out["inst_net_eok"] = 0
     out.setdefault("news_headline", "")
     out.setdefault("volume_ratio", 0.0)
-    out.setdefault("trading_value_vs_3m", out.get("volume_ratio"))
+    out.setdefault("volume_ratio_20d", out.get("volume_ratio"))
+    out.setdefault(
+        "trading_value_ratio_20d",
+        out.get("trading_value_ratio_20d") or out.get("volume_ratio"),
+    )
     return out
 
 

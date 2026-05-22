@@ -10,6 +10,13 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from agents.ai import model_config
+from agents.ai.model_config import (
+    DEEPSEEK_MODEL_ID,
+    GEMINI_MODEL_ID,
+    GROK_MODEL_ID,
+)
+
 load_dotenv()
 
 logger = logging.getLogger("kr_intraday.llm")
@@ -27,16 +34,33 @@ _DEEPSEEK_SYSTEM = """당신은 한국 주식 장중 관심종목 분석가입�
 금지 표현: 무조건 매수, 지금 사세요, 이 가격에 사세요, 급등 따라가세요, 테스트, 드라이런, 검증"""
 
 
+def _resolve_primary_model() -> str:
+    raw = os.getenv("DEEPSEEK_MODEL", "").strip()
+    if raw and raw not in model_config.FORBIDDEN_MODEL_IDS:
+        return raw
+    return DEEPSEEK_MODEL_ID
+
+
+def _resolve_social_model() -> str:
+    raw = os.getenv("GROK_MODEL", "").strip() or os.getenv("GROK_VOTE_MODEL", "").strip()
+    if raw and raw not in model_config.FORBIDDEN_MODEL_IDS:
+        return raw
+    return GROK_MODEL_ID
+
+
+def _resolve_summary_model() -> str:
+    raw = os.getenv("GEMINI_SUMMARY_MODEL", "").strip() or os.getenv("GEMINI_PRO_MODEL", "").strip()
+    if raw and raw not in model_config.FORBIDDEN_MODEL_IDS:
+        return raw
+    return GEMINI_MODEL_ID
+
+
 def primary_config() -> dict[str, str]:
     """DeepSeek 1차 판단."""
     return {
         "role": "primary",
         "provider": os.getenv("AI_PROVIDER", "deepseek").strip().lower(),
-        "model": (
-            os.getenv("AI_MODEL", "").strip()
-            or os.getenv("DEEPSEEK_MODEL", "").strip()
-            or "deepseek-chat"
-        ),
+        "model": _resolve_primary_model(),
         "api_key": os.getenv("DEEPSEEK_API_KEY", "").strip(),
         "base_url": os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").strip(),
     }
@@ -47,11 +71,7 @@ def social_config() -> dict[str, str]:
     return {
         "role": "social",
         "provider": os.getenv("AI_SOCIAL_PROVIDER", "grok").strip().lower(),
-        "model": (
-            os.getenv("AI_SOCIAL_MODEL", "").strip()
-            or os.getenv("GROK_MODEL", "").strip()
-            or "grok-3"
-        ),
+        "model": _resolve_social_model(),
         "api_key": os.getenv("GROK_API_KEY", "").strip(),
         "base_url": os.getenv("GROK_BASE_URL", "https://api.x.ai/v1").strip(),
     }
@@ -62,11 +82,7 @@ def summary_config() -> dict[str, str]:
     return {
         "role": "summary",
         "provider": os.getenv("AI_SUMMARY_PROVIDER", "gemini").strip().lower(),
-        "model": (
-            os.getenv("AI_SUMMARY_MODEL", "").strip()
-            or os.getenv("GEMINI_SUMMARY_MODEL", "").strip()
-            or "gemini-1.5-flash"
-        ),
+        "model": _resolve_summary_model(),
         "api_key": os.getenv("GEMINI_API_KEY", "").strip(),
     }
 

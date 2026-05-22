@@ -13,6 +13,20 @@ import config
 from utils.helpers import safe_json_parse
 
 GROK_X_SEARCH_TOOL: list[dict[str, str]] = [{"type": "x_search"}]
+GROK_WEB_X_SEARCH_TOOLS: list[dict[str, str]] = [
+    {"type": "web_search"},
+    {"type": "x_search"},
+]
+
+
+def _tool_usage_details(response: Any) -> dict[str, int]:
+    usage = getattr(response, "usage", None)
+    if not usage:
+        return {}
+    details = getattr(usage, "server_side_tool_usage_details", None)
+    if isinstance(details, dict):
+        return {k: int(v or 0) for k, v in details.items()}
+    return {}
 
 X_SEARCH_NOISE_RULES: str = """
 X(트위터) 데이터 분석 시 반드시 지켜야 할 규칙:
@@ -30,13 +44,71 @@ def with_x_search_rules(prompt: str) -> str:
 
 
 def _x_search_calls(response: Any) -> int:
-    usage = getattr(response, "usage", None)
-    if not usage:
-        return 0
-    details = getattr(usage, "server_side_tool_usage_details", None)
-    if isinstance(details, dict):
-        return int(details.get("x_search_calls", 0) or 0)
-    return 0
+    return int(_tool_usage_details(response).get("x_search_calls", 0) or 0)
+
+
+def _web_search_calls(response: Any) -> int:
+    return int(_tool_usage_details(response).get("web_search_calls", 0) or 0)
+
+
+def grok_with_web_and_x_search(
+    prompt: str,
+    *,
+    agent: str,
+    logger: Any = None,
+    max_output_tokens: int = 1200,
+    model: str | None = None,
+) -> tuple[str | None, dict[str, Any]]:
+    """Grok with web_search + x_search (최신 뉴스·X 반응)."""
+    if not config.GROK_API_KEY:
+        return None, {
+            "mode": "disabled",
+            "web_search_enabled": False,
+            "x_search_enabled": False,
+            "model": model or config.GROK_MODEL,
+        }
+
+    model_name = model or config.GROK_MODEL
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=config.GROK_API_KEY, base_url=config.GROK_BASE_URL)
+        response = client.responses.create(
+            model=model_name,
+            input=[{"role": "user", "content": prompt}],
+            tools=GROK_WEB_X_SEARCH_TOOLS,
+            max_output_tokens=max_output_tokens,
+        )
+        text = (getattr(response, "output_text", None) or "").strip()
+        web_calls = _web_search_calls(response)
+        x_calls = _x_search_calls(response)
+        meta: dict[str, Any] = {
+            "mode": "grok+web+x_search",
+            "model": model_name,
+            "web_search_enabled": True,
+            "x_search_enabled": True,
+            "web_search_calls": web_calls,
+            "x_search_calls": x_calls,
+            "web_search_used": web_calls > 0,
+            "x_search_used": x_calls > 0,
+        }
+        if logger and getattr(response, "usage", None):
+            usage = response.usage
+            logger.log(
+                model_name,
+                agent,
+                input_tokens=int(getattr(usage, "input_tokens", 0) or 0),
+                output_tokens=int(getattr(usage, "output_tokens", 0) or 0),
+            )
+        return text or None, meta
+    except Exception as exc:
+        return None, {
+            "mode": "error",
+            "model": model_name,
+            "web_search_enabled": False,
+            "x_search_enabled": False,
+            "error": str(exc),
+        }
 
 
 def grok_with_x_search(

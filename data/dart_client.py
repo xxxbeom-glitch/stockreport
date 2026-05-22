@@ -172,9 +172,11 @@ def fetch_disclosure_items(
     for row in items[:max_items]:
         if not isinstance(row, dict):
             continue
+        rcept_no = str(row.get("rcept_no", "")).strip()
         out.append(
             {
                 "report_nm": str(row.get("report_nm", "")).strip(),
+                "rcept_no": rcept_no,
                 "rcept_dt": str(row.get("rcept_dt", "")).strip(),
                 "flr_nm": str(row.get("flr_nm", "")).strip(),
                 "corp_name": str(row.get("corp_name", "")).strip(),

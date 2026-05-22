@@ -177,6 +177,27 @@ def _volume_ratio(ticker: str) -> tuple[float | None, str | None]:
         return None, f"거래량비율 예외: {exc}"
 
 
+def _trading_value_ratio_20d(ticker: str, market: str) -> tuple[float | None, str | None]:
+    try:
+        from pykrx import stock as pykrx_stock  # type: ignore
+
+        from agents.market_metrics.ohlcv_ratios import ratios_from_ohlcv_rows
+        from agents.weekly_watchlist_update.weekly_metrics import _ohlcv_frame_to_rows
+
+        date = _trading_date()
+        code = ticker.zfill(6)
+        dt = datetime.strptime(date, "%Y%m%d")
+        start = (dt - timedelta(days=60)).strftime("%Y%m%d")
+        frame = pykrx_stock.get_market_ohlcv_by_date(start, date, code)
+        rows = _ohlcv_frame_to_rows(frame)
+        ratios = ratios_from_ohlcv_rows(rows)
+        if not ratios:
+            return None, "pykrx 거래대금비율(20일): 계산 불가"
+        return float(ratios["trading_value_ratio_20d"]), None
+    except Exception as exc:
+        return None, f"거래대금비율 예외: {exc}"
+
+
 def _investor_flow(ticker: str, market: str) -> tuple[int | None, int | None, list[str]]:
     """외국인·기관 순매수 (억 원 정수, 실패 시 None + 로그)."""
     warnings: list[str] = []
@@ -271,8 +292,15 @@ def fetch_live_watchlist_row(entry: dict[str, Any]) -> dict[str, Any]:
     vol_ratio, vol_err = _volume_ratio(ticker)
     if vol_ratio is not None:
         merged["volume_ratio"] = vol_ratio
+        merged["volume_ratio_20d"] = vol_ratio
     if vol_err:
         all_errors.append(vol_err)
+
+    tv_ratio, tv_err = _trading_value_ratio_20d(ticker, market)
+    if tv_ratio is not None:
+        merged["trading_value_ratio_20d"] = tv_ratio
+    if tv_err:
+        all_errors.append(tv_err)
 
     foreign_eok, inst_eok, flow_warn = _investor_flow(ticker, market)
     for w in flow_warn:
@@ -310,7 +338,6 @@ def fetch_live_watchlist_row(entry: dict[str, Any]) -> dict[str, Any]:
         merged["target_price"] = int(prev * 1.05)
         merged["target_price_fmt"] = _fmt_won(merged["target_price"])
 
-    merged["trading_value_vs_3m"] = merged.get("volume_ratio")
     merged["data_complete"] = len(missing) == 0
     merged["fetch_errors"] = all_errors
 

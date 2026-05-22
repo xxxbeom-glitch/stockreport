@@ -117,12 +117,37 @@ def scan_one_sector(
         return base
 
 
+def scan_temp_watch_bucket(
+    *,
+    slot: str,
+    live: bool,
+    allow_tickers: set[str] | None,
+) -> SectorScanResult | None:
+    """임시 관찰 후보 (kr_watchlist 미수정)."""
+    try:
+        from data.candidates.temporary_watch import temp_candidates_as_watchlist_entries
+    except ImportError:
+        return None
+    entries = temp_candidates_as_watchlist_entries()
+    if allow_tickers is not None:
+        entries = [e for e in entries if str(e.get("ticker", "")).zfill(6) in allow_tickers]
+    if not entries:
+        return None
+    meta = {
+        "sector_key": "temp_watch",
+        "sector_name": "임시 관찰",
+        "order": 99,
+    }
+    return scan_one_sector(meta, slot=slot, live=live, allow_tickers=allow_tickers)
+
+
 def run_sector_scan_parallel(
     *,
     slot: str,
     live: bool = False,
     tickers: list[str] | None = None,
     max_workers: int = _PARALLEL_WORKERS,
+    include_temp_watch: bool = False,
 ) -> list[SectorScanResult]:
     """관심 5섹터 병렬 스캔."""
     allow = {str(t).zfill(6) for t in tickers} if tickers else None
@@ -156,6 +181,13 @@ def run_sector_scan_parallel(
                         error=f"데이터 수집 실패: {exc}",
                     )
                 )
+
+    if include_temp_watch:
+        temp_res = scan_temp_watch_bucket(
+            slot=slot, live=live, allow_tickers=allow
+        )
+        if temp_res is not None:
+            results.append(temp_res)
 
     results.sort(key=lambda r: r.sector_order)
     try:

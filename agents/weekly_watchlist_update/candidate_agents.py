@@ -48,7 +48,17 @@ def vote_price_agent(candidate: dict[str, Any], metrics: dict[str, Any]) -> dict
 
 
 def vote_volume_agent(candidate: dict[str, Any], metrics: dict[str, Any]) -> dict[str, str]:
-    if metrics.get("tv_increase") or candidate.get("tv_increase"):
+    tv_r = float(
+        metrics.get("trading_value_ratio_20d")
+        or candidate.get("trading_value_ratio_20d")
+        or 0
+    )
+    vol_r = float(
+        metrics.get("volume_ratio_20d") or candidate.get("volume_ratio_20d") or 0
+    )
+    if tv_r >= 1.05 and vol_r >= 1.0:
+        return _vote_record("approve", "거래량·거래대금이 20일 평균 대비 늘었습니다.")
+    if metrics.get("tv_increase") or candidate.get("tv_increase") or tv_r >= 1.0:
         return _vote_record("approve", "거래가 평소보다 늘었습니다.")
     latest = float(metrics.get("latest_trading_value") or 0)
     if latest >= 1_000_000_000:

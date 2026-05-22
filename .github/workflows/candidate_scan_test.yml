@@ -1,5 +1,5 @@
-# 신규 후보 스캔 테스트 — 후보군에서 새 종목 탐색 (제안 JSON만, watchlist 미반영)
-name: 신규 후보 스캔 테스트
+# 수동 테스트 — 내일 볼 종목 알림 dry-run (자동 스케줄 없음)
+name: 내일 볼 종목 알림 (수동 테스트)
 
 on:
   workflow_dispatch:
@@ -55,9 +55,8 @@ jobs:
         run: |
           set -euo pipefail
           ARGS=(
-            python scripts/run_candidate_scan_test.py
+            python scripts/run_tomorrow_watch_alert.py
             --scan-count "${{ inputs.scan_count }}"
-            --trend-days "${{ inputs.trend_days }}"
           )
           if [ "${{ inputs.use_live_data }}" = "true" ]; then
             ARGS+=(--live-data)

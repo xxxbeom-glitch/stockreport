@@ -258,29 +258,31 @@ def _news_dart_flags(
 
 
 def _metrics_from_ohlcv(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
-    if len(rows) < 5:
+    from agents.market_metrics.ohlcv_ratios import ratios_from_ohlcv_rows
+
+    ratios = ratios_from_ohlcv_rows(rows)
+    if not ratios:
         return None
     tail = rows[-5:]
     closes = [float(r["close"]) for r in tail if float(r.get("close") or 0) > 0]
     if len(closes) < 2:
         return None
-    tvs = [float(r.get("trading_value") or 0) for r in tail]
     highs = [float(r.get("high") or r.get("close") or 0) for r in rows[-20:]]
     current = closes[-1]
-    start = closes[0]
-    return_5d = ((current / start) - 1.0) * 100.0 if start > 0 else 0.0
-    recent_tv = sum(tvs[-2:]) / max(1, min(2, len(tvs[-2:])))
-    prior_tv = sum(tvs[:-2]) / max(1, len(tvs[:-2]) or 1)
-    tv_increase = prior_tv > 0 and recent_tv >= prior_tv * TV_INCREASE_RATIO
     peak = max(highs) if highs else current
     near_high = peak > 0 and (current / peak) >= NEAR_HIGH_RATIO
-    latest_tv = tvs[-1] if tvs else 0.0
+    tv_increase = float(ratios.get("trading_value_ratio_20d") or 0) >= TV_INCREASE_RATIO
     return {
         "current_price": int(current),
-        "return_5d_pct": round(return_5d, 2),
+        "return_5d_pct": ratios.get("return_5d_pct", 0.0),
+        "return_60d_pct": ratios.get("return_60d_pct"),
         "tv_increase": tv_increase,
         "near_high": near_high,
-        "latest_trading_value": latest_tv,
+        "latest_trading_value": ratios.get("latest_trading_value", 0.0),
+        "volume_ratio_20d": ratios.get("volume_ratio_20d"),
+        "trading_value_ratio_20d": ratios.get("trading_value_ratio_20d"),
+        "volume_ratio": ratios.get("volume_ratio_20d"),
+        "overheat_5d": ratios.get("overheat_5d"),
         "day_high": int(max(float(r.get("high") or 0) for r in tail)),
         "day_low": int(min(float(r.get("low") or current) for r in tail)),
         "prev_close": int(closes[-2]) if len(closes) >= 2 else int(current),

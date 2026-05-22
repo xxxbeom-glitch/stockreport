@@ -91,10 +91,10 @@ class TestWatchlistReviewFlags(unittest.TestCase):
 class TestWorkflowSchedules(unittest.TestCase):
     def test_daily_pick_workflow_has_active_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        text = (root / ".github" / "workflows" / "daily_pick_alert.yml").read_text(
+        text = (root / ".github" / "workflows" / "morning_buy_alert.yml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("name: 매일 투자 후보 알림", text)
+        self.assertIn("name: 오늘 매수 후보 알림", text)
         self.assertIn("workflow_dispatch:", text)
         self.assertIn("\n  schedule:\n", text)
         active_cron = [
@@ -102,8 +102,10 @@ class TestWorkflowSchedules(unittest.TestCase):
             for ln in text.splitlines()
             if "cron:" in ln and not ln.strip().startswith("#")
         ]
-        self.assertGreaterEqual(len(active_cron), 2)
+        self.assertEqual(len(active_cron), 1)
+        self.assertIn('25 1 * * 1-5', text[text.find("cron:") :])
         self.assertIn('DAILY_PICK_AUTO_SEND: "true"', text)
+        self.assertNotIn("50 4", text)
 
     def test_watchlist_review_workflow_has_no_active_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -119,6 +121,14 @@ class TestWorkflowSchedules(unittest.TestCase):
         ]
         self.assertEqual(active_cron, [])
         self.assertIn('WATCHLIST_REVIEW_AUTO_SEND: "false"', text)
+
+    def test_tomorrow_watch_workflow_schedule(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        text = (root / ".github" / "workflows" / "tomorrow_watch_alert.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("name: 내일 볼 종목 알림", text)
+        self.assertIn("55 6 * * 1-5", text)
 
     def test_candidate_scan_workflow_manual_only(self) -> None:
         root = Path(__file__).resolve().parents[1]

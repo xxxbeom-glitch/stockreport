@@ -7,6 +7,7 @@
 !package.json
 !package-lock.json
 !data/kr_watchlist.json
+!data/candidates/temporary_watch_candidates.json
 !template/kr_market/sample_data.json
 
 # 출력물
