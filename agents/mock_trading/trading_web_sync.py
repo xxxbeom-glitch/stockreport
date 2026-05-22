@@ -10,43 +10,37 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from agents.mock_trading.models import SECTOR_LABELS
+from agents.mock_trading.agent_catalog import normalize_agent_names
+from agents.mock_trading.agent_performance_store import agent_panel_rows, recompute_and_persist
+from agents.mock_trading.milestone_tracker import holding_fields_from_position
+from agents.mock_trading.position_schema import position_to_ui_snake
 from agents.mock_trading.plain_language import build_plain_copy, enrich_merged_card
+from agents.mock_trading.virtual_positions_store import (
+    import_from_week_doc,
+    list_positions,
+    positions_by_week,
+    refresh_position_prices,
+    sync_ledger_from_all_stored_weeks,
+)
 
 KST = ZoneInfo("Asia/Seoul")
 ROOT = Path(__file__).resolve().parents[2]
 MOCK_DIR = ROOT / "data" / "mock_trading"
 MERGED_PATH = MOCK_DIR / "merged_recommendations.json"
 WEEKLY_PATH = MOCK_DIR / "weekly_recommendations.json"
-STATE_PATH = MOCK_DIR / "trading_state.json"
 OUT_PATH = MOCK_DIR / "trading_data.json"
 
-ALLOWED_STATUSES = frozenset({"진행 중", "익절"})
 
-
-def normalize_display_status(value: str | None) -> str:
-    """가상투자 UI 허용 상태만 표시."""
-    s = str(value or "").strip()
-    if s in ("익절", "익절 완료"):
-        return "익절"
-    if s in ("진행 중", "투자 진행 중"):
-        return "진행 중"
-    return "—"
-
-
-def _status_for_ticker(
-    ticker: str,
-    *,
-    week_doc: dict[str, Any] | None,
-    saved_states: dict[str, str],
-) -> str:
-    if week_doc:
-        for row in week_doc.get("virtualTakeProfits") or []:
-            if str(row.get("ticker", "")).zfill(6) == ticker:
-                return "익절"
-        for row in week_doc.get("virtualBuys") or []:
-            if str(row.get("ticker", "")).zfill(6) == ticker:
-                return "진행 중"
-    return normalize_display_status(saved_states.get(ticker))
+def _apply_position_to_holding(
+    holding: dict[str, Any],
+    position: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """가상매수 포지션 → 카드 수익률·달성·에이전트 필드."""
+    if position:
+        holding.update(holding_fields_from_position(position))
+    else:
+        holding.update(holding_fields_from_position(None))
+    return holding
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -105,6 +99,230 @@ def _format_reasons(reasons: list[str], sample: list[str]) -> str:
     return "\n".join(merged[:4]) if merged else "—"
 
 
+def _rankings_from_holdings(holdings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ordered = sorted(
+        holdings,
+        key=lambda h: float(h.get("return_pct") if h.get("return_pct") is not None else -1e9),
+        reverse=True,
+    )
+    return [
+        {
+            "name": h.get("name") or "",
+            "buy_amount": h.get("buy_amount"),
+            "eval_amount": h.get("eval_amount"),
+            "return_pct": h.get("return_pct"),
+        }
+        for h in ordered
+    ]
+
+
+def _build_recommendation_card_index() -> dict[str, dict[str, Any]]:
+    """ticker → merged 카드 (최신 파일 우선)."""
+    paths: list[Path] = []
+    if MERGED_PATH.is_file():
+        paths.append(MERGED_PATH)
+    mirror_dir = MOCK_DIR / "firebase_mirror"
+    if mirror_dir.is_dir():
+        paths.extend(sorted(mirror_dir.glob("weekly_*.json"), key=lambda p: p.stat().st_mtime))
+    paths = sorted(
+        {p.resolve() for p in paths if p.is_file()},
+        key=lambda p: p.stat().st_mtime,
+    )
+
+    index: dict[str, dict[str, Any]] = {}
+    for path in paths:
+        data = _load_json(path)
+        if path == MERGED_PATH:
+            cards = data.get("merged_cards") or []
+        else:
+            cards = data.get("mergedRecommendations") or data.get("merged_cards") or []
+        for card in cards:
+            ticker = str(card.get("ticker", "")).zfill(6)
+            if not ticker:
+                continue
+            enriched = (
+                card
+                if card.get("plainReason")
+                else enrich_merged_card(card)
+            )
+            index[ticker] = enriched
+    return index
+
+
+def _card_current_price(card: dict[str, Any], fallback: int) -> int:
+    current = card.get("current_price")
+    try:
+        return int(round(float(current))) if current is not None else fallback
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _holding_from_position(
+    position: dict[str, Any],
+    card: dict[str, Any],
+) -> dict[str, Any]:
+    ticker = str(position.get("ticker", "")).zfill(6)
+    buy = int(position.get("buyPrice") or 0)
+    qty = max(1, int(position.get("quantity") or 1))
+    invested = int(position.get("investedAmount") or buy * qty)
+    cur = int(position.get("currentPrice") or buy)
+    if card:
+        cur = _card_current_price(card, cur)
+
+    sector_key = str(card.get("sector_group") or "")
+    sector_label = SECTOR_LABELS.get(sector_key, sector_key) if sector_key else "—"
+    grok_warn = _grok_warnings(card) if card else []
+    risks = list(card.get("risk_factors") or []) if card else []
+    reasons = list(card.get("reasons_sample") or []) if card else []
+
+    plain = (
+        {
+            "plainReason": card.get("plainReason"),
+            "plainRisk": card.get("plainRisk"),
+            "viewGuide": card.get("viewGuide"),
+        }
+        if card.get("plainReason")
+        else (
+            build_plain_copy(
+                name=str(card.get("name") or position.get("name") or ""),
+                reason_lines=reasons,
+                risk_lines=risks,
+                grok_validation=card.get("grok_validation"),
+            )
+            if card
+            else {
+                "plainReason": "—",
+                "plainRisk": "—",
+                "viewGuide": "—",
+            }
+        )
+    )
+
+    rec_agents = normalize_agent_names(
+        list(position.get("recommendedAgents") or position.get("agentNames") or [])
+        or list(card.get("recommending_agents") or [])
+    )
+    agent_keys = list(position.get("agentKeys") or card.get("agent_keys") or [])
+
+    exec_snake = position_to_ui_snake(position)
+    row: dict[str, Any] = {
+        "ticker": ticker,
+        "name": str(position.get("name") or card.get("name") or ""),
+        "entry_type": exec_snake.get("entry_type") or "",
+        "execution_market": exec_snake.get("execution_market") or "",
+        "fallback_execution": exec_snake.get("fallback_execution"),
+        "has_weekend_risk": exec_snake.get("has_weekend_risk"),
+        "trigger_type": exec_snake.get("trigger_type") or "",
+        "trigger_reason": exec_snake.get("trigger_reason") or [],
+        "first_signal_at": exec_snake.get("first_signal_at"),
+        "execution_at": exec_snake.get("execution_at"),
+        "execution_price": exec_snake.get("execution_price"),
+        "sector": sector_label,
+        "sector_group": sector_key,
+        "business_summary": sector_label,
+        "buy_price": buy,
+        "buy_amount": invested,
+        "current_price": cur,
+        "eval_amount": cur * qty,
+        "price_status": "ok",
+        "return_pct": float(position.get("currentReturnRate") or 0.0),
+        "agent": ", ".join(rec_agents) if rec_agents else "—",
+        "recommending_agents": rec_agents,
+        "recommending_agents_full": rec_agents,
+        "agent_keys": agent_keys,
+        "recommendation_count": int(card.get("recommendation_count") or len(rec_agents) or 0),
+        "consensus_label": card.get("consensus_label") or "",
+        "selection_reason": _format_reasons(reasons, list(card.get("reasons_sample") or []))
+        if card
+        else "—",
+        "risk_factors_text": _format_risks(risks, grok_warn) if card else "—",
+        "risk_factors": risks,
+        "plain_reason": plain["plainReason"],
+        "plain_risk": plain["plainRisk"],
+        "view_guide": plain["viewGuide"],
+        "grok_warnings": grok_warn,
+        "entry_range": card.get("entry_range") if card else None,
+        "target_price": card.get("target_price") if card else None,
+        "grok_validation": card.get("grok_validation") if card else None,
+        "virtually_bought": True,
+    }
+    row.update(holding_fields_from_position(position))
+    row["buy_amount"] = invested
+    row["eval_amount"] = int(row.get("eval_amount") or cur * qty)
+    row["current_price"] = cur
+    if buy > 0:
+        row["return_pct"] = round((cur - buy) / buy * 100.0, 4)
+    return row
+
+
+def build_cumulative_trading_payload(
+    *,
+    data_source: str = "virtualPositions/ledger",
+) -> dict[str, Any]:
+    """전 주차 누적 가상매수·성과 (특정 week_id 화면·필터 없음)."""
+    sync_ledger_from_all_stored_weeks()
+    card_index = _build_recommendation_card_index()
+
+    positions = list_positions()
+    price_map: dict[str, int] = {}
+    for pos in positions:
+        ticker = str(pos.get("ticker", "")).zfill(6)
+        if not ticker:
+            continue
+        card = card_index.get(ticker) or {}
+        fallback = int(pos.get("currentPrice") or pos.get("buyPrice") or 0)
+        price_map[ticker] = _card_current_price(card, fallback) if card else fallback
+    if price_map:
+        refresh_position_prices(price_map)
+        positions = list_positions()
+
+    perf_map = recompute_and_persist().get("agents") or {}
+    holdings = [
+        _holding_from_position(pos, card_index.get(str(pos.get("ticker", "")).zfill(6), {}))
+        for pos in positions
+    ]
+    holdings.sort(
+        key=lambda h: float(h.get("return_pct") if h.get("return_pct") is not None else -1e9),
+        reverse=True,
+    )
+
+    weekly: dict[str, Any] = {}
+    if WEEKLY_PATH.is_file():
+        weekly = _load_json(WEEKLY_PATH)
+
+    agents_panel = agent_panel_rows(perf_map)
+    for row in agents_panel:
+        spec_agent = next(
+            (a for a in (weekly.get("agents") or []) if a.get("agent_key") == row["agent_key"]),
+            None,
+        )
+        if spec_agent:
+            row["model_id"] = spec_agent.get("model_id") or ""
+            names = [
+                str(r.get("name") or "")
+                for r in (spec_agent.get("recommendations") or [])
+                if r.get("name")
+            ]
+            row["pick_names"] = names
+
+    now = datetime.now(KST)
+    return {
+        "pageMeta": {
+            "title": "모의 투자 시스템",
+            "market": "한국시장",
+            "updated_at": now.strftime("%H:%M 업데이트"),
+            "data_source": data_source,
+            "position_count": len(holdings),
+        },
+        "scope": "cumulative",
+        "holdings": holdings,
+        "rankings": _rankings_from_holdings(holdings),
+        "agents": agents_panel,
+        "agentPerformance": list(perf_map.values()),
+        "excluded_candidates": [],
+    }
+
+
 def _format_risks(risk_factors: list[str], grok_warnings: list[str]) -> str:
     parts: list[str] = []
     for r in risk_factors:
@@ -120,23 +338,28 @@ def build_trading_payload(
     merged: dict[str, Any],
     weekly: dict[str, Any],
     *,
-    state_path: Path = STATE_PATH,
     data_source: str = "merged_recommendations.json",
     week_doc: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     picks = _aggregate_picks_by_ticker(weekly)
 
-    saved_states: dict[str, str] = {}
-    if state_path.is_file():
-        state_doc = _load_json(state_path)
-        for row in state_doc.get("holdings") or []:
-            t = str(row.get("ticker", "")).zfill(6)
-            if t and row.get("status"):
-                saved_states[t] = str(row["status"])
-
     week_id = merged.get("week_id") or weekly.get("week_id") or ""
     generated_at = merged.get("generated_at") or weekly.get("generated_at") or ""
     cards = merged.get("merged_cards") or []
+
+    if week_doc:
+        import_from_week_doc(str(week_id), week_doc)
+
+    week_positions = positions_by_week(str(week_id))
+    price_map = {
+        t: int(p.get("currentPrice") or p.get("buyPrice") or 0)
+        for t, p in week_positions.items()
+    }
+    if price_map:
+        refresh_position_prices(price_map, week_id=str(week_id))
+        week_positions = positions_by_week(str(week_id))
+
+    perf_map = recompute_and_persist().get("agents") or {}
 
     holdings: list[dict[str, Any]] = []
     for card in cards:
@@ -178,59 +401,56 @@ def build_trading_payload(
         except (TypeError, ValueError):
             current_int = entry
 
-        holdings.append(
-            {
-                "ticker": ticker,
-                "name": card_plain.get("name") or "",
-                "sector": sector_label,
-                "sector_group": sector_key,
-                "business_summary": sector_label,
-                "buy_amount": entry,
-                "buy_price": entry,
-                "current_price": current_int,
-                "eval_amount": current_int,
-                "price_status": "ok",
-                "return_pct": 0.0 if entry > 0 else None,
-                "agent": _format_agents(card_plain),
-                "recommending_agents": list(card_plain.get("recommending_agents") or []),
-                "agent_keys": list(card_plain.get("agent_keys") or []),
-                "recommendation_count": int(card_plain.get("recommendation_count") or 0),
-                "consensus_label": card_plain.get("consensus_label") or "",
-                "selection_reason": _format_reasons(
-                    reasons, list(card_plain.get("reasons_sample") or [])
-                ),
-                "risk_factors_text": _format_risks(risks, grok_warn),
-                "risk_factors": risks,
-                "plain_reason": plain["plainReason"],
-                "plain_risk": plain["plainRisk"],
-                "view_guide": plain["viewGuide"],
-                "grok_warnings": grok_warn,
-                "entry_range": card_plain.get("entry_range"),
-                "target_price": card_plain.get("target_price"),
-                "status": _status_for_ticker(
-                    ticker, week_doc=week_doc, saved_states=saved_states
-                ),
-                "grok_validation": card_plain.get("grok_validation"),
-            }
-        )
+        rec_agents = normalize_agent_names(list(card_plain.get("recommending_agents") or []))
+        row = {
+            "ticker": ticker,
+            "name": card_plain.get("name") or "",
+            "sector": sector_label,
+            "sector_group": sector_key,
+            "business_summary": sector_label,
+            "buy_amount": entry,
+            "buy_price": entry,
+            "current_price": current_int,
+            "eval_amount": current_int,
+            "price_status": "ok",
+            "return_pct": 0.0 if entry > 0 else None,
+            "agent": _format_agents(card_plain),
+            "recommending_agents": rec_agents,
+            "recommending_agents_full": rec_agents,
+            "agent_keys": list(card_plain.get("agent_keys") or []),
+            "recommendation_count": int(card_plain.get("recommendation_count") or 0),
+            "consensus_label": card_plain.get("consensus_label") or "",
+            "selection_reason": _format_reasons(
+                reasons, list(card_plain.get("reasons_sample") or [])
+            ),
+            "risk_factors_text": _format_risks(risks, grok_warn),
+            "risk_factors": risks,
+            "plain_reason": plain["plainReason"],
+            "plain_risk": plain["plainRisk"],
+            "view_guide": plain["viewGuide"],
+            "grok_warnings": grok_warn,
+            "entry_range": card_plain.get("entry_range"),
+            "target_price": card_plain.get("target_price"),
+            "grok_validation": card_plain.get("grok_validation"),
+            "virtually_bought": ticker in week_positions,
+        }
+        _apply_position_to_holding(row, week_positions.get(ticker))
+        holdings.append(row)
 
-    agents_panel: list[dict[str, Any]] = []
-    for agent in weekly.get("agents") or []:
-        names = [
-            str(r.get("name") or "")
-            for r in (agent.get("recommendations") or [])
-            if r.get("name")
-        ]
-        agents_panel.append(
-            {
-                "agent_key": agent.get("agent_key"),
-                "name": agent.get("display_name") or agent.get("agent_key"),
-                "model_id": agent.get("model_id") or "",
-                "perspective": agent.get("perspective") or "",
-                "cumulative_return_pct": 0.0,
-                "pick_names": names,
-            }
+    agents_panel = agent_panel_rows(perf_map)
+    for row in agents_panel:
+        spec_agent = next(
+            (a for a in (weekly.get("agents") or []) if a.get("agent_key") == row["agent_key"]),
+            None,
         )
+        if spec_agent:
+            row["model_id"] = spec_agent.get("model_id") or ""
+            names = [
+                str(r.get("name") or "")
+                for r in (spec_agent.get("recommendations") or [])
+                if r.get("name")
+            ]
+            row["pick_names"] = names
 
     now = datetime.now(KST)
     as_of = generated_at[:10] if len(generated_at) >= 10 else now.strftime("%Y-%m-%d")
@@ -256,6 +476,7 @@ def build_trading_payload(
         "holdings": holdings,
         "rankings": [],
         "agents": agents_panel,
+        "agentPerformance": list(perf_map.values()),
         "excluded_candidates": [],
     }
     return payload
@@ -263,18 +484,10 @@ def build_trading_payload(
 
 def build_trading_data(
     *,
-    merged_path: Path = MERGED_PATH,
-    weekly_path: Path = WEEKLY_PATH,
-    state_path: Path = STATE_PATH,
     out_path: Path = OUT_PATH,
 ) -> dict[str, Any]:
-    merged = _load_json(merged_path)
-    weekly = _load_json(weekly_path) if weekly_path.is_file() else {}
-    payload = build_trading_payload(
-        merged,
-        weekly,
-        state_path=state_path,
-        data_source="merged_recommendations.json",
+    payload = build_cumulative_trading_payload(
+        data_source="virtualPositions/ledger+local_mirror",
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
@@ -286,18 +499,10 @@ def build_trading_data(
 
 def build_trading_data_from_firestore_doc(
     firestore_doc: dict[str, Any],
-    *,
-    state_path: Path = STATE_PATH,
 ) -> dict[str, Any]:
-    from agents.mock_trading.weekly_recommendations_store import firestore_doc_to_local
-
-    merged, weekly = firestore_doc_to_local(firestore_doc)
+    week_id = str(firestore_doc.get("weekId") or firestore_doc.get("week_id") or "")
+    if week_id:
+        import_from_week_doc(week_id, firestore_doc)
     source = firestore_doc.get("persist_backend") or "firestore"
     path = firestore_doc.get("firestore_path") or "weeklyRecommendations"
-    return build_trading_payload(
-        merged,
-        weekly,
-        state_path=state_path,
-        data_source=f"{source}:{path}",
-        week_doc=firestore_doc,
-    )
+    return build_cumulative_trading_payload(data_source=f"{source}:{path}")

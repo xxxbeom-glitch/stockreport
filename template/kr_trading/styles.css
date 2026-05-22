@@ -48,7 +48,6 @@
   --gap-header-meta-items: var(--space-10); /* Frame 35 meta row */
   --gap-section-title-content: var(--space-12); /* Frame 57/58/59 */
   --gap-holdings-cards: var(--space-8); /* Frame 58/Frame_60: 카드 래퍼 간 */
-  --gap-agent-cards: var(--space-8); /* Frame 59/Group_60/Frame_62: 에이전트 카드 간 */
   --gap-card-inner-blocks: var(--space-12); /* stock/agent Frame 56 */
   --gap-card-top-row: var(--space-6); /* Frame 48 */
   --gap-card-top-quote: var(--space-4); /* badge/price stack */
@@ -184,6 +183,11 @@ body {
   color: var(--color-text);
 }
 
+.filter-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .filter-pill {
   display: inline-flex;
   align-items: center;
@@ -199,7 +203,56 @@ body {
   font-weight: 600;
   line-height: var(--lh-100);
   color: var(--color-text);
-  cursor: default;
+  cursor: pointer;
+}
+
+.filter-pill[aria-expanded="true"] .filter-pill__chevron {
+  transform: rotate(180deg);
+}
+
+.filter-menu {
+  position: absolute;
+  top: calc(100% + var(--space-4));
+  right: 0;
+  z-index: 20;
+  min-width: calc(120 * var(--u));
+  margin: 0;
+  padding: var(--space-4) 0;
+  list-style: none;
+  border: 1px solid var(--color-pill-border);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+}
+
+.filter-menu[hidden] {
+  display: none;
+}
+
+.filter-menu__item {
+  display: block;
+  width: 100%;
+  padding: calc(8 * var(--u)) calc(14 * var(--u));
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-130);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.filter-menu__item:hover,
+.filter-menu__item:focus-visible {
+  background: var(--color-pill-bg);
+  outline: none;
+}
+
+.filter-menu__item.is-selected {
+  font-weight: 700;
+  color: var(--color-positive);
 }
 
 .filter-pill__chevron {
@@ -208,6 +261,7 @@ body {
   width: calc(8 * var(--u));
   height: calc(8 * var(--u));
   color: var(--color-text);
+  transition: transform 0.15s ease;
 }
 
 /* Card */
@@ -281,6 +335,69 @@ body {
 }
 
 .rank-table__row .col-return.is-down {
+  color: var(--color-negative);
+}
+
+/* 에이전트별 수익률 — Frame 57 (4열: 순위·에이전트명·매수종목·수익률) */
+.agent-rank-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-rank-rows);
+  min-width: 0;
+  width: 100%;
+}
+
+.agent-rank-table__head,
+.agent-rank-table__row {
+  display: grid;
+  grid-template-columns:
+    calc(26 * var(--u))
+    minmax(0, 1fr)
+    calc(56 * var(--u))
+    calc(46 * var(--u));
+  column-gap: var(--gap-rank-cols);
+  align-items: center;
+  width: 100%;
+  min-height: calc(22 * var(--u));
+}
+
+.agent-rank-table__head {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-130);
+  color: var(--color-text-muted);
+}
+
+.agent-rank-table__row {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  line-height: var(--lh-130);
+  color: var(--color-text);
+}
+
+.agent-rank-table__head > span,
+.agent-rank-table__row > span {
+  min-width: 0;
+  text-align: center;
+}
+
+.agent-rank-table__row .col-agent-name {
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-rank-table__row .col-pick-count {
+  font-weight: 500;
+}
+
+.agent-rank-table__row .col-return.is-up {
+  color: var(--color-positive);
+}
+
+.agent-rank-table__row .col-return.is-down {
   color: var(--color-negative);
 }
 
@@ -384,6 +501,17 @@ body {
   align-items: center;
 }
 
+.stock-card__grid-row--full {
+  grid-template-columns: 1fr;
+}
+
+.stock-card__grid-row--full .kv--agent .kv__value--agent-names {
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .kv {
   display: flex;
   align-items: baseline;
@@ -483,79 +611,3 @@ body {
   color: var(--color-text-muted);
 }
 
-/* Agents — Frame 62: 카드 간 8 / 카드 내부 블록 12 */
-/* Agents — Frame_62: 카드↔카드 상하 8 */
-.agents-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-agent-cards);
-}
-
-.agent-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-card-inner-blocks);
-}
-
-.agent-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--gap-card-grid-cols);
-}
-
-.agent-card__identity {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.agent-card__name {
-  margin: 0;
-  font-size: var(--fs-16);
-  font-weight: 600;
-  line-height: var(--lh-150);
-  color: var(--color-text);
-}
-
-.agent-card__model {
-  font-size: var(--fs-12);
-  font-weight: 500;
-  line-height: var(--lh-150);
-  color: var(--color-text-body);
-}
-
-.agent-card__return {
-  font-size: var(--fs-20);
-  font-weight: 700;
-  line-height: var(--lh-150);
-  flex-shrink: 0;
-}
-
-.agent-card__return.is-up {
-  color: var(--color-positive);
-}
-
-.agent-card__return.is-down {
-  color: var(--color-negative-soft);
-}
-
-.agent-card__holdings {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--gap-card-grid-cols);
-  font-size: var(--fs-12);
-  line-height: var(--lh-160);
-}
-
-.agent-card__holdings .kv__label {
-  width: calc(54 * var(--u));
-  text-align: left;
-}
-
-.agent-card__holdings .kv__value {
-  flex: 1;
-  min-width: 0;
-  font-weight: 600;
-  text-align: left;
-}

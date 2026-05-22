@@ -1,0 +1,21 @@
+# 가상 지정가 체결/미체결 판정 — 세션 중 반복 실행 권장
+name: Mock Trading Fill Orders
+
+on:
+  schedule:
+    - cron: "5,35 0-9 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  process_limit_orders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python scripts/run_mock_trading_execute_pending.py
+        env:
+          KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+          KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}

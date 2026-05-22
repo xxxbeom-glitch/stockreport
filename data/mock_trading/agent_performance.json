@@ -1,0 +1,46 @@
+{
+  "agents": {
+    "gemini_pro_conviction": {
+      "agentId": "gemini_pro_conviction",
+      "agentName": "Gemini Pro",
+      "totalTrades": 0,
+      "totalInvestedAmount": 0,
+      "totalEvaluationAmount": 0,
+      "totalProfitLoss": 0,
+      "cumulativeReturnRate": 0.0,
+      "updatedAt": "2026-05-22T23:35:07+09:00"
+    },
+    "gemini_25_momentum": {
+      "agentId": "gemini_25_momentum",
+      "agentName": "Gemini 2.5",
+      "totalTrades": 0,
+      "totalInvestedAmount": 0,
+      "totalEvaluationAmount": 0,
+      "totalProfitLoss": 0,
+      "cumulativeReturnRate": 0.0,
+      "updatedAt": "2026-05-22T23:35:07+09:00"
+    },
+    "deepseek_balance": {
+      "agentId": "deepseek_balance",
+      "agentName": "DeepSeek Balance",
+      "totalTrades": 0,
+      "totalInvestedAmount": 0,
+      "totalEvaluationAmount": 0,
+      "totalProfitLoss": 0,
+      "cumulativeReturnRate": 0.0,
+      "updatedAt": "2026-05-22T23:35:07+09:00"
+    },
+    "deepseek_mix": {
+      "agentId": "deepseek_mix",
+      "agentName": "DeepSeek Mix",
+      "totalTrades": 0,
+      "totalInvestedAmount": 0,
+      "totalEvaluationAmount": 0,
+      "totalProfitLoss": 0,
+      "cumulativeReturnRate": 0.0,
+      "updatedAt": "2026-05-22T23:35:07+09:00"
+    }
+  },
+  "updatedAt": "2026-05-22T23:35:07+09:00",
+  "persist_backend": "local_json"
+}

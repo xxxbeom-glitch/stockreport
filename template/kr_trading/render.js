@@ -1,21 +1,19 @@
 /**
- * kr_trading UI — Firebase weeklyRecommendations 우선 로드
+ * kr_trading UI — 누적 가상매수·성과 (/api/trading-display)
  * 폴백: /data/mock_trading/trading_data.json
  */
 (function () {
   "use strict";
 
-  var DEFAULT_WEEK_ID = "2026-W21";
   var DISPLAY_API = new URL("/api/trading-display", location.origin).href;
   var FALLBACK_DATA_URL = new URL(
     "/data/mock_trading/trading_data.json",
     location.origin
   ).href;
-  var STATE_API = new URL("/api/trading-state", location.origin).href;
-  var LS_PREFIX = "kr_trading_state_";
-
   var pageData = null;
-  var weekId = DEFAULT_WEEK_ID;
+  var allHoldings = [];
+  var holdingsFilterKey = "";
+  var agentCatalog = [];
 
   function formatWon(amount) {
     var n = Math.round(Number(amount) || 0);
@@ -49,123 +47,84 @@
     return node;
   }
 
-  function lsKey() {
-    return LS_PREFIX + weekId;
-  }
-
-  function readLocalStates() {
-    try {
-      var raw = localStorage.getItem(lsKey());
-      if (!raw) return {};
-      var doc = JSON.parse(raw);
-      var map = {};
-      (doc.holdings || []).forEach(function (row) {
-        var t = String(row.ticker || "").padStart(6, "0");
-        if (t && row.status) map[t] = row.status;
-      });
-      return map;
-    } catch (_) {
-      return {};
-    }
-  }
-
-  function writeLocalStates(holdings) {
-    var payload = {
-      week_id: weekId,
-      updated_at: new Date().toISOString(),
-      holdings: holdings.map(function (h) {
-        return { ticker: h.ticker, status: h.status };
-      }),
-    };
-    try {
-      localStorage.setItem(lsKey(), JSON.stringify(payload));
-    } catch (e) {
-      /* ignore quota */
-    }
-    return payload;
-  }
-
-  function postServerState(holdings) {
-    var payload = writeLocalStates(holdings);
-    return fetch(STATE_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then(function (res) {
-        return res.json();
-      })
-      .catch(function () {
-        return { ok: false, offline: true };
-      });
-  }
-
-  function fetchServerState() {
-    var url = STATE_API + "?week_id=" + encodeURIComponent(weekId);
-    return fetch(url)
-      .then(function (res) {
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return res.json();
-      })
-      .then(function (body) {
-        return body.state || {};
-      })
-      .catch(function () {
-        return null;
-      });
-  }
-
-  function normalizeDisplayStatus(value) {
-    var s = (value || "").trim();
-    if (s === "익절" || s === "익절 완료") return "익절";
-    if (s === "진행 중" || s === "투자 진행 중") return "진행 중";
-    return "—";
-  }
-
-  function applyStates(holdings, stateMap) {
-    holdings.forEach(function (h) {
-      var t = String(h.ticker || "").padStart(6, "0");
-      if (stateMap[t]) {
-        h.status = normalizeDisplayStatus(stateMap[t]);
-      } else {
-        h.status = normalizeDisplayStatus(h.status);
-      }
-    });
-  }
-
-  function mergeStateMaps(localMap, serverMap) {
-    var out = {};
-    Object.keys(localMap || {}).forEach(function (k) {
-      out[k] = localMap[k];
-    });
-    Object.keys(serverMap || {}).forEach(function (k) {
-      out[k] = serverMap[k];
-    });
-    return out;
-  }
-
-  function serverStateToMap(stateDoc) {
-    var map = {};
-    (stateDoc.holdings || []).forEach(function (row) {
-      var t = String(row.ticker || "").padStart(6, "0");
-      if (t && row.status) map[t] = row.status;
-    });
-    return map;
-  }
-
   function renderPageMeta(meta) {
     var title = document.querySelector(".page-title");
     if (title && meta.title) title.textContent = meta.title;
 
-    var spans = document.querySelectorAll(".page-meta span");
-    if (spans.length >= 3) {
-      if (meta.market) spans[0].textContent = meta.market;
-      if (meta.weekday_label) spans[1].textContent = meta.weekday_label;
-      if (meta.updated_at) spans[2].textContent = meta.updated_at;
-      if (meta.week_id && spans.length >= 3) {
-        spans[1].textContent = (meta.weekday_label || "") + " · " + meta.week_id;
-      }
+    var line = document.querySelector(".page-meta__line");
+    if (!line) return;
+    var parts = [];
+    if (meta.market) parts.push(meta.market);
+    if (meta.updated_at) parts.push(meta.updated_at);
+    line.textContent = parts.join(" · ");
+  }
+
+  function formatPickCount(agent) {
+    var n = Number(agent.pick_count);
+    if (!isNaN(n) && n > 0) {
+      return n + "개";
     }
+    var names = agent.pick_names;
+    n = Array.isArray(names) ? names.length : Number(agent.total_trades);
+    if (isNaN(n) || n < 0) n = 0;
+    return n + "개";
+  }
+
+  function agentDisplayName(agent) {
+    var name = (agent.name || "").trim();
+    var model = (agent.model_id || "").trim();
+    if (name && model && name.toLowerCase() !== model.toLowerCase()) {
+      return name;
+    }
+    return name || model || "—";
+  }
+
+  function renderAgentRankings(container, items) {
+    container.innerHTML = "";
+    if (!items || !items.length) {
+      container.appendChild(
+        el("p", "rank-empty", "에이전트 수익률 데이터가 없습니다.")
+      );
+      return;
+    }
+
+    var head = el("div", "agent-rank-table__head");
+    head.setAttribute("role", "row");
+    ["순위", "에이전트명", "매수종목", "수익률"].forEach(function (label) {
+      var cell = el("span", null, label);
+      cell.setAttribute("role", "columnheader");
+      head.appendChild(cell);
+    });
+    container.appendChild(head);
+
+    var sorted = items.slice().sort(function (a, b) {
+      var ra = Number(a.cumulative_return_pct);
+      var rb = Number(b.cumulative_return_pct);
+      if (isNaN(ra)) ra = 0;
+      if (isNaN(rb)) rb = 0;
+      return rb - ra;
+    });
+
+    sorted.forEach(function (row, index) {
+      var tr = el("div", "agent-rank-table__row");
+      tr.setAttribute("role", "row");
+      var pctNum = Number(row.cumulative_return_pct);
+      var hasReturn =
+        row.cumulative_return_pct != null &&
+        row.cumulative_return_pct !== "" &&
+        !isNaN(pctNum);
+      tr.appendChild(el("span", null, String(index + 1)));
+      tr.appendChild(el("span", "col-agent-name", agentDisplayName(row)));
+      tr.appendChild(el("span", "col-pick-count", formatPickCount(row)));
+      tr.appendChild(
+        el(
+          "span",
+          hasReturn ? "col-return " + trendClass(pctNum) : "col-return",
+          hasReturn ? formatReturnPctRank(pctNum) : "—"
+        )
+      );
+      container.appendChild(tr);
+    });
   }
 
   function renderRankings(container, items) {
@@ -231,29 +190,180 @@
       .filter(Boolean);
   }
 
+  function agentModelName(agentKey) {
+    var key = String(agentKey || "");
+    for (var i = 0; i < agentCatalog.length; i++) {
+      if (agentCatalog[i].agent_key === key) {
+        return agentCatalog[i].name || key;
+      }
+    }
+    return "";
+  }
+
+  function holdingMatchesAgentFilter(h, filterKey) {
+    if (!filterKey) return true;
+    var keys = h.agent_keys || [];
+    if (Array.isArray(keys) && keys.indexOf(filterKey) >= 0) return true;
+    var modelName = agentModelName(filterKey);
+    if (!modelName) return false;
+    var names = agentNames(h);
+    return names.indexOf(modelName) >= 0;
+  }
+
+  function filterHoldings(holdings, filterKey) {
+    if (!filterKey) return holdings.slice();
+    return (holdings || []).filter(function (h) {
+      return holdingMatchesAgentFilter(h, filterKey);
+    });
+  }
+
+  function closeHoldingsFilterMenu(menu, btn) {
+    if (!menu || !btn) return;
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function setupHoldingsAgentFilter(agents, holdingsList) {
+    var wrap = document.querySelector(".holdings-filter-wrap");
+    if (!wrap || !holdingsList) return;
+
+    var btn = wrap.querySelector(".holdings-filter-pill");
+    var label = wrap.querySelector(".holdings-filter-pill__label");
+    var menu = wrap.querySelector(".holdings-filter-menu");
+    if (!btn || !label || !menu) return;
+
+    agentCatalog = (agents || []).slice();
+    menu.innerHTML = "";
+
+    function addOption(agentKey, displayName, selected) {
+      var li = el("li", "filter-menu__option");
+      var opt = el("button", "filter-menu__item " + (selected ? "is-selected" : ""));
+      opt.type = "button";
+      opt.setAttribute("role", "option");
+      opt.setAttribute("aria-selected", selected ? "true" : "false");
+      opt.dataset.agentKey = agentKey;
+      opt.textContent = displayName;
+      opt.addEventListener("click", function () {
+        holdingsFilterKey = agentKey;
+        label.textContent = displayName;
+        menu.querySelectorAll(".filter-menu__item").forEach(function (node) {
+          var on = node.dataset.agentKey === agentKey;
+          node.classList.toggle("is-selected", on);
+          node.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        renderHoldings(holdingsList, filterHoldings(allHoldings, holdingsFilterKey));
+        closeHoldingsFilterMenu(menu, btn);
+      });
+      li.appendChild(opt);
+      menu.appendChild(li);
+    }
+
+    addOption("", "전체 모델", !holdingsFilterKey);
+    agentCatalog.forEach(function (a) {
+      var key = a.agent_key || "";
+      var name = a.name || key;
+      if (!key) return;
+      addOption(key, name, holdingsFilterKey === key);
+    });
+
+    if (holdingsFilterKey) {
+      label.textContent = agentModelName(holdingsFilterKey) || "전체 모델";
+    } else {
+      label.textContent = "전체 모델";
+    }
+
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = menu.hidden;
+      document.querySelectorAll(".holdings-filter-menu").forEach(function (m) {
+        m.hidden = true;
+      });
+      document.querySelectorAll(".holdings-filter-pill").forEach(function (b) {
+        b.setAttribute("aria-expanded", "false");
+      });
+      if (open) {
+        menu.hidden = false;
+        btn.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    if (!wrap.dataset.boundClose) {
+      wrap.dataset.boundClose = "1";
+      document.addEventListener("click", function () {
+        closeHoldingsFilterMenu(menu, btn);
+      });
+      menu.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+    }
+  }
+
+  function formatMilestoneDays(h, pct) {
+    if (!h.virtually_bought) {
+      return "—";
+    }
+    var keys =
+      pct === 10
+        ? [
+            "daysTo10Percent",
+            "milestone_10_days",
+            "achievement_10_days",
+            "pct_10_days",
+          ]
+        : [
+            "daysTo20Percent",
+            "milestone_20_days",
+            "achievement_20_days",
+            "pct_20_days",
+          ];
+    var v;
+    for (var i = 0; i < keys.length; i++) {
+      if (h[keys[i]] != null && h[keys[i]] !== "") {
+        v = h[keys[i]];
+        break;
+      }
+    }
+    if (v == null || v === "") return "—";
+    var n = Number(v);
+    if (!isNaN(n)) {
+      var sign = n > 0 ? "+" : n < 0 ? "-" : "";
+      return sign + Math.abs(n) + "일";
+    }
+    var s = String(v).trim();
+    if (/일$/.test(s) || /^[+-]/.test(s)) return s;
+    return "+" + s + "일";
+  }
+
   function kvAgent(h) {
     var block = el("div", "kv kv--agent");
     block.appendChild(el("span", "kv__label", "에이전트"));
-    var valueWrap = el("div", "kv__value kv__value--agents");
-    var icons = el("div", "agent-icon-list");
-    var names = agentNames(h);
-    names.forEach(function (name) {
-      var item = el("span", "agent-icon-item");
-      item.setAttribute("aria-label", name);
-      item.setAttribute("title", name);
-      item.appendChild(el("span", "agent-icon-placeholder", ""));
-      icons.appendChild(item);
-    });
-    if (!names.length) {
-      icons.appendChild(el("span", "agent-icon-empty", "—"));
+    var full =
+      h.recommending_agents_full ||
+      h.recommending_agents ||
+      agentNames(h);
+    var names = Array.isArray(full)
+      ? full.filter(function (x, i, arr) {
+          return x && arr.indexOf(x) === i;
+        })
+      : [];
+    var text = names.length ? names.join(", ") : (h.agent || "—");
+    var value = el("span", "kv__value kv__value--agent-names", text);
+    if (names.length) {
+      value.setAttribute("title", names.join(", "));
     }
-    valueWrap.appendChild(icons);
-    block.appendChild(valueWrap);
+    block.appendChild(value);
     return block;
   }
 
   function renderHoldings(container, items) {
     container.innerHTML = "";
+    if (!items || !items.length) {
+      var emptyMsg = holdingsFilterKey
+        ? "선택한 에이전트 모델 추천 종목이 없습니다."
+        : "표시할 종목이 없습니다.";
+      container.appendChild(el("p", "rank-empty", emptyMsg));
+      return;
+    }
     (items || []).forEach(function (h) {
       var priceError = h.price_status === "error";
       var card = el("article", "card card--pad stock-card");
@@ -294,18 +404,32 @@
 
       var grid = el("div", "stock-card__grid");
       var row1 = el("div", "stock-card__grid-row");
-      row1.appendChild(kv("진입가", formatWon(h.buy_amount)));
-      row1.appendChild(kv("목표가", formatWon(h.target_price)));
+      row1.appendChild(
+        kv(
+          "매수금액",
+          h.buy_amount != null ? formatWon(h.buy_amount) : "—"
+        )
+      );
+      row1.appendChild(
+        kv(
+          "평가금액",
+          h.eval_amount != null ? formatWon(h.eval_amount) : "—"
+        )
+      );
       grid.appendChild(row1);
 
       var row2 = el("div", "stock-card__grid-row");
-      row2.appendChild(kvAgent(h));
-      row2.appendChild(kv("진행상태", normalizeDisplayStatus(h.status)));
+      row2.appendChild(kv("10% 달성", formatMilestoneDays(h, 10)));
+      row2.appendChild(kv("20% 달성", formatMilestoneDays(h, 20)));
       grid.appendChild(row2);
+
+      var row3 = el("div", "stock-card__grid-row stock-card__grid-row--full");
+      row3.appendChild(kvAgent(h));
+      grid.appendChild(row3);
       card.appendChild(grid);
 
       var reason = el("div", "reason-box reason-box--plain");
-      reason.appendChild(el("div", "reason-box__title", "왜 추천됐어요?"));
+      reason.appendChild(el("div", "reason-box__title", "왜 추천했어요?"));
       reason.appendChild(
         el("p", "reason-box__body", h.plain_reason || h.plainReason || "—")
       );
@@ -320,34 +444,6 @@
     block.appendChild(el("span", "kv__label", label));
     block.appendChild(el("span", "kv__value", value));
     return block;
-  }
-
-  function renderAgents(container, items) {
-    container.innerHTML = "";
-    (items || []).forEach(function (a) {
-      var card = el("article", "card card--pad agent-card");
-      var top = el("div", "agent-card__top");
-      var identity = el("div", "agent-card__identity");
-      identity.appendChild(el("h3", "agent-card__name", a.name || ""));
-      identity.appendChild(el("span", "agent-card__model", a.model_id || ""));
-      top.appendChild(identity);
-      top.appendChild(
-        el(
-          "span",
-          "agent-card__return " + trendClass(a.cumulative_return_pct),
-          formatReturnPct(a.cumulative_return_pct)
-        )
-      );
-      card.appendChild(top);
-
-      var holdings = el("div", "agent-card__holdings kv");
-      holdings.appendChild(el("span", "kv__label", "추천 종목"));
-      var names = Array.isArray(a.pick_names) ? a.pick_names.join(", ") : "";
-      holdings.appendChild(el("span", "kv__value", names));
-      card.appendChild(holdings);
-
-      container.appendChild(card);
-    });
   }
 
   function showError(message) {
@@ -371,18 +467,16 @@
   }
 
   function init() {
+    var agentRankTable = document.querySelector(".agent-rank-table");
     var rankTable = document.querySelector(".rank-table");
     var holdingsList = document.querySelector(".holdings-list");
-    var agentsList = document.querySelector(".agents-list");
-    if (!rankTable || !holdingsList || !agentsList) {
+    if (!agentRankTable || !rankTable || !holdingsList) {
       showError("렌더링 컨테이너를 찾지 못했습니다.");
       return;
     }
 
     function fetchDisplayData() {
-      var url =
-        DISPLAY_API + "?week_id=" + encodeURIComponent(weekId || DEFAULT_WEEK_ID);
-      return fetch(url)
+      return fetch(DISPLAY_API)
         .then(function (res) {
           if (!res.ok) throw new Error("display API " + res.status);
           return res.json();
@@ -402,45 +496,24 @@
     fetchDisplayData()
       .then(function (data) {
         pageData = data;
-        weekId =
-          (data.pageMeta && data.pageMeta.week_id) ||
-          (data.recommendations && data.recommendations.week_id) ||
-          weekId;
-        var holdings = (data.holdings || []).slice();
-
-        return fetchServerState().then(function (serverDoc) {
-          var localMap = readLocalStates();
-          var serverMap = serverDoc ? serverStateToMap(serverDoc) : {};
-          var merged = mergeStateMaps(serverMap, localMap);
-          applyStates(holdings, merged);
-          return holdings;
-        });
+        return (data.holdings || []).slice();
       })
       .then(function (holdings) {
         var data = pageData;
+        allHoldings = holdings.slice();
         renderPageMeta(data.pageMeta || {});
         var rankings =
           (data.rankings && data.rankings.length
             ? data.rankings
             : buildRankingsFromHoldings(holdings)) || [];
+        renderAgentRankings(agentRankTable, data.agents || []);
         renderRankings(rankTable, rankings);
-        renderHoldings(holdingsList, holdings);
-        renderAgents(agentsList, data.agents || []);
-
-        var expected = Number(
-          (data.recommendations && data.recommendations.ticker_count) ||
-            (data.pageMeta && data.pageMeta.recommendation_count) ||
-            15
+        setupHoldingsAgentFilter(data.agents || [], holdingsList);
+        renderHoldings(
+          holdingsList,
+          filterHoldings(allHoldings, holdingsFilterKey)
         );
-        if (holdings.length !== expected) {
-          showError(
-            "추천 종목 수 불일치: JSON " +
-              expected +
-              "종 기대, 화면 " +
-              holdings.length +
-              "종"
-          );
-        }
+
       })
       .catch(function (err) {
         showError(

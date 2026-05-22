@@ -108,7 +108,6 @@ def build_firestore_doc(
         "mode": merged.get("mode") or weekly.get("mode") or "",
         "inputSource": weekly.get("input_source") or "",
         "virtualBuys": list(prev.get("virtualBuys") or []),
-        "virtualTakeProfits": list(prev.get("virtualTakeProfits") or []),
         "updatedAt": _now_iso(),
     }
 
@@ -234,13 +233,57 @@ def save_weekly_from_local_files(
 
 
 def append_virtual_buy(week_id: str, record: dict[str, Any]) -> dict[str, Any]:
-    """가상매수 즉시 저장."""
-    return _append_virtual_event(week_id, "virtualBuys", record)
+    """레거시 API — 즉시 체결 대신 가상 지정가 주문 생성."""
+    from agents.mock_trading.pending_executions_store import enqueue_limit_order
+    from agents.mock_trading.trading_calendar import now_kst, plan_intraday_execution
+    from agents.mock_trading.virtual_buy_service import has_holding
+
+    result = _append_virtual_event(week_id, "virtualBuys", record)
+    if not result.get("ok"):
+        return result
+
+    ticker = str(record.get("ticker") or "").zfill(6)
+    limit_price = int(
+        record.get("limit_price")
+        or record.get("limitPrice")
+        or record.get("buyPrice")
+        or record.get("buy_price")
+        or 0
+    )
+    if has_holding(ticker):
+        result["order"] = {"ok": False, "error": "already_holding", "use_recommendation_only": True}
+        return result
+    if limit_price <= 0:
+        result["order"] = {"ok": False, "error": "limit_price required"}
+        return result
+
+    plan = plan_intraday_execution(now_kst())
+    order = enqueue_limit_order(
+        {
+            "ticker": ticker,
+            "name": record.get("name"),
+            "limit_price": limit_price,
+            "entry_type": record.get("entryType") or record.get("entry_type") or "LEGACY_API",
+            "trigger_type": "REGULAR",
+            "agent_keys": record.get("agentKeys") or record.get("agent_keys"),
+            "agent_names": record.get("recommendedAgents") or record.get("recommending_agents"),
+            "judgment_run_id": week_id,
+            **plan,
+        }
+    )
+    result["order"] = order
+    result["message"] = "지정가 주문 생성됨 — 체결 후 ledger 반영"
+    return result
 
 
 def append_virtual_take_profit(week_id: str, record: dict[str, Any]) -> dict[str, Any]:
-    """익절 즉시 저장."""
-    return _append_virtual_event(week_id, "virtualTakeProfits", record)
+    """비활성 — 이 앱은 매도·익절·종료를 사용하지 않음."""
+    return {
+        "ok": False,
+        "error": "take_profit_disabled",
+        "message": "가상매수 후 계속 관찰만 지원합니다. 익절·매도 API는 사용하지 않습니다.",
+        "week_id": week_id,
+    }
 
 
 def _append_virtual_event(

@@ -14,14 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from agents.mock_trading.trading_state_store import load_trading_state, save_trading_state
-from agents.mock_trading.trading_web_sync import (
-    build_trading_data,
-    build_trading_data_from_firestore_doc,
-)
+from agents.mock_trading.trading_web_sync import build_cumulative_trading_payload
 from agents.mock_trading.weekly_recommendations_store import (
     append_virtual_buy,
-    append_virtual_take_profit,
     load_weekly_recommendations,
 )
 
@@ -50,9 +45,6 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
-        if path == "/api/trading-state":
-            self._handle_get_state()
-            return
         if path == "/api/weekly-recommendations":
             self._handle_get_weekly()
             return
@@ -63,14 +55,20 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path
-        if path == "/api/trading-state":
-            self._handle_post_state()
-            return
         if path == "/api/virtual-buy":
             self._handle_virtual_buy()
             return
-        if path == "/api/virtual-take-profit":
-            self._handle_virtual_take_profit()
+        if path == "/api/mock-trading/scheduled-judgment":
+            self._handle_scheduled_judgment()
+            return
+        if path == "/api/mock-trading/execute-pending":
+            self._handle_execute_pending()
+            return
+        if path == "/api/mock-trading/realtime-watch":
+            self._handle_realtime_watch()
+            return
+        if path == "/api/mock-trading/intraday-judgment":
+            self._handle_intraday_judgment()
             return
         self.send_error(404)
 
@@ -96,10 +94,6 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _handle_get_state(self) -> None:
-        doc = load_trading_state(self._parse_week_id())
-        self._json_response(200, {"ok": True, "state": doc})
-
     def _handle_get_weekly(self) -> None:
         week_id = self._parse_week_id()
         doc = load_weekly_recommendations(week_id)
@@ -109,34 +103,13 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
         self._json_response(200, {"ok": True, "week_id": week_id, "weekly": doc})
 
     def _handle_get_trading_display(self) -> None:
-        week_id = self._parse_week_id()
-        weekly_doc = load_weekly_recommendations(week_id)
-        if weekly_doc:
-            data = build_trading_data_from_firestore_doc(weekly_doc)
-            self._json_response(
-                200,
-                {
-                    "ok": True,
-                    "week_id": week_id,
-                    "data": data,
-                    "weekly": {
-                        "persist_backend": weekly_doc.get("persist_backend"),
-                        "firestore_path": weekly_doc.get("firestore_path"),
-                        "uniqueRecommendationCount": weekly_doc.get(
-                            "uniqueRecommendationCount"
-                        ),
-                    },
-                },
-            )
-            return
-        data = build_trading_data()
+        data = build_cumulative_trading_payload()
         self._json_response(
             200,
             {
                 "ok": True,
-                "week_id": week_id,
+                "scope": "cumulative",
                 "data": data,
-                "weekly": {"persist_backend": "local_json_files"},
             },
         )
 
@@ -150,26 +123,43 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
         saved = append_virtual_buy(week_id, record)
         self._json_response(200 if saved.get("ok") else 500, saved)
 
-    def _handle_virtual_take_profit(self) -> None:
-        body = self._read_json_body()
-        week_id = str(body.get("week_id") or self._parse_week_id())
-        record = body.get("record")
-        if not isinstance(record, dict):
-            self._json_response(400, {"ok": False, "error": "record object required"})
-            return
-        saved = append_virtual_take_profit(week_id, record)
-        self._json_response(200 if saved.get("ok") else 500, saved)
+    def _handle_scheduled_judgment(self) -> None:
+        from agents.mock_trading.scheduled_judgment import run_scheduled_judgment
 
-    def _handle_post_state(self) -> None:
         body = self._read_json_body()
-        week_id = str(body.get("week_id") or "2026-W21")
-        holdings = body.get("holdings")
-        if not isinstance(holdings, list):
-            self._json_response(400, {"ok": False, "error": "holdings array required"})
-            return
-        saved = save_trading_state(week_id, holdings)
-        self._json_response(200, {"ok": True, "state": saved})
+        result = run_scheduled_judgment(
+            entry_type=body.get("entry_type"),
+            dry_run=bool(body.get("dry_run")),
+            force=bool(body.get("force")),
+        )
+        self._json_response(200 if result.get("ok") else 400, result)
 
+    def _handle_execute_pending(self) -> None:
+        from agents.mock_trading.virtual_buy_executor import process_limit_orders
+
+        result = process_limit_orders()
+        self._json_response(200 if result.get("ok") else 500, result)
+
+    def _handle_realtime_watch(self) -> None:
+        from agents.mock_trading.realtime_watch import run_watch_cycle
+
+        body = self._read_json_body()
+        result = run_watch_cycle(
+            min_change_rate=float(body.get("min_change_rate") or 3.0),
+            include_dart=body.get("include_dart", True) is not False,
+            persist_candidates=body.get("persist_candidates", True) is not False,
+        )
+        self._json_response(200 if result.get("ok") else 500, result)
+
+    def _handle_intraday_judgment(self) -> None:
+        from agents.mock_trading.intraday_alert_judgment import process_open_intraday_candidates
+
+        body = self._read_json_body()
+        result = process_open_intraday_candidates(
+            dry_run=bool(body.get("dry_run")),
+            limit=int(body.get("limit") or 5),
+        )
+        self._json_response(200 if result.get("ok") else 500, result)
 
 def main() -> int:
     import argparse
@@ -183,10 +173,13 @@ def main() -> int:
     print(f"Serving {ROOT} on http://{args.bind}:{args.port}/")
     print(f"Web UI: http://127.0.0.1:{args.port}/template/kr_trading/")
     print("API:")
-    print("  GET  /api/trading-display?week_id=2026-W21")
+    print("  GET  /api/trading-display")
     print("  GET  /api/weekly-recommendations?week_id=2026-W21")
-    print("  GET/POST /api/trading-state?week_id=2026-W21")
-    print("  POST /api/virtual-buy | /api/virtual-take-profit")
+    print("  POST /api/virtual-buy")
+    print("  POST /api/mock-trading/scheduled-judgment")
+    print("  POST /api/mock-trading/execute-pending")
+    print("  POST /api/mock-trading/realtime-watch")
+    print("  POST /api/mock-trading/intraday-judgment")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

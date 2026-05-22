@@ -29,13 +29,13 @@ def main() -> int:
 
     payload = build_trading_data()
     n = len(payload.get("holdings") or [])
-    multi = sum(
-        1 for h in payload.get("holdings") or [] if int(h.get("recommendation_count") or 0) > 1
+    meta = payload.get("pageMeta") or {}
+    print(
+        f"scope=cumulative market={meta.get('market')} "
+        f"positions={meta.get('position_count', n)}종"
     )
-    print(f"week_id={payload.get('pageMeta', {}).get('week_id')} holdings={n}종")
-    print(f"복수 추천 종목: {multi}종")
     print(f"저장: {OUT_PATH}")
-    return 0 if n == 15 else 1
+    return 0
 
 
 if __name__ == "__main__":

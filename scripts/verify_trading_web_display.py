@@ -24,9 +24,7 @@ REQUIRED_HOLDING_KEYS = (
     "agent",
     "recommending_agents",
     "recommendation_count",
-    "selection_reason",
-    "risk_factors_text",
-    "status",
+    "plain_reason",
 )
 
 
@@ -54,13 +52,20 @@ def main() -> int:
     holdings = trading.get("holdings") or []
     merged_cards = merged.get("merged_cards") or []
 
-    # 1) 15종 노출
-    ok_count = len(holdings) == 15 and merged.get("ticker_count") == 15
+    meta = trading.get("pageMeta") or {}
+    # 1) 누적 스코프·주간 메타 미노출
+    ok_scope = (
+        trading.get("scope") == "cumulative"
+        and "week_id" not in meta
+        and "weekday_label" not in meta
+        and meta.get("market") == "한국시장"
+        and bool(meta.get("updated_at"))
+    )
     results.append(
         (
-            "1. 최종 추천 15종 trading_data 반영",
-            ok_count,
-            f"holdings={len(holdings)}, merged.ticker_count={merged.get('ticker_count')}",
+            "1. 누적 표시 스코프·pageMeta(market·updated_at만)",
+            ok_scope,
+            f"scope={trading.get('scope')}, pageMeta keys={sorted(meta.keys())}",
         )
     )
 
@@ -76,55 +81,33 @@ def main() -> int:
     ok_fields = len(missing) == 0
     results.append(
         (
-            "2. 카드 필수 필드(종목명·현재가·에이전트·이유·위험·상태)",
+            "2. 카드 필수 필드(종목명·현재가·에이전트·쉬운 해설)",
             ok_fields,
             "누락 " + ", ".join(missing[:8]) if missing else "OK",
         )
     )
 
-    # 3) 복수 에이전트 합산
-    multi_merged = [c for c in merged_cards if int(c.get("recommendation_count") or 0) > 1]
-    multi_hold = [h for h in holdings if int(h.get("recommendation_count") or 0) > 1]
-    ok_multi = len(multi_merged) == len(multi_hold) and all(
-        len(h.get("recommending_agents") or []) == int(h.get("recommendation_count") or 0)
-        for h in multi_hold
-    )
+    # 3) 보유 종목(가상매수) 카드 필드 일관성
+    ok_holdings_shape = all(h.get("virtually_bought") is True for h in holdings) if holdings else True
     results.append(
         (
-            "3. 복수 추천 합산(5종 기대)",
-            ok_multi and len(multi_hold) == 5,
-            f"merged={len(multi_merged)}, holdings={len(multi_hold)}",
+            "3. 누적 보유(가상매수) 카드만 노출",
+            ok_holdings_shape,
+            f"holdings={len(holdings)}",
         )
     )
 
-    # 4) Firebase/API 상태 유지
-    import os
-
-    port = os.environ.get("MOCK_TRADING_PORT", "8090")
-    base = f"http://127.0.0.1:{port}"
-    week_id = merged.get("week_id") or "2026-W21"
-    test_ticker = str(holdings[0].get("ticker")).zfill(6) if holdings else "000000"
-    persist_ok = False
-    persist_detail = "API 서버 미기동 — python scripts/serve_mock_trading.py 필요"
-    try:
-        post_body = {
-            "week_id": week_id,
-            "holdings": [{"ticker": test_ticker, "status": "투자 진행 중"}],
-        }
-        saved = _http_json(base + "/api/trading-state", method="POST", body=post_body)
-        loaded = _http_json(
-            base + "/api/trading-state?" + urllib.parse.urlencode({"week_id": week_id})
+    # 4) 에이전트 누적 성과 필드
+    agents = trading.get("agents") or []
+    has_cumulative = all("cumulative_return_pct" in a for a in agents) if agents else False
+    no_exit_fields = not any(h.get("status") for h in holdings)
+    results.append(
+        (
+            "4. 종료 상태 미사용·에이전트 누적 수익률 필드",
+            has_cumulative and len(agents) == 4 and no_exit_fields,
+            f"agents={len(agents)}, holdings_with_status={sum(1 for h in holdings if h.get('status'))}",
         )
-        state = loaded.get("state") or {}
-        rows = {str(r.get("ticker")).zfill(6): r.get("status") for r in state.get("holdings") or []}
-        persist_ok = saved.get("ok") and rows.get(test_ticker) == "투자 진행 중"
-        backend = (saved.get("state") or {}).get("persist_backend") or "unknown"
-        fb = (saved.get("state") or {}).get("firebase") or {}
-        persist_detail = f"backend={backend}, firebase_ok={fb.get('ok')}, status={rows.get(test_ticker)}"
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
-        persist_detail = str(exc)
-
-    results.append(("4. 상태 저장·재조회(새로고침 시뮬)", persist_ok, persist_detail))
+    )
 
     print("=== kr_trading 표시 테스트 ===\n")
     failed = 0

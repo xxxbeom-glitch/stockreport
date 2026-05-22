@@ -15,7 +15,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
     />
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=18" />
     <script>
       (function () {
         var root = document.documentElement;
@@ -41,13 +41,18 @@
         <header class="page-header">
           <h1 class="page-title">모의 투자 시스템</h1>
           <p class="page-meta">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span class="page-meta__line"></span>
           </p>
         </header>
 
         <main class="page-content">
+          <section class="section" aria-labelledby="agent-rank-title">
+            <h2 id="agent-rank-title" class="section-title">에이전트별 수익률</h2>
+            <article class="card card--pad rank-card">
+              <div class="agent-rank-table" role="table"></div>
+            </article>
+          </section>
+
           <section class="section" aria-labelledby="rank-title">
             <h2 id="rank-title" class="section-title">투자 성과 순위</h2>
             <article class="card card--pad rank-card">
@@ -58,55 +63,44 @@
           <section class="section" aria-labelledby="holdings-title">
             <div class="section-head">
               <h2 id="holdings-title" class="section-title">보유 종목 상세</h2>
-              <button type="button" class="filter-pill" aria-label="전체모델 필터">
-                <span>전체모델</span>
-                <svg
-                  class="filter-pill__chevron"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
+              <div class="filter-wrap holdings-filter-wrap">
+                <button
+                  type="button"
+                  class="filter-pill holdings-filter-pill"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-label="에이전트 모델 필터"
                 >
-                  <polyline
-                    points="19 9 12 16 5 9"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
+                  <span class="holdings-filter-pill__label">전체 모델</span>
+                  <svg
+                    class="filter-pill__chevron"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <polyline
+                      points="19 9 12 16 5 9"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                <ul
+                  class="filter-menu holdings-filter-menu"
+                  role="listbox"
+                  aria-label="에이전트 모델 선택"
+                  hidden
+                ></ul>
+              </div>
             </div>
             <div class="holdings-list"></div>
-          </section>
-
-          <section class="section" aria-labelledby="agents-title">
-            <div class="section-head">
-              <h2 id="agents-title" class="section-title">에이전트 수익률</h2>
-              <button type="button" class="filter-pill" aria-label="전체모델 필터">
-                <span>전체모델</span>
-                <svg
-                  class="filter-pill__chevron"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <polyline
-                    points="19 9 12 16 5 9"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div class="agents-list"></div>
           </section>
         </main>
       </div>
     </div>
-    <script src="render.js?v=12" defer></script>
+    <script src="render.js?v=21" defer></script>
   </body>
 </html>

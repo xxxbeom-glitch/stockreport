@@ -105,7 +105,7 @@ def main() -> int:
     api_ok = False
     api_detail = "serve_mock_trading.py 미기동"
     try:
-        url = base + "/api/trading-display?" + urllib.parse.urlencode({"week_id": week_id})
+        url = base + "/api/trading-display"
         body = _http_json(url)
         data = body.get("data") or {}
         holdings = data.get("holdings") or []
