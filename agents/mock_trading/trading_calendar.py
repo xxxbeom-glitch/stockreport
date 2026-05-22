@@ -11,8 +11,8 @@ from agents.mock_trading.entry_types import (
     ENTRY_TYPE_BY_WEEKDAY,
     EXECUTION_SLOT_KRX_END,
     EXECUTION_SLOT_KRX_OPEN,
-    EXECUTION_SLOT_NXT,
     EXECUTION_SLOT_NXT_END,
+    EXECUTION_SLOT_NXT_START,
     JUDGMENT_AFTER_CLOSE,
     REGULAR_ENTRY_TYPES,
 )
@@ -82,12 +82,12 @@ def plan_regular_execution(
     *,
     nxt_available: bool,
 ) -> dict[str, Any]:
-    """정기 판단 → NXT 16:00 또는 다음 거래일 09:10."""
+    """정기 판단 → NXT 15:40~20:00 또는 다음 거래일 KRX 09:10~15:30."""
     judgment_at = judgment_at.astimezone(KST)
     jdate = judgment_at.date()
 
     if nxt_available and is_trading_day(jdate):
-        scheduled = datetime.combine(jdate, time(*EXECUTION_SLOT_NXT), tzinfo=KST)
+        scheduled = datetime.combine(jdate, time(*EXECUTION_SLOT_NXT_START), tzinfo=KST)
         if judgment_at > scheduled:
             scheduled = judgment_at.replace(second=0, microsecond=0)
         session_end = datetime.combine(jdate, time(*EXECUTION_SLOT_NXT_END), tzinfo=KST)

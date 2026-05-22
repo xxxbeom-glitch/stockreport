@@ -58,6 +58,9 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
         if path == "/api/virtual-buy":
             self._handle_virtual_buy()
             return
+        if path == "/api/mock-trading/auto-ops":
+            self._handle_auto_ops()
+            return
         if path == "/api/mock-trading/scheduled-judgment":
             self._handle_scheduled_judgment()
             return
@@ -123,6 +126,13 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
         saved = append_virtual_buy(week_id, record)
         self._json_response(200 if saved.get("ok") else 500, saved)
 
+    def _handle_auto_ops(self) -> None:
+        from agents.mock_trading.auto_operations import run_auto_operations
+
+        body = self._read_json_body()
+        result = run_auto_operations(force_judgment=bool(body.get("force_judgment")))
+        self._json_response(200 if result.get("ok") else 400, result)
+
     def _handle_scheduled_judgment(self) -> None:
         from agents.mock_trading.scheduled_judgment import run_scheduled_judgment
 
@@ -176,6 +186,7 @@ def main() -> int:
     print("  GET  /api/trading-display")
     print("  GET  /api/weekly-recommendations?week_id=2026-W21")
     print("  POST /api/virtual-buy")
+    print("  POST /api/mock-trading/auto-ops")
     print("  POST /api/mock-trading/scheduled-judgment")
     print("  POST /api/mock-trading/execute-pending")
     print("  POST /api/mock-trading/realtime-watch")
