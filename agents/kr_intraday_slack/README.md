@@ -23,7 +23,7 @@ python scripts/run_kr_intraday_slack.py --slot 1030 --live
 # 운영 발송 (로컬)
 python scripts/run_kr_intraday_slack.py --slot 1350 --live --send
 
-# GitHub Actions: `.github/workflows/kr_intraday_slack.yml` — KST 10:30 / 13:50 자동 --live --send
+# GitHub Actions: `.github/workflows/daily_pick_alert.yml` — KST 10:30 / 13:50 자동 --live --send
 ```
 
 ## AI (멀티 모델)

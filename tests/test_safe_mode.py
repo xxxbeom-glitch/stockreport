@@ -39,7 +39,7 @@ class TestDailyPickFlags(unittest.TestCase):
         os.environ["DAILY_PICK_AUTO_SEND"] = "true"
         lines: list[str] = []
         safe_mode.print_daily_pick_status(emit=lines.append)
-        self.assertIn("[DAILY_PICK] auto send enabled", lines)
+        self.assertIn("[DAILY_PICK] Slack 발송 가능", lines)
 
 
 class TestWatchlistReviewFlags(unittest.TestCase):
@@ -64,9 +64,9 @@ class TestWatchlistReviewFlags(unittest.TestCase):
         lines: list[str] = []
         safe_mode.print_watchlist_review_status(emit=lines.append)
         joined = "\n".join(lines)
-        self.assertIn("[WATCHLIST_REVIEW] auto send disabled", joined)
-        self.assertIn("[WATCHLIST_REVIEW] auto apply disabled", joined)
-        self.assertIn("candidate auto replace disabled", joined)
+        self.assertIn("[WATCHLIST_REVIEW] 자동 발송 중지", joined)
+        self.assertIn("[WATCHLIST_REVIEW] 자동 수정 중지", joined)
+        self.assertIn("[CANDIDATES] 자동 교체 중지", joined)
 
     def test_save_without_apply_returns_false(self) -> None:
         before = load_kr_watchlist_raw()
@@ -91,9 +91,10 @@ class TestWatchlistReviewFlags(unittest.TestCase):
 class TestWorkflowSchedules(unittest.TestCase):
     def test_daily_pick_workflow_has_active_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        text = (root / ".github" / "workflows" / "kr_intraday_slack.yml").read_text(
+        text = (root / ".github" / "workflows" / "daily_pick_alert.yml").read_text(
             encoding="utf-8"
         )
+        self.assertIn("name: 매일 투자 후보 알림", text)
         self.assertIn("workflow_dispatch:", text)
         self.assertIn("\n  schedule:\n", text)
         active_cron = [
@@ -106,7 +107,7 @@ class TestWorkflowSchedules(unittest.TestCase):
 
     def test_watchlist_review_workflow_has_no_active_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        text = (root / ".github" / "workflows" / "weekly_watchlist.yml").read_text(
+        text = (root / ".github" / "workflows" / "watchlist_review.yml").read_text(
             encoding="utf-8"
         )
         self.assertIn("workflow_dispatch:", text)
@@ -118,6 +119,15 @@ class TestWorkflowSchedules(unittest.TestCase):
         ]
         self.assertEqual(active_cron, [])
         self.assertIn('WATCHLIST_REVIEW_AUTO_SEND: "false"', text)
+
+    def test_candidate_scan_workflow_manual_only(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        text = (root / ".github" / "workflows" / "candidate_scan_test.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("name: 신규 후보 스캔 테스트", text)
+        self.assertIn("workflow_dispatch:", text)
+        self.assertNotIn("\n  schedule:\n", text)
 
 
 class TestPipelineSlackGate(unittest.TestCase):

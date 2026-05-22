@@ -98,26 +98,40 @@ def can_replace_candidates(*, explicit_cli: bool = False) -> bool:
     return candidate_auto_replace_enabled()
 
 
+def can_send_candidate_slack(*, explicit_cli: bool = False) -> bool:
+    """신규 후보 스캔 테스트 — 수동 --send-slack 시에만 (자동 스케줄·env 게이트 없음)."""
+    return explicit_cli
+
+
 def print_daily_pick_status(emit: Callable[[str], None] | None = None) -> None:
     out = emit or print
     if daily_pick_auto_send_enabled():
-        out("[DAILY_PICK] auto send enabled")
+        out("[DAILY_PICK] Slack 발송 가능")
     else:
-        out("[DAILY_PICK] auto send disabled")
+        out("[DAILY_PICK] Slack 발송 비활성 (DAILY_PICK_AUTO_SEND=false)")
 
 
 def print_watchlist_review_status(emit: Callable[[str], None] | None = None) -> None:
     out = emit or print
     if watchlist_review_auto_send_enabled():
-        out("[WATCHLIST_REVIEW] auto send enabled")
+        out("[WATCHLIST_REVIEW] 자동 발송 허용 (WATCHLIST_REVIEW_AUTO_SEND=true)")
     else:
-        out("[WATCHLIST_REVIEW] auto send disabled")
+        out("[WATCHLIST_REVIEW] 자동 발송 중지")
     if watchlist_auto_apply_enabled():
-        out("[WATCHLIST_REVIEW] auto apply enabled")
+        out("[WATCHLIST_REVIEW] 자동 수정 허용 (WATCHLIST_AUTO_APPLY=true)")
     else:
-        out("[WATCHLIST_REVIEW] auto apply disabled")
+        out("[WATCHLIST_REVIEW] 자동 수정 중지")
+    if candidate_auto_replace_enabled():
+        out("[CANDIDATES] 자동 교체 허용 (CANDIDATE_AUTO_REPLACE=true)")
+    elif not candidate_auto_replace_enabled():
+        out("[CANDIDATES] 자동 교체 중지 — 제안만 생성")
+
+
+def print_candidate_scan_status(emit: Callable[[str], None] | None = None) -> None:
+    out = emit or print
+    out("[CANDIDATES] 제안만 생성 (watchlist·kr_watchlist.json 미수정)")
     if not candidate_auto_replace_enabled():
-        out("[WATCHLIST_REVIEW] candidate auto replace disabled")
+        out("[CANDIDATES] 자동 교체 중지")
 
 
 def print_safe_mode_banner(emit: Callable[[str], None] | None = None) -> None:

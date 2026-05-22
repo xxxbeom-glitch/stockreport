@@ -1,10 +1,16 @@
 # GitHub Actions
 
-## 운영 (Slack 자동 발송)
+## 운영 (Slack·자동화)
 
-| 파일 | Workflow | 용도 |
-|------|----------|------|
-| **kr_intraday_slack.yml** | KR Intraday Slack Scan | 장중 관심종목 알림 (KST **10:30** / **13:50** 자동, `--live --send`) |
+| 파일 | Workflow (Actions 탭 이름) | 용도 |
+|------|---------------------------|------|
+| **daily_pick_alert.yml** | 매일 투자 후보 알림 | KST **10:30** / **13:50** 자동 + 수동. 오늘 볼 만한 종목 Slack |
+| **watchlist_review.yml** | 관심종목 재평가 리포트 | **수동만**. 25종목 유지/주의/제외, proposal·리포트 |
+| **candidate_scan_test.yml** | 신규 후보 스캔 테스트 | **수동만**. 신규 후보 탐색·JSON 제안 (watchlist 미수정) |
+
+레거시 파일명 (삭제됨): `kr_intraday_slack.yml`, `weekly_watchlist.yml` → 위 3개로 대체.
+
+전체 운영 설명: [docs/STOCKREPORT_OPERATIONS.md](../../docs/STOCKREPORT_OPERATIONS.md)
 
 ## CI / 검증 (Slack 발송 없음)
 
@@ -15,15 +21,13 @@
 
 ## 삭제됨 (2026-05-21)
 
-예전 장시작/장마감 브리핑 자동 발송 workflow — repo에서 제거:
+예전 장시작/장마감 브리핑 자동 발송 workflow:
 
 - `01_us_close.yml`, `02_kr_open.yml`, `03_kr_close.yml`, `04_us_open.yml`
 
-리포트 생성은 로컬 `main.py` 가능. Slack 자동 발송은 `kr_intraday_slack.yml` 만 사용.
+리포트 생성은 로컬 `main.py` 가능.
 
-## `KR Intraday Slack Scan` — Secrets 설정
-
-### Repository secrets (권장)
+## Secrets 설정
 
 GitHub → **Settings → Secrets and variables → Actions → Repository secrets**
 
@@ -36,39 +40,52 @@ GitHub → **Settings → Secrets and variables → Actions → Repository secre
 | `KIS_APP_SECRET` | ✅ | 라이브 시세 |
 | `GROK_API_KEY` | optional | X/뉴스 보조 |
 | `GEMINI_API_KEY` | optional | 문장 polish |
+| `DART_API_KEY` | optional | 주간 공시 |
+| `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` | optional | 주간 뉴스 |
 | `KIS_ACCOUNT_NO` | optional | KIS |
 | `KRX_ID` / `KRX_PW` | optional | pykrx |
 
-### Variables (optional, 비밀 아님)
+### Variables (optional)
 
-**Actions → Variables → Repository variables**
+`AI_PROVIDER`, `AI_MODEL`, `AI_SOCIAL_*`, `AI_SUMMARY_*` — `daily_pick_alert.yml` job `env` 기본값 참고.
 
-`AI_PROVIDER`, `AI_MODEL`, `AI_SOCIAL_PROVIDER`, `AI_SOCIAL_MODEL`, `AI_SUMMARY_PROVIDER`, `AI_SUMMARY_MODEL` — 미설정 시 workflow 기본값 사용.
+### Environment secrets
 
-### Environment secrets 사용 시
+Secrets를 **Environment**에만 넣었다면 `daily_pick_alert.yml` 의 `jobs.daily_pick` 에 `environment: production` 등 추가.
 
-Secrets를 **Environment**(예: `production`)에만 넣었다면:
+## Run workflow 입력 (요약)
 
-1. Settings → **Environments** 에서 environment 이름 확인
-2. `kr_intraday_slack.yml` 의 `jobs.scan` 에서 주석 해제:
-   ```yaml
-   environment: production   # 실제 이름으로 변경
-   ```
-3. 해당 Environment에 위 표와 **동일한 secret 이름** 등록
+### 매일 투자 후보 알림
 
-Preflight 단계는 **job `env`에서 secrets를 받음** — step에만 env를 두면 MISSING이 난다 (2026-05-21 수정).
+| 입력 | 기본값 |
+|------|--------|
+| 실행 기준 (`run_timing`) | 자동 |
+| 실제 데이터로 확인 | true |
+| Slack으로 보내기 | true |
+| 최대 발송 개수 | 3 |
 
-### 수동 실운영 발송 (workflow_dispatch)
+### 관심종목 재평가 리포트
 
-Actions → **KR Intraday Slack Scan** → **Run workflow**
+| 입력 | 기본값 |
+|------|--------|
+| 실제 데이터로 확인 | true |
+| 뉴스/공시 포함 | false |
+| Slack으로 보내기 | false |
+| 관심종목 자동 수정 | false |
 
-| Input | 기본값 | 설명 |
-|-------|--------|------|
-| `slot` | `auto` | `auto` \| `1030` \| `1350` (12시 이전 auto → 1030, 이후 → 1350) |
-| `live` | `true` | `false` 시 더미/로컬 시세 |
-| `send` | `true` | `false` 시 `--dry-run` (Slack 미발송) |
-| `max_messages` | `3` | SendFilter 상한 |
+### 신규 후보 스캔 테스트
 
-기본 실행: `python scripts/run_kr_intraday_slack.py --slot <SLOT> --live --send --max-messages 3`
+| 입력 | 기본값 |
+|------|--------|
+| 스캔 종목 수 | 30 |
+| 최근 며칠 흐름 | 5 |
+| Slack으로 보내기 | false |
+| 실제 데이터로 확인 | true |
 
-Preflight 로그에 `OK DEEPSEEK_API_KEY` 등 표시 확인.
+로컬 동일 실행:
+
+```bash
+python scripts/run_kr_intraday_slack.py --slot auto --live --send --max-messages 3
+python scripts/run_weekly_watchlist_update.py --no-llm --no-send
+python scripts/run_candidate_scan_test.py --live-data --scan-count 30 --trend-days 5
+```

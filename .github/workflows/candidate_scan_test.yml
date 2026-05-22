@@ -1,0 +1,69 @@
+# 신규 후보 스캔 테스트 — 후보군에서 새 종목 탐색 (제안 JSON만, watchlist 미반영)
+name: 신규 후보 스캔 테스트
+
+on:
+  workflow_dispatch:
+    inputs:
+      scan_count:
+        description: |
+          스캔 종목 수
+          pykrx로 조회할 후보 상한 (섹터 우선순위 순)
+        type: string
+        default: "30"
+      trend_days:
+        description: |
+          최근 며칠 흐름 볼지
+          daily_scan 누적 일수로 며칠째 강한 종목을 가산합니다.
+        type: string
+        default: "5"
+      send_slack:
+        description: |
+          Slack으로 보내기
+          후보 요약을 Slack으로 보냅니다. (기본 꺼짐 — JSON 제안만 생성)
+        type: boolean
+        default: false
+      use_live_data:
+        description: |
+          실제 데이터로 확인
+          체크하면 pykrx로 OHLCV를 조회합니다. (미체크 시 더 빠른 드라이런)
+        type: boolean
+        default: true
+
+jobs:
+  candidate_scan:
+    name: 신규 후보 스캔
+    runs-on: ubuntu-latest
+    env:
+      DAILY_PICK_AUTO_SEND: "true"
+      WATCHLIST_REVIEW_AUTO_SEND: "false"
+      WATCHLIST_AUTO_APPLY: "false"
+      CANDIDATE_AUTO_REPLACE: "false"
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
+      KRX_ID: ${{ secrets.KRX_ID }}
+      KRX_PW: ${{ secrets.KRX_PW }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: 신규 후보 스캔 실행
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS=(
+            python scripts/run_candidate_scan_test.py
+            --scan-count "${{ inputs.scan_count }}"
+            --trend-days "${{ inputs.trend_days }}"
+          )
+          if [ "${{ inputs.use_live_data }}" = "true" ]; then
+            ARGS+=(--live-data)
+          fi
+          if [ "${{ inputs.send_slack }}" = "true" ]; then
+            ARGS+=(--send-slack)
+          fi
+          echo "Command: ${ARGS[*]}"
+          "${ARGS[@]}"
