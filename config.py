@@ -27,6 +27,12 @@ PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent
 GEMINI_API_KEY: Final[str] = os.getenv("GEMINI_API_KEY", "")
 GROK_API_KEY: Final[str] = os.getenv("GROK_API_KEY", "")
 SLACK_BOT_TOKEN: Final[str] = os.getenv("SLACK_BOT_TOKEN", "")
+# 실사용 알림 (채널 ID 또는 Incoming Webhook URL)
+SLACK_BUY_CANDIDATE_WEBHOOK: Final[str] = os.getenv("SLACK_BUY_CANDIDATE_WEBHOOK", "")
+SLACK_BUY_CANDIDATE_CHANNEL: Final[str] = os.getenv("SLACK_BUY_CANDIDATE_CHANNEL", "")
+SLACK_WATCHLIST_REPORT_WEBHOOK: Final[str] = os.getenv("SLACK_WATCHLIST_REPORT_WEBHOOK", "")
+SLACK_WATCHLIST_REPORT_CHANNEL: Final[str] = os.getenv("SLACK_WATCHLIST_REPORT_CHANNEL", "")
+# 레거시 (브리핑·미사용 US 등 — 신규 알림에는 사용하지 않음)
 SLACK_CHANNEL_KR: Final[str] = os.getenv("SLACK_CHANNEL_KR", "")
 SLACK_CHANNEL_US: Final[str] = os.getenv("SLACK_CHANNEL_US", "")
 FIREBASE_STORAGE_BUCKET: Final[str] = os.getenv("FIREBASE_STORAGE_BUCKET", "")
@@ -81,9 +87,20 @@ DATA_SOURCES: Final[dict[str, dict[str, str | bool]]] = {
         "description": "Draft/vote analysis",
     },
     "slack": {
-        "enabled": bool(SLACK_BOT_TOKEN and SLACK_CHANNEL_KR and SLACK_CHANNEL_US),
-        "required_env": "SLACK_BOT_TOKEN+SLACK_CHANNEL_KR+SLACK_CHANNEL_US",
-        "description": "Report delivery (Web API)",
+        "enabled": bool(
+            SLACK_BOT_TOKEN
+            and (
+                SLACK_BUY_CANDIDATE_WEBHOOK
+                or SLACK_BUY_CANDIDATE_CHANNEL
+                or SLACK_CHANNEL_KR
+            )
+            and (
+                SLACK_WATCHLIST_REPORT_WEBHOOK
+                or SLACK_WATCHLIST_REPORT_CHANNEL
+            )
+        ),
+        "required_env": "SLACK_BOT_TOKEN+(BUY_CANDIDATE|WATCHLIST_REPORT destination)",
+        "description": "Alert delivery (buy candidate + watchlist dawn report)",
     },
     "firebase": {
         "enabled": bool(FIREBASE_STORAGE_BUCKET),

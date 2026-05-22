@@ -284,11 +284,11 @@ def run_mock_report(report_type: str | None = None) -> dict[str, Any]:
 
     # CI provides FIREBASE_SERVICE_ACCOUNT; local dev may use FIREBASE_KEY_PATH file.
     firebase_configured = _is_configured("FIREBASE_SERVICE_ACCOUNT")
-    slack_configured = (
-        _is_configured("SLACK_BOT_TOKEN")
-        and _is_configured("SLACK_CHANNEL_KR")
-        and _is_configured("SLACK_CHANNEL_US")
-    )
+    slack_configured = os.getenv("STOCKREPORT_MOCK_SLACK", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ) and _is_configured("SLACK_BOT_TOKEN")
 
     firebase_result = save_report(
         payload={
@@ -301,15 +301,18 @@ def run_mock_report(report_type: str | None = None) -> dict[str, Any]:
 
     pdf_url = str(firebase_result.get("url") or "")
     report_data["pdf_url"] = pdf_url
-    slack_result = send_report(
-        payload={
-            "report_data": report_data,
-            "message": f"[MOCK] {selected} HTML design test",
-            "summary": report_data.get("one_line_summary", ""),
-            "report_type": selected,
-            "pdf_url": pdf_url,
-        }
-    )
+    if slack_configured:
+        slack_result = send_report(
+            payload={
+                "report_data": report_data,
+                "message": f"[MOCK] {selected} HTML design test",
+                "summary": report_data.get("one_line_summary", ""),
+                "report_type": selected,
+                "pdf_url": pdf_url,
+            }
+        )
+    else:
+        slack_result = {"ok": True, "skipped": True, "reason": "mock_slack_disabled"}
     _log_json("[INFO] slack", slack_result)
 
     ok = True

@@ -159,12 +159,9 @@ def run_weekly_watchlist_update(
 
     if may_send and result.slack_text:
         try:
-            from slack_sender import post_message, resolve_slack_channel
+            from slack_sender import post_watchlist_report_message
 
-            import config
-
-            channel = resolve_slack_channel("kr_during") or config.SLACK_CHANNEL_KR
-            posted = post_message(result.slack_text, channel, retries=1)
+            posted = post_watchlist_report_message(result.slack_text, retries=1)
             result.slack_sent = bool(posted.get("ok"))
             if not posted.get("ok"):
                 result.errors.append(f"slack: {posted.get('error', 'unknown')}")

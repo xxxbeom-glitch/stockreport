@@ -11,6 +11,11 @@ from datetime import datetime
 from typing import Any
 
 import config
+from utils.slack_destinations import (
+    is_incoming_webhook,
+    resolve_buy_candidate_destination,
+    resolve_watchlist_report_destination,
+)
 
 SLACK_POST_URL = "https://slack.com/api/chat.postMessage"
 
@@ -56,8 +61,84 @@ PHASE_LABELS: dict[str, str] = {
 }
 
 
+def post_webhook(text: str, webhook_url: str, *, retries: int = 1) -> dict[str, Any]:
+    """Post plain text via Slack Incoming Webhook (no threads)."""
+    url = (webhook_url or "").strip()
+    if not url:
+        return {"ok": False, "error": "webhook_url missing", "skipped": True}
+    body = {"text": text}
+    last_error = ""
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+                headers={"Content-Type": "application/json; charset=utf-8"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:  # nosec B310
+                raw = resp.read().decode("utf-8", errors="replace").strip()
+            if raw.lower() == "ok" or not raw:
+                return {"ok": True, "via": "webhook"}
+            last_error = raw or "webhook_error"
+        except (urllib.error.URLError, TimeoutError) as exc:
+            last_error = str(exc)
+        if attempt < retries:
+            time.sleep(1.0)
+    return {"ok": False, "error": last_error, "via": "webhook"}
+
+
+def post_to_destination(
+    text: str,
+    destination: str,
+    *,
+    thread_ts: str | None = None,
+    blocks: list[dict[str, Any]] | None = None,
+    retries: int = 1,
+) -> dict[str, Any]:
+    """채널 ID(Web API) 또는 Incoming Webhook URL로 1건 발송."""
+    dest = (destination or "").strip()
+    if not dest:
+        return {"ok": False, "error": "Slack destination missing", "skipped": True}
+    if is_incoming_webhook(dest):
+        if thread_ts or blocks:
+            text = (text or "").strip()
+        return post_webhook(text, dest, retries=retries)
+    return post_message(text, dest, thread_ts=thread_ts, blocks=blocks, retries=retries)
+
+
+def post_buy_candidate_message(
+    text: str,
+    *,
+    thread_ts: str | None = None,
+    blocks: list[dict[str, Any]] | None = None,
+    retries: int = 1,
+) -> dict[str, Any]:
+    return post_to_destination(
+        text,
+        resolve_buy_candidate_destination(),
+        thread_ts=thread_ts,
+        blocks=blocks,
+        retries=retries,
+    )
+
+
+def post_watchlist_report_message(
+    text: str,
+    *,
+    blocks: list[dict[str, Any]] | None = None,
+    retries: int = 1,
+) -> dict[str, Any]:
+    return post_to_destination(
+        text,
+        resolve_watchlist_report_destination(),
+        blocks=blocks,
+        retries=retries,
+    )
+
+
 def resolve_slack_channel(report_type: str) -> str | None:
-    """Pick Slack channel ID from report_type."""
+    """Pick Slack channel ID from report_type (레거시 브리핑·US/KR 리포트)."""
     if report_type in KR_SLACK_CHANNEL_TYPES:
         return config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "") or None
     if report_type in US_SLACK_CHANNEL_TYPES:
@@ -850,12 +931,20 @@ def send_kr_intraday_slack(
     ]
     thread_texts = [t for t in thread_texts if t]
 
-    channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
-        "SLACK_CHANNEL_KR", ""
-    )
-    posted = send_slack_threaded_messages(
-        main_text, thread_texts, channel=channel or "", retries=1
-    )
+    destination = resolve_buy_candidate_destination()
+    if is_incoming_webhook(destination):
+        combined = main_text
+        if thread_texts:
+            combined = main_text + "\n\n" + "\n\n".join(thread_texts)
+        posted = post_webhook(combined, destination, retries=1)
+        channel = destination
+    else:
+        channel = destination or resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv(
+            "SLACK_CHANNEL_KR", ""
+        )
+        posted = send_slack_threaded_messages(
+            main_text, thread_texts, channel=channel or "", retries=1
+        )
     ok = bool(posted.get("ok"))
     errors = list(posted.get("errors") or [])
     if not ok and not errors:
@@ -909,11 +998,11 @@ def send_kr_watchlist_report_slack(
     if not config.legacy_report_slack_enabled():
         return _legacy_slack_skipped(report_type)
 
-    channel = resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "")
+    destination = resolve_watchlist_report_destination() or resolve_slack_channel(report_type) or config.SLACK_CHANNEL_KR or os.getenv("SLACK_CHANNEL_KR", "")
     text = build_kr_watchlist_report_slack_text(result, briefing_url)
-    blocks = _briefing_blocks(text, briefing_url)
+    blocks = _briefing_blocks(text, briefing_url) if not is_incoming_webhook(destination) else None
     fallback = text if not briefing_url else f"{text}\n\n브리핑: {briefing_url}"
-    posted = post_message(fallback, channel, blocks=blocks, retries=1)
+    posted = post_to_destination(fallback, destination, blocks=blocks, retries=1)
     return {
         "ok": bool(posted.get("ok")),
         "channel": channel,

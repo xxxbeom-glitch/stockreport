@@ -42,6 +42,8 @@ jobs:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_BUY_CANDIDATE_CHANNEL: ${{ secrets.SLACK_BUY_CANDIDATE_CHANNEL }}
+      SLACK_BUY_CANDIDATE_WEBHOOK: ${{ secrets.SLACK_BUY_CANDIDATE_WEBHOOK }}
       SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
       KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
       KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}

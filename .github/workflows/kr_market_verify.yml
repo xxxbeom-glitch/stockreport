@@ -1,4 +1,4 @@
-name: KR Market Watchlist Verify
+name: KR 관심종목 HTML 검증 (Slack 없음)
 
 on:
   push:

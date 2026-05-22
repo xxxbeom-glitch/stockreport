@@ -73,9 +73,13 @@ def can_send_daily_pick_slack(
     return daily_pick_auto_send_enabled()
 
 
-def can_send_watchlist_review_slack(*, explicit_cli: bool = False) -> bool:
-    """주간 재판단 Slack — 명시 --send-slack + WATCHLIST_REVIEW_AUTO_SEND."""
-    if not explicit_cli:
+def can_send_watchlist_review_slack(
+    *,
+    explicit_cli: bool = False,
+    scheduled: bool = False,
+) -> bool:
+    """관심종목 새벽 리포트 Slack — 스케줄 또는 --send-slack + WATCHLIST_REVIEW_AUTO_SEND."""
+    if not (explicit_cli or scheduled):
         return False
     return watchlist_review_auto_send_enabled()
 

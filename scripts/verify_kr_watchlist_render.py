@@ -297,7 +297,7 @@ def main() -> None:
     parser.add_argument(
         "--notify-slack",
         action="store_true",
-        help="검증 성공 후 SLACK_BOT_TOKEN + SLACK_CHANNEL_KR 로 알림",
+        help="검증 성공 후 SLACK_WATCHLIST_REPORT_* 또는 SLACK_BOT_TOKEN 으로 알림",
     )
     args = parser.parse_args()
 

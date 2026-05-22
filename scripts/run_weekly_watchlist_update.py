@@ -42,7 +42,12 @@ def main() -> int:
         "--send",
         action="store_true",
         dest="send_slack",
-        help="주간 재판단 Slack 발송 (WATCHLIST_REVIEW_AUTO_SEND=true 필요)",
+        help="관심종목 새벽 리포트 Slack 발송 (WATCHLIST_REVIEW_AUTO_SEND=true 필요)",
+    )
+    parser.add_argument(
+        "--scheduled",
+        action="store_true",
+        help="Actions schedule 실행 (새벽 자동 발송)",
     )
     parser.add_argument(
         "--apply-watchlist",
@@ -102,7 +107,10 @@ def main() -> int:
     send = (
         args.send_slack
         and not args.no_send
-        and can_send_watchlist_review_slack(explicit_cli=bool(args.send_slack))
+        and can_send_watchlist_review_slack(
+            explicit_cli=bool(args.send_slack),
+            scheduled=bool(args.scheduled),
+        )
     )
     spec_errs = validate_watchlist_spec()
     if spec_errs:

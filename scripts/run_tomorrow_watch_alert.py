@@ -64,11 +64,9 @@ def main() -> int:
             safe_print("[TOMORROW_WATCH] Slack 발송 차단")
             log.finish(ok=False, fn=safe_print)
             return 1
-        from slack_sender import post_message, resolve_slack_channel
-        import config
+        from slack_sender import post_buy_candidate_message
 
-        channel = resolve_slack_channel("kr_during") or config.SLACK_CHANNEL_KR
-        posted = post_message(result.slack_text, channel, retries=1)
+        posted = post_buy_candidate_message(result.slack_text, retries=1)
         log.mark_slack_sent()
         ok = bool(posted.get("ok"))
         log.counts["Slack 발송"] = "성공" if ok else "실패"

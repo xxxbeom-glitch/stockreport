@@ -1,4 +1,4 @@
-name: 내일 볼 종목 알림
+name: 오늘 매수 후보 알림 · 장후 후보
 
 on:
   schedule:
@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   tomorrow_watch:
-    name: 내일 볼 종목
+    name: 장후 후보 스캔 (15:55)
     runs-on: ubuntu-latest
     env:
       TZ: Asia/Seoul
@@ -45,6 +45,8 @@ jobs:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_BUY_CANDIDATE_CHANNEL: ${{ secrets.SLACK_BUY_CANDIDATE_CHANNEL }}
+      SLACK_BUY_CANDIDATE_WEBHOOK: ${{ secrets.SLACK_BUY_CANDIDATE_WEBHOOK }}
       SLACK_CHANNEL_KR: ${{ secrets.SLACK_CHANNEL_KR }}
       KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
       KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
@@ -57,7 +59,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: 내일 볼 종목 실행
+      - name: 장후 후보 스캔 실행
         shell: bash
         run: |
           set -euo pipefail

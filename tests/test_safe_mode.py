@@ -105,39 +105,34 @@ class TestWorkflowSchedules(unittest.TestCase):
         self.assertEqual(len(active_cron), 1)
         self.assertIn('25 1 * * 1-5', text[text.find("cron:") :])
         self.assertIn('DAILY_PICK_AUTO_SEND: "true"', text)
+        self.assertIn("SLACK_BUY_CANDIDATE_CHANNEL", text)
         self.assertNotIn("50 4", text)
 
-    def test_watchlist_review_workflow_has_no_active_schedule(self) -> None:
+    def test_watchlist_dawn_report_workflow_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        text = (root / ".github" / "workflows" / "watchlist_review.yml").read_text(
+        text = (root / ".github" / "workflows" / "watchlist_dawn_report.yml").read_text(
             encoding="utf-8"
         )
+        self.assertIn("name: 관심종목 새벽 리포트", text)
         self.assertIn("workflow_dispatch:", text)
-        self.assertIn("# schedule:", text)
-        active_cron = [
-            ln
-            for ln in text.splitlines()
-            if "cron:" in ln and not ln.strip().startswith("#")
-        ]
-        self.assertEqual(active_cron, [])
-        self.assertIn('WATCHLIST_REVIEW_AUTO_SEND: "false"', text)
+        self.assertIn("30 20 * * 0-4", text)
+        self.assertIn('WATCHLIST_REVIEW_AUTO_SEND: "true"', text)
+        self.assertIn("SLACK_WATCHLIST_REPORT_CHANNEL", text)
 
     def test_tomorrow_watch_workflow_schedule(self) -> None:
         root = Path(__file__).resolve().parents[1]
         text = (root / ".github" / "workflows" / "tomorrow_watch_alert.yml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("name: 내일 볼 종목 알림", text)
+        self.assertIn("name: 오늘 매수 후보 알림 · 장후 후보", text)
         self.assertIn("55 6 * * 1-5", text)
+        self.assertIn("SLACK_BUY_CANDIDATE_CHANNEL", text)
 
-    def test_candidate_scan_workflow_manual_only(self) -> None:
+    def test_candidate_scan_test_workflow_removed(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        text = (root / ".github" / "workflows" / "candidate_scan_test.yml").read_text(
-            encoding="utf-8"
+        self.assertFalse(
+            (root / ".github" / "workflows" / "candidate_scan_test.yml").exists()
         )
-        self.assertIn("name: 신규 후보 스캔 테스트", text)
-        self.assertIn("workflow_dispatch:", text)
-        self.assertNotIn("\n  schedule:\n", text)
 
 
 class TestPipelineSlackGate(unittest.TestCase):
@@ -164,7 +159,7 @@ class TestPipelineSlackGate(unittest.TestCase):
                     "agents.weekly_watchlist_update.pipeline.run_weekly_review",
                     return_value=({"stocks": [], "summary": ""}, None),
                 ):
-                    with patch("slack_sender.post_message") as post_mock:
+                    with patch("slack_sender.post_watchlist_report_message") as post_mock:
                         from agents.weekly_watchlist_update.pipeline import (
                             run_weekly_watchlist_update,
                         )

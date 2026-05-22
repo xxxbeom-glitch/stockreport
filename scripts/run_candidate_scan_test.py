@@ -108,11 +108,9 @@ def main() -> int:
         if not can_send_candidate_slack(explicit_cli=True):
             safe_print("[CANDIDATES] Slack 발송 차단 — --send-slack 필요")
         else:
-            from slack_sender import post_message, resolve_slack_channel
-            import config
+            from slack_sender import post_buy_candidate_message
 
-            channel = resolve_slack_channel("kr_during") or config.SLACK_CHANNEL_KR
-            posted = post_message(slack_text, channel, retries=1)
+            posted = post_buy_candidate_message(slack_text, retries=1)
             safe_print(f"[CANDIDATES] slack_sent={posted.get('ok')}")
     else:
         safe_print("[CANDIDATES] slack (dry, 제안만):")
