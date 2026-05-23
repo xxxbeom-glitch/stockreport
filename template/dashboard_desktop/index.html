@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920" />
+    <title>한국시장 모의투자 · 메인 대시보드</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #030814;
+        --card: #081426;
+        --card-inner: #0b1930;
+        --card-sub: #0d1c34;
+        --border: #1a2940;
+        --text: #f2f6fc;
+        --text-secondary: #8ea4c4;
+        --positive: #ff5d73;
+        --negative: #4da3ff;
+        --accent-blue: #4da3ff;
+        --accent-cyan: #43c7cf;
+        --line-speed: #707eff;
+        --radius: 16px;
+        --max-w: 1608px;
+        --pad-x: 40px;
+        --card-padding-x: 20px;
+        --card-padding-top: 20px;
+        --card-padding-bottom: 20px;
+        --card-header-gap: 18px;
+        --bottom-table-row-height: 53px;
+        --bottom-table-visible-rows: 4;
+        --bottom-table-head-height: 34px;
+        --bottom-table-header-height: 34px;
+        --bottom-table-body-height: calc(var(--bottom-table-row-height) * var(--bottom-table-visible-rows));
+        --bottom-card-height: calc(
+          var(--card-padding-top) +
+          var(--card-padding-bottom) +
+          var(--bottom-table-header-height) +
+          var(--card-header-gap) +
+          var(--bottom-table-head-height) +
+          var(--bottom-table-body-height)
+        );
+        --bottom-table-scrollbar-size: 6px;
+      }
+
+      html {
+        font-size: 14px;
+      }
+
+      body {
+        min-width: 1920px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Pretendard, "Noto Sans KR", sans-serif;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.45;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page {
+        max-width: calc(var(--max-w) + var(--pad-x) * 2);
+        margin: 0 auto;
+        padding: 28px var(--pad-x) 40px;
+      }
+
+      /* ── Header ── */
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 18px;
+      }
+
+      .header__title {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .header__sub {
+        margin-top: 6px;
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      .segment {
+        display: inline-flex;
+        padding: 3px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      .segment__btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-secondary);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .segment__btn.is-active {
+        background: var(--card-inner);
+        color: var(--text);
+      }
+
+      .meta {
+        margin-bottom: 18px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      /* ── Card ── */
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+      }
+
+      .kpi-card {
+        padding: 20px 20px 18px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .content-card {
+        padding: var(--card-padding-top) var(--card-padding-x) var(--card-padding-bottom);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .content-card__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: var(--card-header-gap);
+        flex-shrink: 0;
+      }
+
+      .content-card__title {
+        font-size: 19px;
+        font-weight: 600;
+        line-height: 1.3;
+        margin: 0;
+      }
+
+      .content-card__body {
+        flex: 1;
+        min-height: 0;
+      }
+
+      /* Bottom 2-column section — 좌 44% / 우 56% */
+      .bottom-grid {
+        display: grid;
+        grid-template-columns: 44fr 56fr;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .bottom-grid .content-card {
+        height: var(--bottom-card-height);
+        max-height: var(--bottom-card-height);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .bottom-grid .content-card__header {
+        min-height: 34px;
+        align-items: center;
+        margin-bottom: var(--card-header-gap);
+        flex-shrink: 0;
+      }
+
+      .bottom-grid .content-card__header-spacer {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1;
+        visibility: hidden;
+        flex-shrink: 0;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .bottom-grid .content-card__body {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        padding-top: 0;
+        margin-top: 0;
+        overflow: hidden;
+      }
+
+      .bottom-grid .bottom-grid-table-wrap {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .bottom-grid .table-head-slot {
+        flex-shrink: 0;
+        overflow: hidden;
+        padding-right: var(--bottom-table-scrollbar-size);
+      }
+
+      .bottom-grid .table-body-slot {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(142, 164, 196, 0.28) transparent;
+      }
+
+      .bottom-grid .table-body-slot::-webkit-scrollbar {
+        width: var(--bottom-table-scrollbar-size);
+      }
+
+      .bottom-grid .table-body-slot::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .bottom-grid .table-body-slot::-webkit-scrollbar-thumb {
+        background: rgba(142, 164, 196, 0.28);
+        border-radius: 999px;
+      }
+
+      .bottom-grid .table-body-slot::-webkit-scrollbar-thumb:hover {
+        background: rgba(142, 164, 196, 0.42);
+      }
+
+      .bottom-grid .table-head-slot .bottom-grid-table,
+      .bottom-grid .table-body-slot .bottom-grid-table {
+        margin: 0;
+      }
+
+      .bottom-grid .table-head-slot .bottom-grid-table thead th {
+        background: var(--card);
+      }
+
+      @media (max-width: 1280px) {
+        .bottom-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── KPI ── */
+      .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .kpi-card .kpi__label {
+        font-size: 12px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+      }
+
+      .kpi-card .kpi__value {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .kpi-card .kpi__value--rate {
+        color: var(--positive);
+      }
+
+      .kpi-card .kpi__value--money {
+        color: var(--text);
+      }
+
+      .kpi-card .kpi__sub {
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.35;
+        color: var(--text-secondary);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .kpi-card .kpi__sub--accum {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        min-height: 17px;
+      }
+
+      .kpi-card .kpi__sub-accum {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .kpi-card .kpi__sub--accum .sign-value {
+        gap: 4px;
+        line-height: 1;
+        font-weight: 500;
+      }
+
+      .kpi-card .kpi__sub--accum .sign-icon {
+        display: block;
+        width: 7px;
+        height: 7px;
+      }
+
+      .kpi-card .kpi__sub-divider {
+        margin: 0 8px;
+        flex-shrink: 0;
+        line-height: 1;
+        color: var(--text-secondary);
+      }
+
+      .kpi-card .kpi__sub-meta {
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      /* ── Agent compare (unified mid card) ── */
+      .compare-section {
+        margin-bottom: 18px;
+      }
+
+      .compare-card {
+        padding: 24px;
+        background: var(--card);
+        border-radius: var(--radius);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .compare-card__header {
+        flex-shrink: 0;
+        margin-bottom: 16px;
+      }
+
+      .compare-card__title {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+
+      .compare-card__body {
+        --compare-side-height: 351px;
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: 60fr 40fr;
+        gap: 20px;
+        height: var(--compare-side-height);
+        align-items: stretch;
+      }
+
+      .compare-card__chart {
+        min-width: 0;
+        height: var(--compare-side-height);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .compare-card__chart .chart-area {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        margin-left: -4px;
+        margin-right: -4px;
+      }
+
+      .compare-card__chart .chart-area canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .compare-card__agents {
+        min-width: 0;
+        height: var(--compare-side-height);
+      }
+
+      .agent-tile-grid {
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 15px;
+      }
+
+      .agent-tile {
+        background: var(--card-sub);
+        border-radius: 10px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        box-sizing: border-box;
+        cursor: pointer;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .agent-tile.is-chart-hover {
+        background: rgba(77, 163, 255, 0.1);
+        box-shadow:
+          inset 0 0 0 1px rgba(77, 163, 255, 0.38),
+          0 4px 18px rgba(0, 0, 0, 0.22);
+      }
+
+      .agent-tile__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+      }
+
+      .agent-tile__name {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+      }
+
+      .agent-tile__desc {
+        margin: 3px 0 0;
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      .agent-tile__asset-block {
+        margin-top: 10px;
+      }
+
+      .agent-tile__asset-label {
+        display: block;
+        font-size: 11px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+
+      .agent-tile__asset {
+        margin: 4px 0 0;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .agent-tile__return {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(26, 41, 64, 0.55);
+      }
+
+      .agent-tile__return-label {
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.3;
+        color: var(--text-secondary);
+      }
+
+      .agent-tile__return-value {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.3;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sign-value {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .sign-icon {
+        width: 8px;
+        height: 8px;
+        flex-shrink: 0;
+      }
+
+      .sign-value.num-up,
+      .num-up.sign-value {
+        color: var(--positive);
+      }
+
+      .sign-value.num-down,
+      .num-down.sign-value {
+        color: var(--negative);
+      }
+
+      .kpi-card .kpi__value.sign-value {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .bottom-grid .bottom-grid-table .col-return .sign-value,
+      .bottom-grid .bottom-grid-table .col-pnl .sign-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+      }
+
+      /* Tabs / pills */
+      .tabs {
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      .tabs__btn {
+        padding: 5px 10px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text-secondary);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .tabs__btn.is-active {
+        border-color: var(--border);
+        background: var(--card-inner);
+        color: var(--text);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1;
+        border: none;
+        white-space: nowrap;
+      }
+
+      .badge--speed {
+        background: rgba(150, 110, 255, 0.18);
+        color: #c8b3ff;
+      }
+
+      .badge--verify {
+        background: rgba(0, 200, 170, 0.16);
+        color: #7fe7d2;
+      }
+
+      .badge--bench {
+        background: rgba(120, 136, 160, 0.14);
+        color: #b4c0d0;
+      }
+
+      .badge--hold {
+        background: rgba(46, 179, 110, 0.18);
+        color: #8ce6b2;
+      }
+
+      .badge--sold {
+        background: rgba(120, 136, 160, 0.18);
+        color: #c3cfdd;
+      }
+
+      .badge--agent-1 {
+        padding: 4px 8px;
+        margin-right: 2px;
+        background: rgba(150, 110, 255, 0.14);
+        color: #bca8f5;
+      }
+
+      .badge--agent-2 {
+        padding: 4px 8px;
+        margin-right: 2px;
+        background: rgba(220, 170, 60, 0.16);
+        color: #e8c878;
+      }
+
+      .badge--agent-3 {
+        padding: 4px 8px;
+        margin-right: 2px;
+        background: rgba(0, 200, 170, 0.12);
+        color: #72d9c4;
+      }
+
+      .badge--agent-4 {
+        padding: 4px 8px;
+        margin-right: 2px;
+        background: rgba(140, 165, 90, 0.16);
+        color: #b8cc98;
+      }
+
+      .num-up {
+        color: var(--positive);
+        font-weight: 600;
+      }
+
+      .num-down {
+        color: var(--negative);
+        font-weight: 600;
+      }
+
+      .agent-tile__return-value.num-up,
+      .agent-tile__return-value.num-down {
+        font-weight: 700;
+      }
+
+      /* Tables */
+      .table-wrap {
+        overflow: hidden;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(26, 41, 64, 0.5);
+        vertical-align: middle;
+      }
+
+      .data-table th {
+        padding-top: 7px;
+        padding-bottom: 7px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .data-table thead tr:first-child th {
+        padding-top: 8px;
+      }
+
+      .data-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .data-table tr.is-top {
+        background: rgba(77, 163, 255, 0.06);
+      }
+
+      /* Bottom grid — shared table (좌측 종목별 수익률 기준, 좌우 동일 적용) */
+      .bottom-grid .bottom-grid-table {
+        table-layout: fixed;
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .bottom-grid .bottom-grid-table thead th {
+        padding: 8px 6px;
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 1.3;
+        letter-spacing: 0;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+
+      .bottom-grid .bottom-grid-table tbody td {
+        padding: 9px 6px;
+        min-height: 53px;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(26, 41, 64, 0.5);
+        vertical-align: middle;
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.35;
+      }
+
+      .bottom-grid .bottom-grid-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .bottom-grid .bottom-grid-table thead th,
+      .bottom-grid .bottom-grid-table tbody td {
+        text-align: center;
+      }
+
+      .bottom-grid .bottom-grid-table .col-price,
+      .bottom-grid .bottom-grid-table .col-return,
+      .bottom-grid .bottom-grid-table .col-pnl,
+      .bottom-grid .bottom-grid-table .col-qty,
+      .bottom-grid .bottom-grid-table .col-date {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .bottom-grid .bottom-grid-table .col-agent,
+      .bottom-grid .bottom-grid-table .col-side {
+        white-space: nowrap;
+      }
+
+      .bottom-grid .bottom-grid-table .col-reason.reason {
+        font-size: 12px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      .bottom-grid .bottom-grid-table .col-pnl .pnl-empty {
+        color: var(--text-secondary);
+      }
+
+      .bottom-grid .bottom-grid-table .stock-name {
+        font-weight: 600;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .bottom-grid .bottom-grid-table .stock-code {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+        font-weight: 400;
+        text-align: center;
+      }
+
+      .trade-history-table .col-stock {
+        white-space: normal;
+      }
+
+      .trade-history-table th.col-gap,
+      .trade-history-table td.col-gap {
+        padding: 0;
+        width: auto;
+      }
+
+      .trade-history-table td.col-gap {
+        border-bottom-color: transparent;
+      }
+
+      .trade-history-table tbody tr:last-child td.col-gap {
+        border-bottom: none;
+      }
+
+      .bottom-grid .bottom-grid-table .col-reason {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .bottom-grid .bottom-grid-table .stock-code--row-spacer {
+        visibility: hidden;
+      }
+
+      .bottom-grid .bottom-grid-table .table-empty-cell {
+        padding: 24px 8px;
+        min-height: 0;
+        text-align: center;
+        color: var(--text-secondary);
+        border-bottom: none;
+      }
+
+      /* Stock return table — column grid (colgroup 28/14/12/17/15/14 = 100%) */
+      .stock-return-table col.col-stock {
+        width: 28%;
+      }
+
+      .stock-return-table col.col-avg-price {
+        width: 14%;
+      }
+
+      .stock-return-table col.col-current-price {
+        width: 12%;
+      }
+
+      .stock-return-table col.col-return {
+        width: 17%;
+      }
+
+      .stock-return-table col.col-pnl {
+        width: 15%;
+      }
+
+      .stock-return-table col.col-reason {
+        width: 14%;
+      }
+
+      /* Trade history — 좌(날짜+종목) | gap | 우(거래정보) 그룹 grid */
+      .trade-history-table col.col-date {
+        width: 9%;
+      }
+
+      .trade-history-table col.col-stock {
+        width: 20%;
+      }
+
+      /* col-gap: width 미지정 → 남는 공간(유동 여백) */
+
+      .trade-history-table col.col-agent {
+        width: 8%;
+      }
+
+      .trade-history-table col.col-side {
+        width: 8%;
+      }
+
+      .trade-history-table col.col-price {
+        width: 13%;
+      }
+
+      .trade-history-table col.col-qty {
+        width: 7%;
+      }
+
+      .trade-history-table col.col-pnl {
+        width: 14%;
+      }
+
+      .trade-history-table col.col-reason {
+        width: 16%;
+      }
+
+      .badge--buy {
+        background: rgba(110, 158, 196, 0.2);
+        color: #9ec4e8;
+      }
+
+      .badge--sell {
+        background: rgba(168, 158, 138, 0.2);
+        color: #cfc4b4;
+      }
+
+      .data-table .col-rank,
+      .data-table .col-amount,
+      .data-table .col-return,
+      .data-table .col-price,
+      .data-table .col-pnl,
+      .data-table .col-type,
+      .data-table .col-status {
+        text-align: center;
+      }
+
+      .data-table .col-agent,
+      .data-table .col-stock,
+      .data-table .col-agents,
+      .data-table .col-reason {
+        text-align: left;
+      }
+
+      .data-table .col-rank,
+      .data-table .col-amount,
+      .data-table .col-return,
+      .data-table .col-price,
+      .data-table .col-pnl {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .data-table .col-rank {
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
+      .agent-name {
+        font-weight: 600;
+      }
+
+      .agent-desc {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 400;
+      }
+
+      .select-row {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .select-wrap {
+        position: relative;
+      }
+
+      .select-fake {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 12px;
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .select-fake svg {
+        opacity: 0.6;
+      }
+
+      .select-menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        z-index: 20;
+        min-width: 100%;
+        margin: 0;
+        padding: 4px;
+        list-style: none;
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .select-menu[hidden] {
+        display: none;
+      }
+
+      .select-menu__item {
+        display: block;
+        width: 100%;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text);
+        font: inherit;
+        font-size: 12px;
+        text-align: left;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .select-menu__item:hover,
+      .select-menu__item.is-selected {
+        background: rgba(77, 163, 255, 0.1);
+      }
+
+      .data-table tr.is-hidden {
+        display: none;
+      }
+
+      .legend {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 6px;
+        font-size: 11px;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+
+      .legend__item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .legend__dot--speed {
+        background: var(--line-speed);
+      }
+
+      .legend__dot--verify {
+        background: var(--accent-cyan);
+      }
+
+      .legend__dot--bench {
+        background: var(--text-secondary);
+      }
+
+      /* Stock table */
+      .stock-name {
+        font-weight: 600;
+      }
+
+      .stock-code {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+
+      .reason {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- Header -->
+      <header class="header">
+        <div>
+          <h1 class="header__title">한국시장 모의투자</h1>
+          <p class="header__sub">에이전트들이 50만원을 어떻게 운용했는지 비교합니다.</p>
+        </div>
+        <div class="segment" role="tablist" aria-label="기간 선택" data-ui="period-segment">
+          <button type="button" class="segment__btn is-active" data-period="all" aria-selected="true">전체</button>
+          <button type="button" class="segment__btn" data-period="7d">최근 7일</button>
+          <button type="button" class="segment__btn" data-period="14d">최근 14일</button>
+        </div>
+      </header>
+      <p class="meta">조회 기간 <span data-ui="period-label">전체</span> · 기준일 2026.05.31 · 초기 시드 500,000원 · 총 9개 계좌 운용 중</p>
+
+      <!-- KPI -->
+      <section class="kpi-row" aria-label="요약 KPI">
+        <article class="card kpi-card">
+          <p class="kpi__label">총 자산</p>
+          <p class="kpi__value kpi__value--money" data-ui="kpi-total-asset">537,420원</p>
+          <p class="kpi__sub kpi__sub--accum">
+            <span class="kpi__sub-accum" data-ui="kpi-total-return-wrap">
+              <span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>7.48%</span>
+            </span>
+            <span class="kpi__sub-divider" aria-hidden="true">·</span>
+            <span class="kpi__sub-meta">초기 투자금 500,000원</span>
+          </p>
+        </article>
+        <article class="card kpi-card">
+          <p class="kpi__label">거래가능금액</p>
+          <p class="kpi__value kpi__value--money" data-ui="kpi-cash">148,200원</p>
+          <p class="kpi__sub">현재 현금 보유액 · 신규 매수 가능</p>
+        </article>
+        <article class="card kpi-card">
+          <p class="kpi__label">최고 수익 에이전트</p>
+          <p class="kpi__value sign-value num-up kpi__value--rate" data-ui="kpi-best-agent-rate"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>7.48%</p>
+          <p class="kpi__sub" data-ui="kpi-best-agent-sub">에이전트 1호 · 속도형</p>
+        </article>
+        <article class="card kpi-card">
+          <p class="kpi__label">최고 수익 종목</p>
+          <p class="kpi__value sign-value num-up kpi__value--rate" data-ui="kpi-best-stock-rate"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>11.67%</p>
+          <p class="kpi__sub" data-ui="kpi-best-stock-sub">삼성전자 · 에이전트 1호, 3호 보유</p>
+        </article>
+      </section>
+
+      <!-- Agent compare (unified) -->
+      <section class="compare-section" aria-label="에이전트 자산 비교">
+        <article class="card compare-card">
+          <header class="compare-card__header">
+            <h2 class="compare-card__title">에이전트 자산 비교</h2>
+          </header>
+          <div class="compare-card__body">
+            <div class="compare-card__chart">
+              <div class="chart-area">
+                <canvas id="asset-chart" aria-label="자산 변화 차트"></canvas>
+              </div>
+            </div>
+            <div class="compare-card__agents">
+              <div class="agent-tile-grid">
+                <article class="agent-tile" data-agent-series="agent1">
+                  <div class="agent-tile__head">
+                    <h3 class="agent-tile__name">에이전트 1호</h3>
+                    <span class="badge badge--speed">속도형</span>
+                  </div>
+                  <p class="agent-tile__desc">모멘텀·수급</p>
+                  <div class="agent-tile__asset-block">
+                    <span class="agent-tile__asset-label">현재 총자산</span>
+                    <p class="agent-tile__asset">537,420원</p>
+                  </div>
+                  <div class="agent-tile__return">
+                    <span class="agent-tile__return-label">누적 수익률</span>
+                    <span class="agent-tile__return-value sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>7.48%</span>
+                  </div>
+                </article>
+                <article class="agent-tile" data-agent-series="agent2">
+                  <div class="agent-tile__head">
+                    <h3 class="agent-tile__name">에이전트 2호</h3>
+                    <span class="badge badge--speed">속도형</span>
+                  </div>
+                  <p class="agent-tile__desc">섹터 추세</p>
+                  <div class="agent-tile__asset-block">
+                    <span class="agent-tile__asset-label">현재 총자산</span>
+                    <p class="agent-tile__asset">496,300원</p>
+                  </div>
+                  <div class="agent-tile__return">
+                    <span class="agent-tile__return-label">누적 수익률</span>
+                    <span class="agent-tile__return-value sign-value num-down"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 6.5 7.5 1.5H.5Z"/></svg>0.74%</span>
+                  </div>
+                </article>
+                <article class="agent-tile" data-agent-series="agent3">
+                  <div class="agent-tile__head">
+                    <h3 class="agent-tile__name">에이전트 3호</h3>
+                    <span class="badge badge--verify">검증형</span>
+                  </div>
+                  <p class="agent-tile__desc">공시·이벤트</p>
+                  <div class="agent-tile__asset-block">
+                    <span class="agent-tile__asset-label">현재 총자산</span>
+                    <p class="agent-tile__asset">529,100원</p>
+                  </div>
+                  <div class="agent-tile__return">
+                    <span class="agent-tile__return-label">누적 수익률</span>
+                    <span class="agent-tile__return-value sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>5.82%</span>
+                  </div>
+                </article>
+                <article class="agent-tile" data-agent-series="agent4">
+                  <div class="agent-tile__head">
+                    <h3 class="agent-tile__name">에이전트 4호</h3>
+                    <span class="badge badge--verify">검증형</span>
+                  </div>
+                  <p class="agent-tile__desc">보수 확인</p>
+                  <div class="agent-tile__asset-block">
+                    <span class="agent-tile__asset-label">현재 총자산</span>
+                    <p class="agent-tile__asset">508,640원</p>
+                  </div>
+                  <div class="agent-tile__return">
+                    <span class="agent-tile__return-label">누적 수익률</span>
+                    <span class="agent-tile__return-value sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>1.73%</span>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Bottom: holdings + trade history -->
+      <section class="bottom-grid" aria-label="종목 및 거래 기록">
+        <article class="card content-card">
+        <div class="content-card__header">
+          <h2 class="content-card__title">종목별 수익률</h2>
+          <div class="select-wrap" data-ui="stock-agent-select">
+            <button type="button" class="select-fake" aria-haspopup="listbox" aria-expanded="false">
+              <span data-ui="stock-agent-label">에이전트 1호</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M2.5 4.5 6 8 9.5 4.5Z"/></svg>
+            </button>
+            <ul class="select-menu" role="listbox" hidden>
+              <li><button type="button" class="select-menu__item is-selected" data-agent="agent1">에이전트 1호</button></li>
+              <li><button type="button" class="select-menu__item" data-agent="agent2">에이전트 2호</button></li>
+              <li><button type="button" class="select-menu__item" data-agent="agent3">에이전트 3호</button></li>
+              <li><button type="button" class="select-menu__item" data-agent="agent4">에이전트 4호</button></li>
+            </ul>
+          </div>
+        </div>
+        <div class="content-card__body">
+          <div class="bottom-grid-table-wrap">
+            <div class="table-head-slot">
+              <table class="data-table bottom-grid-table stock-return-table">
+                <colgroup>
+                  <col class="col-stock" />
+                  <col class="col-price col-avg-price" />
+                  <col class="col-price col-current-price" />
+                  <col class="col-return" />
+                  <col class="col-pnl" />
+                  <col class="col-reason" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="col-stock">종목</th>
+                    <th class="col-price col-avg-price">평균 매수가</th>
+                    <th class="col-price col-current-price">현재가</th>
+                    <th class="col-return">매수 이후 수익률</th>
+                    <th class="col-pnl">평가손익</th>
+                    <th class="col-reason">매수 근거</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="table-body-slot">
+              <table class="data-table bottom-grid-table stock-return-table">
+                <colgroup>
+                  <col class="col-stock" />
+                  <col class="col-price col-avg-price" />
+                  <col class="col-price col-current-price" />
+                  <col class="col-return" />
+                  <col class="col-pnl" />
+                  <col class="col-reason" />
+                </colgroup>
+                <tbody>
+              <tr data-stock-id="005930" data-agents="agent1 agent3">
+                <td class="col-stock">
+                  <span class="stock-name">삼성전자</span>
+                  <span class="stock-code">005930</span>
+                </td>
+                <td class="col-price">72,300원</td>
+                <td class="col-price">80,740원</td>
+                <td class="col-return"><span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>11.67%</span></td>
+                <td class="col-pnl"><span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>16,880원</span></td>
+                <td class="col-reason reason">거래대금·수급</td>
+              </tr>
+              <tr data-stock-id="000660" data-agents="agent2 agent4">
+                <td class="col-stock">
+                  <span class="stock-name">SK하이닉스</span>
+                  <span class="stock-code">000660</span>
+                </td>
+                <td class="col-price">160,000원</td>
+                <td class="col-price">170,200원</td>
+                <td class="col-return"><span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>6.38%</span></td>
+                <td class="col-pnl"><span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>12,750원</span></td>
+                <td class="col-reason reason">섹터 강세</td>
+              </tr>
+              <tr data-stock-id="042700" data-agents="agent3">
+                <td class="col-stock">
+                  <span class="stock-name">한미반도체</span>
+                  <span class="stock-code">042700</span>
+                </td>
+                <td class="col-price">112,400원</td>
+                <td class="col-price">116,900원</td>
+                <td class="col-return"><span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>4.00%</span></td>
+                <td class="col-pnl"><span class="sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>9,000원</span></td>
+                <td class="col-reason reason">공시·이벤트</td>
+              </tr>
+              <tr data-stock-id="005380" data-agents="agent2">
+                <td class="col-stock">
+                  <span class="stock-name">현대차</span>
+                  <span class="stock-code">005380</span>
+                </td>
+                <td class="col-price">240,000원</td>
+                <td class="col-price">225,650원</td>
+                <td class="col-return"><span class="sign-value num-down"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 6.5 7.5 1.5H.5Z"/></svg>5.98%</span></td>
+                <td class="col-pnl"><span class="sign-value num-down"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 6.5 7.5 1.5H.5Z"/></svg>14,350원</span></td>
+                <td class="col-reason reason">섹터 추세</td>
+              </tr>
+            </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        </article>
+
+        <article class="card content-card">
+          <div class="content-card__header">
+            <h2 class="content-card__title">매수·매도 기록</h2>
+            <div class="select-wrap" data-ui="trade-side-select">
+              <button type="button" class="select-fake" aria-haspopup="listbox" aria-expanded="false">
+                <span data-ui="trade-side-label">전체</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M2.5 4.5 6 8 9.5 4.5Z"/></svg>
+              </button>
+              <ul class="select-menu" role="listbox" hidden>
+                <li><button type="button" class="select-menu__item is-selected" data-side="all">전체</button></li>
+                <li><button type="button" class="select-menu__item" data-side="buy">매수</button></li>
+                <li><button type="button" class="select-menu__item" data-side="sell">매도</button></li>
+              </ul>
+            </div>
+          </div>
+          <div class="content-card__body">
+            <div class="bottom-grid-table-wrap">
+              <div class="table-head-slot">
+                <table class="data-table bottom-grid-table trade-history-table">
+                  <colgroup>
+                    <col class="col-date" />
+                    <col class="col-stock" />
+                    <col class="col-gap" />
+                    <col class="col-agent" />
+                    <col class="col-side" />
+                    <col class="col-price" />
+                    <col class="col-qty" />
+                    <col class="col-pnl" />
+                    <col class="col-reason" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="col-date">날짜</th>
+                      <th class="col-stock">종목</th>
+                      <th class="col-gap" aria-hidden="true"></th>
+                      <th class="col-agent">에이전트</th>
+                      <th class="col-side">구분</th>
+                      <th class="col-price">체결가</th>
+                      <th class="col-qty">수량</th>
+                      <th class="col-pnl">실현손익</th>
+                      <th class="col-reason">판단 근거</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+              <div class="table-body-slot">
+                <table class="data-table bottom-grid-table trade-history-table">
+                  <colgroup>
+                    <col class="col-date" />
+                    <col class="col-stock" />
+                    <col class="col-gap" />
+                    <col class="col-agent" />
+                    <col class="col-side" />
+                    <col class="col-price" />
+                    <col class="col-qty" />
+                    <col class="col-pnl" />
+                    <col class="col-reason" />
+                  </colgroup>
+                  <tbody data-ui="trade-history-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script>
+      (function () {
+        var PERIODS = {
+          all: { label: "전체", days: null },
+          "7d": { label: "최근 7일", days: 7 },
+          "14d": { label: "최근 14일", days: 14 },
+        };
+
+
+        var TIMELINE = {
+          labels: [
+            "05/19", "05/20", "05/21", "05/22", "05/23",
+            "05/26", "05/27", "05/28", "05/29", "05/30",
+          ],
+          series: [
+            {
+              key: "agent1",
+              label: "에이전트 1호",
+              color: "#7B8AFF",
+              data: [501200, 502800, 504100, 505600, 506400, 509500, 517000, 513000, 525000, 534000],
+            },
+            {
+              key: "agent2",
+              label: "에이전트 2호",
+              color: "#48D4DE",
+              data: [499800, 499000, 498800, 498500, 497800, 498500, 501000, 497200, 498000, 496800],
+            },
+            {
+              key: "agent3",
+              label: "에이전트 3호",
+              color: "#B08CFF",
+              data: [501500, 502000, 503500, 505000, 507000, 512000, 512000, 520800, 527000, 528000],
+            },
+            {
+              key: "agent4",
+              label: "에이전트 4호",
+              color: "#FFBE4D",
+              data: [500500, 501000, 501500, 502000, 502800, 504500, 503400, 506200, 508200, 508400],
+            },
+            {
+              key: "bench",
+              label: "시장 기준",
+              color: "#6E859E",
+              data: [500800, 501500, 502200, 503000, 504000, 506000, 505000, 506500, 511000, 512000],
+              dashed: true,
+            },
+          ],
+        };
+
+        var AGENT_META = {
+          agent1: { name: "에이전트 1호", badge: "속도형", badgeClass: "badge--speed", strategy: "모멘텀·수급" },
+          agent2: { name: "에이전트 2호", badge: "속도형", badgeClass: "badge--speed", strategy: "섹터 추세" },
+          agent3: { name: "에이전트 3호", badge: "검증형", badgeClass: "badge--verify", strategy: "공시·이벤트" },
+          agent4: { name: "에이전트 4호", badge: "검증형", badgeClass: "badge--verify", strategy: "보수 확인" },
+        };
+
+        var CASH_BY_PERIOD = { all: 148200, "7d": 162400, "14d": 155800 };
+
+        var STOCK_CATALOG = {
+          "005930": {
+            name: "삼성전자",
+            agents: ["agent1", "agent3"],
+            reason: "거래대금·수급",
+            all: { avg: 72300, current: 80740, returnPct: 11.67, pnl: 16880 },
+            "7d": { avg: 76800, current: 80740, returnPct: 5.13, pnl: 7840 },
+            "14d": { avg: 74100, current: 80740, returnPct: 8.96, pnl: 13280 },
+          },
+          "000660": {
+            name: "SK하이닉스",
+            agents: ["agent2", "agent4"],
+            reason: "섹터 강세",
+            all: { avg: 160000, current: 170200, returnPct: 6.38, pnl: 12750 },
+            "7d": { avg: 165400, current: 170200, returnPct: 2.90, pnl: 4800 },
+            "14d": { avg: 162800, current: 170200, returnPct: 4.55, pnl: 7400 },
+          },
+          "042700": {
+            name: "한미반도체",
+            agents: ["agent3"],
+            reason: "공시·이벤트",
+            all: { avg: 112400, current: 116900, returnPct: 4.00, pnl: 9000 },
+            "7d": { avg: 114800, current: 116900, returnPct: 1.83, pnl: 4200 },
+            "14d": { avg: 113600, current: 116900, returnPct: 2.91, pnl: 6600 },
+          },
+          "005380": {
+            name: "현대차",
+            agents: ["agent2"],
+            reason: "섹터 추세",
+            all: { avg: 240000, current: 225650, returnPct: -5.98, pnl: -14350 },
+            "7d": { avg: 232000, current: 225650, returnPct: -2.74, pnl: -6350 },
+            "14d": { avg: 236500, current: 225650, returnPct: -4.59, pnl: -10850 },
+          },
+        };
+
+        var TRADE_HISTORY = {
+          agent1: [
+            { dayIndex: 1, date: "05/20", name: "삼성전자", code: "005930", side: "buy", price: 72300, qty: 6, pnl: null, reason: "거래대금·수급" },
+            { dayIndex: 5, date: "05/26", name: "카카오", code: "035720", side: "buy", price: 58000, qty: 8, pnl: null, reason: "모멘텀" },
+            { dayIndex: 7, date: "05/28", name: "카카오", code: "035720", side: "sell", price: 54260, qty: 8, pnl: -7480, reason: "모멘텀 약화" },
+          ],
+          agent2: [
+            { dayIndex: 0, date: "05/19", name: "SK하이닉스", code: "000660", side: "buy", price: 160000, qty: 3, pnl: null, reason: "섹터 강세" },
+            { dayIndex: 3, date: "05/22", name: "현대차", code: "005380", side: "buy", price: 240000, qty: 2, pnl: null, reason: "섹터 추세" },
+          ],
+          agent3: [
+            { dayIndex: 2, date: "05/21", name: "삼성전자", code: "005930", side: "buy", price: 72300, qty: 6, pnl: null, reason: "거래대금·수급" },
+            { dayIndex: 4, date: "05/23", name: "한미반도체", code: "042700", side: "buy", price: 112400, qty: 4, pnl: null, reason: "공시·이벤트" },
+          ],
+          agent4: [
+            { dayIndex: 1, date: "05/20", name: "SK하이닉스", code: "000660", side: "buy", price: 160000, qty: 3, pnl: null, reason: "섹터 강세" },
+          ],
+        };
+
+        var assetChart = null;
+        var activeChartSeries = [];
+
+        var periodSegment = document.querySelector('[data-ui="period-segment"]');
+        var periodLabel = document.querySelector('[data-ui="period-label"]');
+        var stockRows = document.querySelectorAll(".stock-return-table tbody tr");
+
+        var state = {
+          period: "all",
+          stockAgent: "agent1",
+          tradeSide: "all",
+        };
+
+        function getPeriodRange(periodKey) {
+          var total = TIMELINE.labels.length;
+          var days = PERIODS[periodKey].days;
+          if (!days || days >= total) return { start: 0, end: total };
+          return { start: total - days, end: total };
+        }
+
+        function sliceTimeline(periodKey) {
+          var range = getPeriodRange(periodKey);
+          return {
+            labels: TIMELINE.labels.slice(range.start, range.end),
+            series: TIMELINE.series.map(function (s) {
+              return {
+                key: s.key,
+                label: s.label,
+                color: s.color,
+                dashed: !!s.dashed,
+                data: s.data.slice(range.start, range.end),
+              };
+            }),
+          };
+        }
+
+        function calcReturnPct(startVal, endVal) {
+          if (!startVal) return 0;
+          return ((endVal - startVal) / startVal) * 100;
+        }
+
+        function formatPctValue(value) {
+          return Math.abs(value).toFixed(2) + "%";
+        }
+
+        function signValueHtml(value, opts) {
+          opts = opts || {};
+          var up = value >= 0;
+          var cls = up ? "num-up" : "num-down";
+          var extra = opts.extraClass ? " " + opts.extraClass : "";
+          var path = up ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z";
+          var text = opts.isMoney ? formatMoney(Math.abs(value)) : formatPctValue(value);
+          return (
+            '<span class="sign-value ' + cls + extra + '">' +
+            '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' + path + '"/></svg>' +
+            text +
+            "</span>"
+          );
+        }
+
+        function getAgentPeriodStats(periodKey) {
+          var range = getPeriodRange(periodKey);
+          var stats = [];
+          TIMELINE.series.forEach(function (s) {
+            if (s.dashed) return;
+            var startVal = s.data[range.start];
+            var endVal = s.data[range.end - 1];
+            stats.push({
+              key: s.key,
+              label: s.label,
+              asset: endVal,
+              returnPct: calcReturnPct(startVal, endVal),
+            });
+          });
+          return stats;
+        }
+
+        function getBestAgent(stats) {
+          return stats.reduce(function (best, cur) {
+            return !best || cur.returnPct > best.returnPct ? cur : best;
+          }, null);
+        }
+
+        function getBestStock(periodKey) {
+          var best = null;
+          Object.keys(STOCK_CATALOG).forEach(function (id) {
+            var stock = STOCK_CATALOG[id];
+            var data = stock[periodKey] || stock.all;
+            if (!best || data.returnPct > best.returnPct) {
+              best = { id: id, name: stock.name, agents: stock.agents, returnPct: data.returnPct };
+            }
+          });
+          return best;
+        }
+
+        function agentAgentLabel(agents) {
+          return agents
+            .map(function (key) {
+              return AGENT_META[key].name.replace("에이전트 ", "");
+            })
+            .join(", ") + " 보유";
+        }
+
+        function updateKpis(periodKey, agentStats) {
+          var totalEnd = agentStats.reduce(function (sum, a) { return sum + a.asset; }, 0);
+          var range = getPeriodRange(periodKey);
+          var totalStart = TIMELINE.series
+            .filter(function (s) { return !s.dashed; })
+            .reduce(function (sum, s) { return sum + s.data[range.start]; }, 0);
+          var totalReturn = calcReturnPct(totalStart, totalEnd);
+          var bestAgent = getBestAgent(agentStats);
+          var bestStock = getBestStock(periodKey);
+          var meta = AGENT_META[bestAgent.key];
+
+          var totalAssetEl = document.querySelector('[data-ui="kpi-total-asset"]');
+          var totalReturnWrap = document.querySelector('[data-ui="kpi-total-return-wrap"]');
+          var cashEl = document.querySelector('[data-ui="kpi-cash"]');
+          var bestAgentRate = document.querySelector('[data-ui="kpi-best-agent-rate"]');
+          var bestAgentSub = document.querySelector('[data-ui="kpi-best-agent-sub"]');
+          var bestStockRate = document.querySelector('[data-ui="kpi-best-stock-rate"]');
+          var bestStockSub = document.querySelector('[data-ui="kpi-best-stock-sub"]');
+
+          if (totalAssetEl) totalAssetEl.textContent = formatMoney(totalEnd);
+          if (totalReturnWrap) totalReturnWrap.innerHTML = signValueHtml(totalReturn);
+          if (cashEl) cashEl.textContent = formatMoney(CASH_BY_PERIOD[periodKey]);
+          if (bestAgentRate) {
+            bestAgentRate.className = "kpi__value sign-value kpi__value--rate " + (bestAgent.returnPct >= 0 ? "num-up" : "num-down");
+            bestAgentRate.innerHTML =
+              '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
+              (bestAgent.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
+              '"/></svg>' + formatPctValue(bestAgent.returnPct);
+          }
+          if (bestAgentSub) bestAgentSub.textContent = meta.name + " · " + meta.badge;
+          if (bestStockRate) {
+            bestStockRate.className = "kpi__value sign-value kpi__value--rate " + (bestStock.returnPct >= 0 ? "num-up" : "num-down");
+            bestStockRate.innerHTML =
+              '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
+              (bestStock.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
+              '"/></svg>' + formatPctValue(bestStock.returnPct);
+          }
+          if (bestStockSub) bestStockSub.textContent = bestStock.name + " · " + agentAgentLabel(bestStock.agents);
+        }
+
+        function updateAgentTiles(agentStats) {
+          agentStats.forEach(function (stat) {
+            var tile = document.querySelector('.agent-tile[data-agent-series="' + stat.key + '"]');
+            if (!tile) return;
+            var assetEl = tile.querySelector(".agent-tile__asset");
+            var returnEl = tile.querySelector(".agent-tile__return-value");
+            if (assetEl) assetEl.textContent = formatMoney(stat.asset);
+            if (returnEl) returnEl.outerHTML = signValueHtml(stat.returnPct, { extraClass: "agent-tile__return-value" });
+          });
+        }
+
+        function getAgentShortLabel(agentKey) {
+          var meta = AGENT_META[agentKey];
+          return meta ? meta.name.replace("에이전트 ", "") : agentKey;
+        }
+
+        function getAgentBadgeClass(agentKey) {
+          var map = {
+            agent1: "badge--agent-1",
+            agent2: "badge--agent-2",
+            agent3: "badge--agent-3",
+            agent4: "badge--agent-4",
+          };
+          return map[agentKey] || "badge--bench";
+        }
+
+        function getAllTrades(periodKey) {
+          var range = getPeriodRange(periodKey);
+          var all = [];
+          Object.keys(TRADE_HISTORY).forEach(function (agentKey) {
+            (TRADE_HISTORY[agentKey] || []).forEach(function (t) {
+              if (t.dayIndex >= range.start && t.dayIndex < range.end) {
+                all.push({ agentKey: agentKey, trade: t });
+              }
+            });
+          });
+          return all.sort(function (a, b) {
+            return b.trade.dayIndex - a.trade.dayIndex;
+          });
+        }
+
+        function renderRealizedPnl(pnl, side) {
+          if (side !== "sell" || pnl === null || pnl === undefined) {
+            return '<span class="pnl-empty">-</span>';
+          }
+          return signValueHtml(pnl, { isMoney: true });
+        }
+
+        function renderTradeHistoryRow(entry) {
+          var trade = entry.trade;
+          var sideBadge = trade.side === "buy"
+            ? '<span class="badge badge--buy">매수</span>'
+            : '<span class="badge badge--sell">매도</span>';
+          var agentBadge =
+            '<span class="badge ' + getAgentBadgeClass(entry.agentKey) + '">' +
+            getAgentShortLabel(entry.agentKey) +
+            "</span>";
+          var qtyLabel = trade.qty ? trade.qty + "주" : "-";
+          return (
+            "<tr>" +
+            '<td class="col-date">' + trade.date + "</td>" +
+            '<td class="col-stock"><span class="stock-name">' + trade.name + '</span><span class="stock-code">' + trade.code + "</span></td>" +
+            '<td class="col-gap" aria-hidden="true"></td>' +
+            '<td class="col-agent">' + agentBadge + "</td>" +
+            '<td class="col-side">' + sideBadge + "</td>" +
+            '<td class="col-price">' + formatMoney(trade.price) + "</td>" +
+            '<td class="col-qty">' + qtyLabel + "</td>" +
+            '<td class="col-pnl">' + renderRealizedPnl(trade.pnl, trade.side) + "</td>" +
+            '<td class="col-reason reason">' + trade.reason + "</td>" +
+            "</tr>"
+          );
+        }
+
+        function filterTradesBySide(trades, sideFilter) {
+          if (!sideFilter || sideFilter === "all") return trades;
+          return trades.filter(function (entry) {
+            return entry.trade.side === sideFilter;
+          });
+        }
+
+        function renderTradeHistory(periodKey) {
+          var tbody = document.querySelector('[data-ui="trade-history-body"]');
+          if (!tbody) return;
+
+          var filtered = filterTradesBySide(getAllTrades(periodKey), state.tradeSide);
+
+          if (!filtered.length) {
+            tbody.innerHTML =
+              '<tr><td class="table-empty-cell" colspan="9">해당 거래 기록이 없습니다</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = filtered.map(renderTradeHistoryRow).join("");
+        }
+
+        function applyTradeSideFilter(sideKey) {
+          state.tradeSide = sideKey;
+          renderTradeHistory(state.period);
+        }
+
+        function applyStockAgentFilter(agentKey) {
+          state.stockAgent = agentKey;
+          stockRows.forEach(function (row) {
+            var agents = (row.getAttribute("data-agents") || "").split(/\s+/);
+            row.classList.toggle("is-hidden", agents.indexOf(agentKey) === -1);
+          });
+        }
+
+        function updateStockTable(periodKey) {
+          stockRows.forEach(function (row) {
+            var id = row.getAttribute("data-stock-id");
+            var stock = STOCK_CATALOG[id];
+            if (!stock) return;
+            var data = stock[periodKey] || stock.all;
+            var priceCells = row.querySelectorAll(".col-price");
+            var returnCell = row.querySelector(".col-return");
+            var pnlCell = row.querySelector(".col-pnl");
+            if (priceCells[0]) priceCells[0].textContent = formatMoney(data.avg);
+            if (priceCells[1]) priceCells[1].textContent = formatMoney(data.current);
+            if (returnCell) returnCell.innerHTML = signValueHtml(data.returnPct);
+            if (pnlCell) pnlCell.innerHTML = signValueHtml(data.pnl, { isMoney: true });
+          });
+        }
+
+        function filterStockByAgent(agentKey) {
+          applyStockAgentFilter(agentKey);
+        }
+
+        function calcChartBounds(seriesList) {
+          var values = [];
+          seriesList.forEach(function (s) {
+            values = values.concat(s.data);
+          });
+          var minVal = Math.min.apply(null, values);
+          var maxVal = Math.max.apply(null, values);
+          var min = Math.floor(minVal / 20000) * 20000 - 20000;
+          var max = Math.ceil(maxVal / 20000) * 20000 + 20000;
+          return { min: Math.max(min, 480000), max: Math.min(max, 580000) };
+        }
+
+        function updateChart(periodKey) {
+          if (!assetChart) return;
+          var sliced = sliceTimeline(periodKey);
+          activeChartSeries = sliced.series;
+          var bounds = calcChartBounds(sliced.series);
+
+          assetChart.data.labels = sliced.labels;
+          assetChart.data.datasets.forEach(function (dataset, index) {
+            var series = sliced.series[index];
+            dataset.data = series.data.slice();
+            dataset.borderColor = series.color;
+            dataset.pointBackgroundColor = series.color;
+            dataset.pointBorderColor = series.color;
+          });
+
+          assetChart.options.scales.y.min = bounds.min;
+          assetChart.options.scales.y.max = bounds.max;
+          assetChart.update();
+        }
+
+        function applyPeriod(periodKey) {
+          if (!PERIODS[periodKey]) return;
+          state.period = periodKey;
+
+          periodSegment.querySelectorAll(".segment__btn").forEach(function (btn) {
+            var on = btn.getAttribute("data-period") === periodKey;
+            btn.classList.toggle("is-active", on);
+            btn.setAttribute("aria-selected", on ? "true" : "false");
+          });
+
+          if (periodLabel) periodLabel.textContent = PERIODS[periodKey].label;
+
+          var agentStats = getAgentPeriodStats(periodKey);
+          updateKpis(periodKey, agentStats);
+          updateAgentTiles(agentStats);
+          updateStockTable(periodKey);
+          applyStockAgentFilter(state.stockAgent);
+          renderTradeHistory(periodKey);
+          updateChart(periodKey);
+        }
+
+        function setPeriod(periodKey) {
+          applyPeriod(periodKey);
+        }
+
+        function initStockAgentSelect() {
+          var wrap = document.querySelector('[data-ui="stock-agent-select"]');
+          if (!wrap) return;
+
+          var trigger = wrap.querySelector(".select-fake");
+          var menu = wrap.querySelector(".select-menu");
+          var label = wrap.querySelector('[data-ui="stock-agent-label"]');
+          var items = wrap.querySelectorAll(".select-menu__item");
+
+          function closeMenu() {
+            menu.hidden = true;
+            trigger.setAttribute("aria-expanded", "false");
+          }
+
+          function openMenu() {
+            menu.hidden = false;
+            trigger.setAttribute("aria-expanded", "true");
+          }
+
+          trigger.addEventListener("click", function () {
+            if (menu.hidden) openMenu();
+            else closeMenu();
+          });
+
+          items.forEach(function (item) {
+            item.addEventListener("click", function () {
+              var agentKey = item.getAttribute("data-agent");
+              items.forEach(function (el) {
+                el.classList.toggle("is-selected", el === item);
+              });
+              if (label) label.textContent = item.textContent;
+              applyStockAgentFilter(agentKey);
+              closeMenu();
+            });
+          });
+
+          document.addEventListener("click", function (e) {
+            if (!wrap.contains(e.target)) closeMenu();
+          });
+
+          applyStockAgentFilter(state.stockAgent);
+        }
+
+        function initTradeSideSelect() {
+          var wrap = document.querySelector('[data-ui="trade-side-select"]');
+          if (!wrap) return;
+
+          var trigger = wrap.querySelector(".select-fake");
+          var menu = wrap.querySelector(".select-menu");
+          var label = wrap.querySelector('[data-ui="trade-side-label"]');
+          var items = wrap.querySelectorAll(".select-menu__item");
+
+          function closeMenu() {
+            menu.hidden = true;
+            trigger.setAttribute("aria-expanded", "false");
+          }
+
+          function openMenu() {
+            menu.hidden = false;
+            trigger.setAttribute("aria-expanded", "true");
+          }
+
+          trigger.addEventListener("click", function () {
+            if (menu.hidden) openMenu();
+            else closeMenu();
+          });
+
+          items.forEach(function (item) {
+            item.addEventListener("click", function () {
+              var sideKey = item.getAttribute("data-side");
+              items.forEach(function (el) {
+                el.classList.toggle("is-selected", el === item);
+              });
+              if (label) label.textContent = item.textContent;
+              applyTradeSideFilter(sideKey);
+              closeMenu();
+            });
+          });
+
+          document.addEventListener("click", function (e) {
+            if (!wrap.contains(e.target)) closeMenu();
+          });
+
+          applyTradeSideFilter(state.tradeSide);
+        }
+
+        function formatMoney(value) {
+          return value.toLocaleString("ko-KR") + "원";
+        }
+
+        function formatAxisMoney(value) {
+          return value / 10000 + "만원";
+        }
+
+        function colorWithOpacity(hex, opacity) {
+          var normalized = hex.replace("#", "");
+          var r = parseInt(normalized.slice(0, 2), 16);
+          var g = parseInt(normalized.slice(2, 4), 16);
+          var b = parseInt(normalized.slice(4, 6), 16);
+          return "rgba(" + r + ", " + g + ", " + b + ", " + opacity + ")";
+        }
+
+        var CHART_DIM_OPACITY = 0.1;
+
+        function applyChartHighlight(activeKey) {
+          if (!assetChart) return;
+
+          assetChart.data.datasets.forEach(function (dataset, index) {
+            var series = activeChartSeries[index];
+            if (!series) return;
+            var isActive = !activeKey || series.key === activeKey;
+            var lineOpacity = isActive ? 1 : CHART_DIM_OPACITY;
+            var color = colorWithOpacity(series.color, lineOpacity);
+
+            dataset.borderColor = color;
+            dataset.pointBackgroundColor = color;
+            dataset.pointBorderColor = color;
+          });
+
+          assetChart.update();
+        }
+
+        function initAgentTileHover() {
+          var tiles = document.querySelectorAll(".agent-tile[data-agent-series]");
+          var grid = document.querySelector(".agent-tile-grid");
+          if (!tiles.length) return;
+
+          tiles.forEach(function (tile) {
+            tile.addEventListener("mouseenter", function () {
+              var key = tile.getAttribute("data-agent-series");
+              tiles.forEach(function (t) {
+                t.classList.toggle("is-chart-hover", t === tile);
+              });
+              applyChartHighlight(key);
+            });
+          });
+
+          if (grid) {
+            grid.addEventListener("mouseleave", function () {
+              tiles.forEach(function (t) {
+                t.classList.remove("is-chart-hover");
+              });
+              applyChartHighlight(null);
+            });
+          }
+        }
+
+        function buildChartDatasets(seriesList) {
+          return seriesList.map(function (series) {
+            var isBench = !!series.dashed;
+            return {
+              label: series.label,
+              data: series.data.slice(),
+              borderColor: series.color,
+              backgroundColor: "transparent",
+              borderWidth: isBench ? 1.5 : 2,
+              borderDash: isBench ? [5, 4] : undefined,
+              pointRadius: isBench ? 2.5 : 3,
+              pointBackgroundColor: series.color,
+              pointBorderColor: series.color,
+              pointBorderWidth: 0,
+              pointHoverRadius: isBench ? 4 : 4,
+              fill: false,
+              tension: 0.35,
+              cubicInterpolationMode: "monotone",
+              order: isBench ? 4 : 2,
+            };
+          });
+        }
+
+        var CHART_AXIS_BORDER = "#243652";
+        var CHART_GRID_COLOR = "rgba(142, 164, 196, 0.12)";
+
+        function buildChartYScaleOptions(bounds) {
+          return {
+            min: bounds.min,
+            max: bounds.max,
+            grid: {
+              color: CHART_GRID_COLOR,
+              lineWidth: 1,
+              drawTicks: false,
+              drawOnChartArea: true,
+            },
+            border: {
+              display: true,
+              color: CHART_AXIS_BORDER,
+              width: 1,
+            },
+            ticks: {
+              display: false,
+              stepSize: 20000,
+              autoSkip: false,
+              maxTicksLimit: 6,
+            },
+          };
+        }
+
+        var yAxisLabelAlignPlugin = {
+          id: "yAxisLabelAlign",
+          afterDraw: function (chart) {
+            var yScale = chart.scales.y;
+            if (!yScale || !yScale.ticks.length) return;
+
+            var tickOpts = yScale.options.ticks;
+            var labelColor = "#8EA4C4";
+            var labelPadding = 12;
+            var labelFont = Chart.helpers.toFont({
+              size: 12,
+              family: "Pretendard, Noto Sans KR, sans-serif",
+            });
+            var ctx = chart.ctx;
+
+            ctx.save();
+            ctx.fillStyle = labelColor;
+            ctx.font = labelFont.string;
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+
+            yScale.ticks.forEach(function (tick) {
+              var label = formatAxisMoney(tick.value);
+              var y = yScale.getPixelForValue(tick.value);
+              ctx.fillText(label, yScale.left - labelPadding, y);
+            });
+
+            ctx.restore();
+          },
+        };
+
+        function initAssetChart() {
+          var canvas = document.getElementById("asset-chart");
+          if (!canvas || typeof Chart === "undefined") return;
+
+          if (typeof Chart !== "undefined") {
+            var annotationLib = window["chartjs-plugin-annotation"];
+            if (annotationLib) Chart.register(annotationLib);
+            Chart.register(yAxisLabelAlignPlugin);
+          }
+
+          var initialSlice = sliceTimeline("all");
+          activeChartSeries = initialSlice.series;
+          var bounds = calcChartBounds(initialSlice.series);
+
+          assetChart = new Chart(canvas, {
+            type: "line",
+            data: {
+              labels: initialSlice.labels,
+              datasets: buildChartDatasets(initialSlice.series),
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              layout: { padding: { top: 2, right: 16, bottom: 16, left: 4 } },
+              animations: {
+                colors: { duration: 200 },
+                numbers: { duration: 0 },
+              },
+              transitions: {
+                active: {
+                  animation: {
+                    duration: 200,
+                  },
+                },
+              },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: "#0B1930",
+                  borderColor: "#1A2940",
+                  borderWidth: 1,
+                  titleColor: "#F2F6FC",
+                  bodyColor: "#F2F6FC",
+                  titleFont: { size: 11, weight: "600", family: "Pretendard, Noto Sans KR, sans-serif" },
+                  bodyFont: { size: 10, family: "Pretendard, Noto Sans KR, sans-serif" },
+                  padding: 10,
+                  displayColors: false,
+                  callbacks: {
+                    title: function (items) {
+                      return items[0].label;
+                    },
+                    label: function () {
+                      return null;
+                    },
+                    afterBody: function (items) {
+                      var i = items[0].dataIndex;
+                      return activeChartSeries.map(function (series) {
+                        return series.label + " " + formatMoney(series.data[i]);
+                      });
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  offset: true,
+                  grid: { display: false, drawTicks: false },
+                  border: {
+                    display: true,
+                    color: CHART_AXIS_BORDER,
+                    width: 1,
+                  },
+                  ticks: {
+                    color: "#8EA4C4",
+                    font: { size: 11, family: "Pretendard, Noto Sans KR, sans-serif" },
+                    padding: 6,
+                    autoSkip: false,
+                    maxRotation: 0,
+                  },
+                },
+                y: buildChartYScaleOptions(bounds),
+              },
+            },
+          });
+
+          if (typeof ResizeObserver !== "undefined") {
+            var chartAreaEl = canvas.closest(".chart-area");
+            if (chartAreaEl) {
+              new ResizeObserver(function () {
+                assetChart.resize();
+              }).observe(chartAreaEl);
+            }
+          }
+
+          window.addEventListener("resize", function () {
+            if (assetChart) assetChart.resize();
+          });
+        }
+
+        if (periodSegment) {
+          periodSegment.querySelectorAll(".segment__btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              setPeriod(btn.getAttribute("data-period"));
+            });
+          });
+        }
+
+        initAssetChart();
+        initAgentTileHover();
+        initStockAgentSelect();
+        initTradeSideSelect();
+        applyPeriod("all");
+      })();
+    </script>
+  </body>
+</html>
