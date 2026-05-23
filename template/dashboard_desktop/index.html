@@ -512,7 +512,7 @@
       .weekly-card__body {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
       }
 
       .weekly-kpi-row {
@@ -522,6 +522,8 @@
       }
 
       .weekly-kpi {
+        display: flex;
+        flex-direction: column;
         background: var(--card-inner);
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -530,23 +532,35 @@
       }
 
       .weekly-kpi__label {
-        margin: 0 0 8px;
+        margin: 0 0 6px;
         font-size: 11px;
         line-height: 1.35;
         color: var(--text-secondary);
       }
 
       .weekly-kpi__name {
-        margin: 0 0 4px;
+        margin: 0 0 6px;
         font-size: 14px;
         font-weight: 600;
         line-height: 1.3;
         color: var(--text);
       }
 
-      .weekly-kpi__value .sign-value {
-        font-size: 13px;
-        font-weight: 600;
+      .weekly-kpi__metric {
+        margin: 0;
+      }
+
+      .weekly-kpi__metric .sign-value {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        gap: 6px;
+      }
+
+      .weekly-kpi__metric .sign-icon {
+        width: 10px;
+        height: 10px;
       }
 
       .weekly-agent-grid {
@@ -562,7 +576,7 @@
         padding: 16px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         min-width: 0;
       }
 
@@ -614,27 +628,9 @@
       }
 
       .weekly-agent-card__contribution {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 16px;
-        width: 100%;
-        min-width: 0;
-      }
-
-      .weekly-agent-card__contribution-stock {
-        flex: 1 1 auto;
-        min-width: 0;
-      }
-
-      .weekly-agent-card__contribution-value {
-        flex: 0 0 auto;
-        margin-left: auto;
-        text-align: right;
-      }
-
-      .weekly-agent-card__contribution-value .sign-value {
-        justify-content: flex-end;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
 
       .weekly-agent-card__eval-block + .weekly-agent-card__eval-block {
@@ -1842,12 +1838,6 @@
           w4: {
             label: "5월 4주차",
             period: "05.26 – 05.30",
-            summary: {
-              bestAgent: { name: "에이전트 1호", returnPct: 4.12 },
-              worstAgent: { name: "에이전트 2호", returnPct: -2.31 },
-              bestStock: { name: "삼성전자", pnl: 16880 },
-              worstStock: { name: "현대차", pnl: -14350 },
-            },
             agents: [
               {
                 key: "agent1",
@@ -1857,6 +1847,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "삼성전자",
                 contributionPnl: 16880,
+                tierEval: "수급 확인 후 진입한 판단이 유효했음",
                 selfEval:
                   "삼성전자 수익과 카카오 조기 매도가 주간 성과를 견인했습니다. 거래대금 증가와 수급 확인 후 진입한 판단이 유효했습니다.",
                 nextWeek: "반도체 흐름 유지 시 보유 지속, 신규 진입은 제한",
@@ -1869,6 +1860,7 @@
                 contributionLabel: "주요 손실",
                 contributionStock: "현대차",
                 contributionPnl: -14350,
+                tierEval: "섹터 약세 대응이 늦어 손실이 확대됨",
                 selfEval:
                   "현대차 섹터 약세 전환 확인이 늦어 손실 구간이 확대되었습니다. 진입 시점은 적절했으나 매도 판단이 지연된 것이 핵심 원인입니다. 잔여 모멘텀은 제한적입니다.",
                 nextWeek: "잔여 모멘텀 재검토 후 매도 판단 기준 보완",
@@ -1881,6 +1873,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "한미반도체",
                 contributionPnl: 9000,
+                tierEval: "공시·이벤트 진입과 보유 연장 판단이 적중함",
                 selfEval:
                   "공시·이벤트 기반 한미반도체 진입과 삼성전자 보유가 수익을 만들었습니다. 이벤트 구간 매수와 보유 연장 판단이 적중했습니다.",
                 nextWeek: "이벤트 종목 비중 조절, 신규 공시 대기 후 선별 진입",
@@ -1893,6 +1886,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "SK하이닉스",
                 contributionPnl: 4800,
+                tierEval: "수익은 발생했으나 성과 판단을 위한 관찰 필요",
                 selfEval:
                   "SK하이닉스 중심의 보수적 보유로 소폭 수익을 기록했습니다. 거래 빈도는 낮았지만 손실 구간을 피한 점은 긍정적입니다.",
                 nextWeek: "보수적 운용 유지, 확실한 섹터 신호 전까지 신규 진입 자제",
@@ -1909,12 +1903,6 @@
           w3: {
             label: "5월 3주차",
             period: "05.19 – 05.23",
-            summary: {
-              bestAgent: { name: "에이전트 3호", returnPct: 2.84 },
-              worstAgent: { name: "에이전트 2호", returnPct: -1.05 },
-              bestStock: { name: "한미반도체", pnl: 6200 },
-              worstStock: { name: "카카오", pnl: -4200 },
-            },
             agents: [
               {
                 key: "agent1",
@@ -1924,6 +1912,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "삼성전자",
                 contributionPnl: 5200,
+                tierEval: "수급 확인 매수는 유효했으나 추가 확장은 제한적",
                 selfEval: "초반 수급 확인 매수가 유효했으나, 후반 변동성 구간에서 추가 수익 확대는 제한적이었습니다.",
                 nextWeek: "거래대금 재확인 후 분할 매수 기준 강화",
               },
@@ -1935,6 +1924,7 @@
                 contributionLabel: "주요 손실",
                 contributionStock: "카카오",
                 contributionPnl: -4200,
+                tierEval: "매도 타이밍 지연으로 소폭 손실 발생",
                 selfEval: "모멘텀 약화 초기 신호를 놓쳐 보유 기간이 길어졌습니다. 종목 선택보다 매도 타이밍이 문제였습니다.",
                 nextWeek: "모멘텀 이탈 시 즉시 재평가 규칙 적용",
               },
@@ -1946,6 +1936,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "한미반도체",
                 contributionPnl: 6200,
+                tierEval: "공시 직후 진입 전략이 안정적으로 작동함",
                 selfEval: "공시 직후 진입과 단기 보유 전략이 맞았습니다. 이벤트 구간 수익 실현 판단도 적절했습니다.",
                 nextWeek: "공시 빈도 낮은 구간에서는 보유 비중 축소",
               },
@@ -1957,6 +1948,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "SK하이닉스",
                 contributionPnl: 2800,
+                tierEval: "보수적 운용으로 변동성은 낮았으나 수익 확장도 제한적",
                 selfEval: "낮은 거래 빈도로 변동성을 억제했습니다. 수익 확장은 제한적이나 손실 회피에는 성공했습니다.",
                 nextWeek: "섹터 확인 신호 2회 이상일 때만 진입",
               },
@@ -1970,12 +1962,6 @@
           w2: {
             label: "5월 2주차",
             period: "05.12 – 05.16",
-            summary: {
-              bestAgent: { name: "에이전트 1호", returnPct: 1.56 },
-              worstAgent: { name: "에이전트 4호", returnPct: -0.48 },
-              bestStock: { name: "SK하이닉스", pnl: 3900 },
-              worstStock: { name: "삼성전자", pnl: -2100 },
-            },
             agents: [
               {
                 key: "agent1",
@@ -1985,6 +1971,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "SK하이닉스",
                 contributionPnl: 3900,
+                tierEval: "섹터 강세 초입 매수는 유효했으나 실현이 늦었음",
                 selfEval: "섹터 강세 초입 매수가 유효했습니다. 다만 단기 차익 실현이 늦어 일부 수익을 반납했습니다.",
                 nextWeek: "목표 수익률 도달 시 분할 매도 적용",
               },
@@ -1996,6 +1983,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "삼성전자",
                 contributionPnl: 1200,
+                tierEval: "소폭 수익 유지, 거래 대비 기여도는 낮음",
                 selfEval: "소폭 수익 구간을 유지했으나 거래 대비 기여도는 낮았습니다. 종목 집중도 조정이 필요합니다.",
                 nextWeek: "섹터 분산 후 재진입 검토",
               },
@@ -2007,6 +1995,7 @@
                 contributionLabel: "주요 기여",
                 contributionStock: "한미반도체",
                 contributionPnl: 2500,
+                tierEval: "이벤트 기대 구간 선매수가 적중함",
                 selfEval: "이벤트 기대 구간 선매수가 맞았습니다. 확인 공시 전 선행 진입 리스크는 통제 가능했습니다.",
                 nextWeek: "공시 전 포지션 상한 15% 유지",
               },
@@ -2018,6 +2007,7 @@
                 contributionLabel: "주요 손실",
                 contributionStock: "삼성전자",
                 contributionPnl: -2100,
+                tierEval: "진입 타이밍이 늦어 단기 조정 구간에 노출됨",
                 selfEval: "보수적 진입 타이밍이 늦어 단기 조정 구간에 노출되었습니다. 손실 폭은 작으나 효율은 낮았습니다.",
                 nextWeek: "진입 전 2일 추세 확인 규칙 추가",
               },
@@ -2697,40 +2687,73 @@
           return value.toLocaleString("ko-KR") + "원";
         }
 
+        function computeWeeklySummary(agents) {
+          var bestAgent = null;
+          var worstAgent = null;
+          var bestStock = null;
+          var worstStock = null;
+
+          agents.forEach(function (agent) {
+            if (!bestAgent || agent.returnPct > bestAgent.returnPct) bestAgent = agent;
+            if (!worstAgent || agent.returnPct < worstAgent.returnPct) worstAgent = agent;
+            if (!bestStock || agent.contributionPnl > bestStock.contributionPnl) bestStock = agent;
+            if (!worstStock || agent.contributionPnl < worstStock.contributionPnl) worstStock = agent;
+          });
+
+          return {
+            bestAgent: {
+              name: AGENT_META[bestAgent.key].name,
+              returnPct: bestAgent.returnPct,
+            },
+            worstAgent: {
+              name: AGENT_META[worstAgent.key].name,
+              returnPct: worstAgent.returnPct,
+            },
+            bestStock: {
+              name: bestStock.contributionStock,
+              pnl: bestStock.contributionPnl,
+            },
+            worstStock: {
+              name: worstStock.contributionStock,
+              pnl: worstStock.contributionPnl,
+            },
+          };
+        }
+
         function renderWeeklyKpiCard(label, name, valueHtml) {
           return (
             '<div class="weekly-kpi">' +
             '<p class="weekly-kpi__label">' + label + "</p>" +
             '<p class="weekly-kpi__name">' + name + "</p>" +
-            '<div class="weekly-kpi__value">' + valueHtml + "</div>" +
+            '<div class="weekly-kpi__metric">' + valueHtml + "</div>" +
             "</div>"
           );
         }
 
         function renderWeeklySummary(report) {
           var row = document.querySelector('[data-ui="weekly-kpi-row"]');
-          if (!row || !report) return;
-          var s = report.summary;
+          if (!row || !report || !report.agents || !report.agents.length) return;
+          var summary = computeWeeklySummary(report.agents);
           row.innerHTML =
             renderWeeklyKpiCard(
               "주간 최고 성과 에이전트",
-              s.bestAgent.name,
-              signValueHtml(s.bestAgent.returnPct)
+              summary.bestAgent.name,
+              signValueHtml(summary.bestAgent.returnPct)
             ) +
             renderWeeklyKpiCard(
               "주간 최저 성과 에이전트",
-              s.worstAgent.name,
-              signValueHtml(s.worstAgent.returnPct)
+              summary.worstAgent.name,
+              signValueHtml(summary.worstAgent.returnPct)
             ) +
             renderWeeklyKpiCard(
               "최고 수익 기여 종목",
-              s.bestStock.name,
-              signValueHtml(s.bestStock.pnl, { isMoney: true })
+              summary.bestStock.name,
+              signValueHtml(summary.bestStock.pnl, { isMoney: true })
             ) +
             renderWeeklyKpiCard(
               "최대 손실 기여 종목",
-              s.worstStock.name,
-              signValueHtml(s.worstStock.pnl, { isMoney: true })
+              summary.worstStock.name,
+              signValueHtml(summary.worstStock.pnl, { isMoney: true })
             );
         }
 
@@ -2739,10 +2762,8 @@
           if (!meta) return "";
           var contributionHtml =
             '<span class="weekly-agent-card__contribution">' +
-            '<span class="weekly-agent-card__contribution-stock">' + agent.contributionStock + "</span>" +
-            '<span class="weekly-agent-card__contribution-value">' +
+            "<span>" + agent.contributionStock + "</span>" +
             signValueHtml(agent.contributionPnl, { isMoney: true }) +
-            "</span>" +
             "</span>";
           return (
             '<article class="weekly-agent-card" data-agent="' + agent.key + '">' +
