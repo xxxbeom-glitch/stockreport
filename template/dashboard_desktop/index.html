@@ -115,6 +115,216 @@
         color: var(--text);
       }
 
+      /* ── Header notifications ── */
+      .notify-wrap {
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .notify-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      }
+
+      .notify-btn:hover,
+      .notify-btn[aria-expanded="true"] {
+        color: var(--text);
+        border-color: rgba(77, 163, 255, 0.45);
+        background: var(--card-inner);
+      }
+
+      .notify-btn__icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      .notify-btn__badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: var(--positive);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 16px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .notify-btn__badge:empty,
+      .notify-btn__badge[hidden] {
+        display: none;
+      }
+
+      .notify-panel {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 100;
+        width: 360px;
+        max-height: 420px;
+        display: flex;
+        flex-direction: column;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+
+      .notify-panel[hidden] {
+        display: none;
+      }
+
+      .notify-panel__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px 10px;
+        flex-shrink: 0;
+      }
+
+      .notify-panel__title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .notify-panel__read-all {
+        padding: 0;
+        border: none;
+        background: none;
+        color: var(--accent-blue);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .notify-panel__read-all:hover {
+        color: #7bb8ff;
+      }
+
+      .notify-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 0 12px 10px;
+        flex-shrink: 0;
+      }
+
+      .notify-tabs__btn {
+        padding: 5px 10px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text-secondary);
+        font: inherit;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .notify-tabs__btn.is-active {
+        border-color: var(--border);
+        background: var(--card-inner);
+        color: var(--text);
+      }
+
+      .notify-list {
+        list-style: none;
+        margin: 0;
+        padding: 0 8px 8px;
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .notify-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+        min-height: 48px;
+        padding: 10px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+
+      .notify-item:hover {
+        background: rgba(77, 163, 255, 0.06);
+      }
+
+      .notify-item.is-unread {
+        background: rgba(77, 163, 255, 0.08);
+      }
+
+      .notify-item__body {
+        min-width: 0;
+      }
+
+      .notify-item__title {
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--text);
+      }
+
+      .notify-item__sub {
+        margin-top: 2px;
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      .notify-item__meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        flex-shrink: 0;
+        padding-top: 1px;
+      }
+
+      .notify-item__time {
+        font-size: 10px;
+        line-height: 1.3;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+
+      .notify-item__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--positive);
+        flex-shrink: 0;
+      }
+
+      .notify-empty {
+        padding: 24px 16px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
       .meta {
         margin-bottom: 18px;
         font-size: 12px;
@@ -265,6 +475,257 @@
         }
       }
 
+      /* ── Weekly performance report ── */
+      .weekly-section {
+        margin-top: 18px;
+      }
+
+      .weekly-card {
+        border: 1px solid var(--border);
+      }
+
+      .weekly-card__header {
+        align-items: flex-start;
+      }
+
+      .weekly-card__headline {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .weekly-card__sub {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: var(--text-secondary);
+      }
+
+      .weekly-card__actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .weekly-card__body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .weekly-kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      .weekly-kpi {
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        min-width: 0;
+      }
+
+      .weekly-kpi__label {
+        margin: 0 0 8px;
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      .weekly-kpi__name {
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text);
+      }
+
+      .weekly-kpi__value .sign-value {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .weekly-agent-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .weekly-agent-card {
+        background: var(--card-sub);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .weekly-agent-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .weekly-agent-card__name {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text);
+      }
+
+      .weekly-agent-card__stats {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .weekly-agent-card__stat {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 8px;
+        align-items: baseline;
+      }
+
+      .weekly-agent-card__stat dt {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      .weekly-agent-card__stat dd {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--text);
+      }
+
+      .weekly-agent-card__stat dd .sign-value {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .weekly-agent-card__contribution {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .weekly-agent-card__contribution-stock {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .weekly-agent-card__contribution-value {
+        flex: 0 0 auto;
+        margin-left: auto;
+        text-align: right;
+      }
+
+      .weekly-agent-card__contribution-value .sign-value {
+        justify-content: flex-end;
+      }
+
+      .weekly-agent-card__eval-block + .weekly-agent-card__eval-block {
+        padding-top: 2px;
+      }
+
+      .weekly-agent-card__eval-label {
+        margin: 0 0 4px;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--text-secondary);
+      }
+
+      .weekly-agent-card__eval-text {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--text-secondary);
+      }
+
+      .weekly-overall {
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+      }
+
+      .weekly-overall__title {
+        margin: 0 0 10px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text);
+      }
+
+      .weekly-overall__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .weekly-overall__list li {
+        position: relative;
+        padding-left: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--text-secondary);
+      }
+
+      .weekly-overall__list li + li {
+        margin-top: 8px;
+      }
+
+      .weekly-overall__list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.6em;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--text-secondary);
+        opacity: 0.55;
+      }
+
+      @media (max-width: 1280px) {
+        .weekly-kpi-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .weekly-agent-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .weekly-kpi-row {
+          grid-template-columns: 1fr;
+        }
+
+        .weekly-card__header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .weekly-card__actions {
+          justify-content: space-between;
+        }
+      }
+
       /* ── KPI ── */
       .kpi-row {
         display: grid;
@@ -349,10 +810,10 @@
       }
 
       .compare-card {
-        padding: 24px;
+        padding: var(--card-padding-top) var(--card-padding-x) var(--card-padding-bottom);
         background: var(--card);
         border-radius: var(--radius);
-        overflow: hidden;
+        overflow: visible;
         display: flex;
         flex-direction: column;
       }
@@ -390,9 +851,8 @@
       .compare-card__chart .chart-area {
         flex: 1;
         min-height: 0;
+        min-width: 0;
         position: relative;
-        margin-left: -4px;
-        margin-right: -4px;
       }
 
       .compare-card__chart .chart-area canvas {
@@ -457,48 +917,30 @@
       }
 
       .agent-tile__asset-block {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
         margin-top: 10px;
-      }
-
-      .agent-tile__asset-label {
-        display: block;
-        font-size: 11px;
-        line-height: 1.3;
-        color: var(--text-secondary);
+        min-height: 0;
       }
 
       .agent-tile__asset {
-        margin: 4px 0 0;
-        font-size: 16px;
+        margin: 0;
+        font-size: 24px;
         font-weight: 700;
-        letter-spacing: -0.02em;
-        line-height: 1.25;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
         color: var(--text);
         font-variant-numeric: tabular-nums;
-      }
-
-      .agent-tile__return {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid rgba(26, 41, 64, 0.55);
-      }
-
-      .agent-tile__return-label {
-        font-size: 12px;
-        font-weight: 500;
-        line-height: 1.3;
-        color: var(--text-secondary);
       }
 
       .agent-tile__return-value {
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        font-size: 14px;
+        margin-top: 8px;
+        font-size: 13px;
         font-weight: 700;
         line-height: 1.3;
         font-variant-numeric: tabular-nums;
@@ -637,11 +1079,6 @@
       .num-down {
         color: var(--negative);
         font-weight: 600;
-      }
-
-      .agent-tile__return-value.num-up,
-      .agent-tile__return-value.num-down {
-        font-weight: 700;
       }
 
       /* Tables */
@@ -1010,10 +1447,6 @@
         background: var(--accent-cyan);
       }
 
-      .legend__dot--bench {
-        background: var(--text-secondary);
-      }
-
       /* Stock table */
       .stock-name {
         font-weight: 600;
@@ -1040,13 +1473,30 @@
           <h1 class="header__title">한국시장 모의투자</h1>
           <p class="header__sub">에이전트들이 50만원을 어떻게 운용했는지 비교합니다.</p>
         </div>
-        <div class="segment" role="tablist" aria-label="기간 선택" data-ui="period-segment">
-          <button type="button" class="segment__btn is-active" data-period="all" aria-selected="true">전체</button>
-          <button type="button" class="segment__btn" data-period="7d">최근 7일</button>
-          <button type="button" class="segment__btn" data-period="14d">최근 14일</button>
+        <div class="notify-wrap" data-ui="notify-wrap">
+          <button type="button" class="notify-btn" data-ui="notify-trigger" aria-label="알림" aria-expanded="false" aria-haspopup="true">
+            <svg class="notify-btn__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+              <path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+            </svg>
+            <span class="notify-btn__badge" data-ui="notify-badge" hidden>0</span>
+          </button>
+          <div class="notify-panel" data-ui="notify-panel" hidden>
+            <div class="notify-panel__head">
+              <h2 class="notify-panel__title">알림</h2>
+              <button type="button" class="notify-panel__read-all" data-ui="notify-read-all">모두 읽음</button>
+            </div>
+            <div class="notify-tabs" data-ui="notify-tabs" role="tablist">
+              <button type="button" class="notify-tabs__btn is-active" data-filter="all" role="tab">전체</button>
+              <button type="button" class="notify-tabs__btn" data-filter="trade" role="tab">거래</button>
+              <button type="button" class="notify-tabs__btn" data-filter="report" role="tab">리포트</button>
+              <button type="button" class="notify-tabs__btn" data-filter="system" role="tab">시스템</button>
+            </div>
+            <ul class="notify-list" data-ui="notify-list" role="list"></ul>
+          </div>
         </div>
       </header>
-      <p class="meta">조회 기간 <span data-ui="period-label">전체</span> · 기준일 2026.05.31 · 초기 시드 500,000원 · 총 9개 계좌 운용 중</p>
+      <p class="meta">기준일 2026.05.31 · 초기 시드 500,000원 · 총 9개 계좌 운용 중</p>
 
       <!-- KPI -->
       <section class="kpi-row" aria-label="요약 KPI">
@@ -1099,11 +1549,7 @@
                   </div>
                   <p class="agent-tile__desc">모멘텀·수급</p>
                   <div class="agent-tile__asset-block">
-                    <span class="agent-tile__asset-label">현재 총자산</span>
                     <p class="agent-tile__asset">537,420원</p>
-                  </div>
-                  <div class="agent-tile__return">
-                    <span class="agent-tile__return-label">누적 수익률</span>
                     <span class="agent-tile__return-value sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>7.48%</span>
                   </div>
                 </article>
@@ -1114,11 +1560,7 @@
                   </div>
                   <p class="agent-tile__desc">섹터 추세</p>
                   <div class="agent-tile__asset-block">
-                    <span class="agent-tile__asset-label">현재 총자산</span>
                     <p class="agent-tile__asset">496,300원</p>
-                  </div>
-                  <div class="agent-tile__return">
-                    <span class="agent-tile__return-label">누적 수익률</span>
                     <span class="agent-tile__return-value sign-value num-down"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 6.5 7.5 1.5H.5Z"/></svg>0.74%</span>
                   </div>
                 </article>
@@ -1129,11 +1571,7 @@
                   </div>
                   <p class="agent-tile__desc">공시·이벤트</p>
                   <div class="agent-tile__asset-block">
-                    <span class="agent-tile__asset-label">현재 총자산</span>
                     <p class="agent-tile__asset">529,100원</p>
-                  </div>
-                  <div class="agent-tile__return">
-                    <span class="agent-tile__return-label">누적 수익률</span>
                     <span class="agent-tile__return-value sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>5.82%</span>
                   </div>
                 </article>
@@ -1144,11 +1582,7 @@
                   </div>
                   <p class="agent-tile__desc">보수 확인</p>
                   <div class="agent-tile__asset-block">
-                    <span class="agent-tile__asset-label">현재 총자산</span>
                     <p class="agent-tile__asset">508,640원</p>
-                  </div>
-                  <div class="agent-tile__return">
-                    <span class="agent-tile__return-label">누적 수익률</span>
                     <span class="agent-tile__return-value sign-value num-up"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>1.73%</span>
                   </div>
                 </article>
@@ -1262,7 +1696,7 @@
         </div>
         </article>
 
-        <article class="card content-card">
+        <article class="card content-card" data-ui="trade-history-section">
           <div class="content-card__header">
             <h2 class="content-card__title">매수·매도 기록</h2>
             <div class="select-wrap" data-ui="trade-side-select">
@@ -1327,17 +1761,42 @@
           </div>
         </article>
       </section>
+
+      <!-- Weekly performance evaluation -->
+      <section class="weekly-section" aria-label="주간 성과 평가 리포트" data-ui="report-section">
+        <article class="card content-card weekly-card">
+          <div class="content-card__header weekly-card__header">
+            <div class="weekly-card__headline">
+              <h2 class="content-card__title">주간 성과 평가 리포트</h2>
+              <p class="weekly-card__sub">에이전트별 1주 운용 결과 및 자체 평가</p>
+            </div>
+            <div class="weekly-card__actions">
+              <div class="select-wrap" data-ui="weekly-week-select">
+                <button type="button" class="select-fake" aria-haspopup="listbox" aria-expanded="false">
+                  <span data-ui="weekly-week-label">5월 4주차</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M2.5 4.5 6 8 9.5 4.5Z"/></svg>
+                </button>
+                <ul class="select-menu" role="listbox" hidden>
+                  <li><button type="button" class="select-menu__item is-selected" data-week="w4">5월 4주차</button></li>
+                  <li><button type="button" class="select-menu__item" data-week="w3">5월 3주차</button></li>
+                  <li><button type="button" class="select-menu__item" data-week="w2">5월 2주차</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="content-card__body weekly-card__body">
+            <div class="weekly-kpi-row" data-ui="weekly-kpi-row"></div>
+            <div class="weekly-agent-grid" data-ui="weekly-agent-grid"></div>
+            <div class="weekly-overall" data-ui="weekly-overall"></div>
+          </div>
+        </article>
+      </section>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script>
       (function () {
-        var PERIODS = {
-          all: { label: "전체", days: null },
-          "7d": { label: "최근 7일", days: 7 },
-          "14d": { label: "최근 14일", days: 14 },
-        };
-
+        var CASH_AMOUNT = 148200;
 
         var TIMELINE = {
           labels: [
@@ -1369,13 +1828,6 @@
               color: "#FFBE4D",
               data: [500500, 501000, 501500, 502000, 502800, 504500, 503400, 506200, 508200, 508400],
             },
-            {
-              key: "bench",
-              label: "시장 기준",
-              color: "#6E859E",
-              data: [500800, 501500, 502200, 503000, 504000, 506000, 505000, 506500, 511000, 512000],
-              dashed: true,
-            },
           ],
         };
 
@@ -1386,7 +1838,201 @@
           agent4: { name: "에이전트 4호", badge: "검증형", badgeClass: "badge--verify", strategy: "보수 확인" },
         };
 
-        var CASH_BY_PERIOD = { all: 148200, "7d": 162400, "14d": 155800 };
+        var WEEKLY_REPORTS = {
+          w4: {
+            label: "5월 4주차",
+            period: "05.26 – 05.30",
+            summary: {
+              bestAgent: { name: "에이전트 1호", returnPct: 4.12 },
+              worstAgent: { name: "에이전트 2호", returnPct: -2.31 },
+              bestStock: { name: "삼성전자", pnl: 16880 },
+              worstStock: { name: "현대차", pnl: -14350 },
+            },
+            agents: [
+              {
+                key: "agent1",
+                startAsset: 518000,
+                endAsset: 534000,
+                returnPct: 3.09,
+                contributionLabel: "주요 기여",
+                contributionStock: "삼성전자",
+                contributionPnl: 16880,
+                selfEval:
+                  "삼성전자 수익과 카카오 조기 매도가 주간 성과를 견인했습니다. 거래대금 증가와 수급 확인 후 진입한 판단이 유효했습니다.",
+                nextWeek: "반도체 흐름 유지 시 보유 지속, 신규 진입은 제한",
+              },
+              {
+                key: "agent2",
+                startAsset: 505000,
+                endAsset: 496800,
+                returnPct: -1.62,
+                contributionLabel: "주요 손실",
+                contributionStock: "현대차",
+                contributionPnl: -14350,
+                selfEval:
+                  "현대차 섹터 약세 전환 확인이 늦어 손실 구간이 확대되었습니다. 진입 시점은 적절했으나 매도 판단이 지연된 것이 핵심 원인입니다. 잔여 모멘텀은 제한적입니다.",
+                nextWeek: "잔여 모멘텀 재검토 후 매도 판단 기준 보완",
+              },
+              {
+                key: "agent3",
+                startAsset: 512000,
+                endAsset: 528000,
+                returnPct: 3.13,
+                contributionLabel: "주요 기여",
+                contributionStock: "한미반도체",
+                contributionPnl: 9000,
+                selfEval:
+                  "공시·이벤트 기반 한미반도체 진입과 삼성전자 보유가 수익을 만들었습니다. 이벤트 구간 매수와 보유 연장 판단이 적중했습니다.",
+                nextWeek: "이벤트 종목 비중 조절, 신규 공시 대기 후 선별 진입",
+              },
+              {
+                key: "agent4",
+                startAsset: 504500,
+                endAsset: 508400,
+                returnPct: 0.77,
+                contributionLabel: "주요 기여",
+                contributionStock: "SK하이닉스",
+                contributionPnl: 4800,
+                selfEval:
+                  "SK하이닉스 중심의 보수적 보유로 소폭 수익을 기록했습니다. 거래 빈도는 낮았지만 손실 구간을 피한 점은 긍정적입니다.",
+                nextWeek: "보수적 운용 유지, 확실한 섹터 신호 전까지 신규 진입 자제",
+              },
+            ],
+            overall: [
+              "이번 주에는 수급 확인 후 진입한 에이전트 1호의 전략이 가장 안정적인 성과를 냈습니다.",
+              "손실은 섹터 약세 전환 이후에도 보유를 지속한 종목에서 집중되었습니다.",
+              "카카오 매도는 모멘텀 약화를 반영한 적절한 판단으로 평가됩니다.",
+              "다음 주에는 신규 매수보다 기존 손실 종목의 잔여 모멘텀 검토와 매도 판단 기준 보완이 우선입니다.",
+              "판단 12회 대비 주간 수익률 +1.8%p로, 거래 횟수 대비 효율은 양호한 편입니다.",
+            ],
+          },
+          w3: {
+            label: "5월 3주차",
+            period: "05.19 – 05.23",
+            summary: {
+              bestAgent: { name: "에이전트 3호", returnPct: 2.84 },
+              worstAgent: { name: "에이전트 2호", returnPct: -1.05 },
+              bestStock: { name: "한미반도체", pnl: 6200 },
+              worstStock: { name: "카카오", pnl: -4200 },
+            },
+            agents: [
+              {
+                key: "agent1",
+                startAsset: 501200,
+                endAsset: 506400,
+                returnPct: 1.04,
+                contributionLabel: "주요 기여",
+                contributionStock: "삼성전자",
+                contributionPnl: 5200,
+                selfEval: "초반 수급 확인 매수가 유효했으나, 후반 변동성 구간에서 추가 수익 확대는 제한적이었습니다.",
+                nextWeek: "거래대금 재확인 후 분할 매수 기준 강화",
+              },
+              {
+                key: "agent2",
+                startAsset: 499800,
+                endAsset: 497800,
+                returnPct: -0.40,
+                contributionLabel: "주요 손실",
+                contributionStock: "카카오",
+                contributionPnl: -4200,
+                selfEval: "모멘텀 약화 초기 신호를 놓쳐 보유 기간이 길어졌습니다. 종목 선택보다 매도 타이밍이 문제였습니다.",
+                nextWeek: "모멘텀 이탈 시 즉시 재평가 규칙 적용",
+              },
+              {
+                key: "agent3",
+                startAsset: 501500,
+                endAsset: 507000,
+                returnPct: 1.10,
+                contributionLabel: "주요 기여",
+                contributionStock: "한미반도체",
+                contributionPnl: 6200,
+                selfEval: "공시 직후 진입과 단기 보유 전략이 맞았습니다. 이벤트 구간 수익 실현 판단도 적절했습니다.",
+                nextWeek: "공시 빈도 낮은 구간에서는 보유 비중 축소",
+              },
+              {
+                key: "agent4",
+                startAsset: 500500,
+                endAsset: 502800,
+                returnPct: 0.46,
+                contributionLabel: "주요 기여",
+                contributionStock: "SK하이닉스",
+                contributionPnl: 2800,
+                selfEval: "낮은 거래 빈도로 변동성을 억제했습니다. 수익 확장은 제한적이나 손실 회피에는 성공했습니다.",
+                nextWeek: "섹터 확인 신호 2회 이상일 때만 진입",
+              },
+            ],
+            overall: [
+              "3주차는 이벤트·공시 대응형 에이전트 3호의 전략이 상대적으로 효과적이었습니다.",
+              "손실은 모멘텀 둔화 종목의 매도 지연에서 발생했습니다.",
+              "다음 주에는 진입보다 보유 종목의 추세 이탈 감지를 우선합니다.",
+            ],
+          },
+          w2: {
+            label: "5월 2주차",
+            period: "05.12 – 05.16",
+            summary: {
+              bestAgent: { name: "에이전트 1호", returnPct: 1.56 },
+              worstAgent: { name: "에이전트 4호", returnPct: -0.48 },
+              bestStock: { name: "SK하이닉스", pnl: 3900 },
+              worstStock: { name: "삼성전자", pnl: -2100 },
+            },
+            agents: [
+              {
+                key: "agent1",
+                startAsset: 498500,
+                endAsset: 501200,
+                returnPct: 0.54,
+                contributionLabel: "주요 기여",
+                contributionStock: "SK하이닉스",
+                contributionPnl: 3900,
+                selfEval: "섹터 강세 초입 매수가 유효했습니다. 다만 단기 차익 실현이 늦어 일부 수익을 반납했습니다.",
+                nextWeek: "목표 수익률 도달 시 분할 매도 적용",
+              },
+              {
+                key: "agent2",
+                startAsset: 499200,
+                endAsset: 499800,
+                returnPct: 0.12,
+                contributionLabel: "주요 기여",
+                contributionStock: "삼성전자",
+                contributionPnl: 1200,
+                selfEval: "소폭 수익 구간을 유지했으나 거래 대비 기여도는 낮았습니다. 종목 집중도 조정이 필요합니다.",
+                nextWeek: "섹터 분산 후 재진입 검토",
+              },
+              {
+                key: "agent3",
+                startAsset: 499000,
+                endAsset: 501500,
+                returnPct: 0.50,
+                contributionLabel: "주요 기여",
+                contributionStock: "한미반도체",
+                contributionPnl: 2500,
+                selfEval: "이벤트 기대 구간 선매수가 맞았습니다. 확인 공시 전 선행 진입 리스크는 통제 가능했습니다.",
+                nextWeek: "공시 전 포지션 상한 15% 유지",
+              },
+              {
+                key: "agent4",
+                startAsset: 500800,
+                endAsset: 500500,
+                returnPct: -0.06,
+                contributionLabel: "주요 손실",
+                contributionStock: "삼성전자",
+                contributionPnl: -2100,
+                selfEval: "보수적 진입 타이밍이 늦어 단기 조정 구간에 노출되었습니다. 손실 폭은 작으나 효율은 낮았습니다.",
+                nextWeek: "진입 전 2일 추세 확인 규칙 추가",
+              },
+            ],
+            overall: [
+              "2주차는 전반적으로 완만한 수익 구간이었고, 공격형·검증형 모두 큰 손실은 없었습니다.",
+              "수익 격차는 진입 타이밍과 실현 속도 차이에서 발생했습니다.",
+              "다음 주에는 수익 실현 기준을 명확히 하는 것이 우선입니다.",
+            ],
+          },
+        };
+
+        var weeklyReportState = {
+          weekKey: "w4",
+        };
 
         var STOCK_CATALOG = {
           "005930": {
@@ -1442,28 +2088,76 @@
           ],
         };
 
+        var NOTIFICATIONS = [
+          {
+            id: "n1",
+            category: "trade",
+            type: "buy",
+            title: "삼성전자 6주 매수 체결",
+            sub: "에이전트 1호 · 72,300원",
+            time: "5분 전",
+            read: false,
+            navigate: "trade-history",
+          },
+          {
+            id: "n2",
+            category: "trade",
+            type: "sell",
+            title: "카카오 8주 매도 체결",
+            sub: "에이전트 1호 · 손실 7,480원",
+            time: "18분 전",
+            read: false,
+            navigate: "trade-history",
+          },
+          {
+            id: "n3",
+            category: "trade",
+            type: "action",
+            title: "신규 매수 판단이 생성되었습니다",
+            sub: "에이전트 3호 · 한미반도체",
+            time: "32분 전",
+            read: false,
+          },
+          {
+            id: "n4",
+            category: "report",
+            type: "report",
+            title: "오늘 장 마감 리포트가 생성되었습니다",
+            sub: "전체 에이전트 성과 요약",
+            time: "1시간 전",
+            read: true,
+            navigate: "report-detail",
+          },
+          {
+            id: "n5",
+            category: "system",
+            type: "system",
+            title: "거래 데이터 수집이 완료되었습니다",
+            sub: "한국시장 · 정상 처리",
+            time: "2시간 전",
+            read: true,
+          },
+        ];
+
         var assetChart = null;
         var activeChartSeries = [];
 
-        var periodSegment = document.querySelector('[data-ui="period-segment"]');
-        var periodLabel = document.querySelector('[data-ui="period-label"]');
         var stockRows = document.querySelectorAll(".stock-return-table tbody tr");
 
         var state = {
-          period: "all",
           stockAgent: "agent1",
           tradeSide: "all",
+          notifyFilter: "all",
+          notifyOpen: false,
         };
 
-        function getPeriodRange(periodKey) {
+        function getPeriodRange() {
           var total = TIMELINE.labels.length;
-          var days = PERIODS[periodKey].days;
-          if (!days || days >= total) return { start: 0, end: total };
-          return { start: total - days, end: total };
+          return { start: 0, end: total };
         }
 
-        function sliceTimeline(periodKey) {
-          var range = getPeriodRange(periodKey);
+        function sliceTimeline() {
+          var range = getPeriodRange();
           return {
             labels: TIMELINE.labels.slice(range.start, range.end),
             series: TIMELINE.series.map(function (s) {
@@ -1502,8 +2196,8 @@
           );
         }
 
-        function getAgentPeriodStats(periodKey) {
-          var range = getPeriodRange(periodKey);
+        function getAgentPeriodStats() {
+          var range = getPeriodRange();
           var stats = [];
           TIMELINE.series.forEach(function (s) {
             if (s.dashed) return;
@@ -1525,11 +2219,11 @@
           }, null);
         }
 
-        function getBestStock(periodKey) {
+        function getBestStock() {
           var best = null;
           Object.keys(STOCK_CATALOG).forEach(function (id) {
             var stock = STOCK_CATALOG[id];
-            var data = stock[periodKey] || stock.all;
+            var data = stock.all;
             if (!best || data.returnPct > best.returnPct) {
               best = { id: id, name: stock.name, agents: stock.agents, returnPct: data.returnPct };
             }
@@ -1545,15 +2239,15 @@
             .join(", ") + " 보유";
         }
 
-        function updateKpis(periodKey, agentStats) {
+        function updateKpis(agentStats) {
           var totalEnd = agentStats.reduce(function (sum, a) { return sum + a.asset; }, 0);
-          var range = getPeriodRange(periodKey);
+          var range = getPeriodRange();
           var totalStart = TIMELINE.series
             .filter(function (s) { return !s.dashed; })
             .reduce(function (sum, s) { return sum + s.data[range.start]; }, 0);
           var totalReturn = calcReturnPct(totalStart, totalEnd);
           var bestAgent = getBestAgent(agentStats);
-          var bestStock = getBestStock(periodKey);
+          var bestStock = getBestStock();
           var meta = AGENT_META[bestAgent.key];
 
           var totalAssetEl = document.querySelector('[data-ui="kpi-total-asset"]');
@@ -1566,7 +2260,7 @@
 
           if (totalAssetEl) totalAssetEl.textContent = formatMoney(totalEnd);
           if (totalReturnWrap) totalReturnWrap.innerHTML = signValueHtml(totalReturn);
-          if (cashEl) cashEl.textContent = formatMoney(CASH_BY_PERIOD[periodKey]);
+          if (cashEl) cashEl.textContent = formatMoney(CASH_AMOUNT);
           if (bestAgentRate) {
             bestAgentRate.className = "kpi__value sign-value kpi__value--rate " + (bestAgent.returnPct >= 0 ? "num-up" : "num-down");
             bestAgentRate.innerHTML =
@@ -1611,8 +2305,8 @@
           return map[agentKey] || "badge--bench";
         }
 
-        function getAllTrades(periodKey) {
-          var range = getPeriodRange(periodKey);
+        function getAllTrades() {
+          var range = getPeriodRange();
           var all = [];
           Object.keys(TRADE_HISTORY).forEach(function (agentKey) {
             (TRADE_HISTORY[agentKey] || []).forEach(function (t) {
@@ -1665,11 +2359,11 @@
           });
         }
 
-        function renderTradeHistory(periodKey) {
+        function renderTradeHistory() {
           var tbody = document.querySelector('[data-ui="trade-history-body"]');
           if (!tbody) return;
 
-          var filtered = filterTradesBySide(getAllTrades(periodKey), state.tradeSide);
+          var filtered = filterTradesBySide(getAllTrades(), state.tradeSide);
 
           if (!filtered.length) {
             tbody.innerHTML =
@@ -1682,7 +2376,7 @@
 
         function applyTradeSideFilter(sideKey) {
           state.tradeSide = sideKey;
-          renderTradeHistory(state.period);
+          renderTradeHistory();
         }
 
         function applyStockAgentFilter(agentKey) {
@@ -1693,12 +2387,12 @@
           });
         }
 
-        function updateStockTable(periodKey) {
+        function updateStockTable() {
           stockRows.forEach(function (row) {
             var id = row.getAttribute("data-stock-id");
             var stock = STOCK_CATALOG[id];
             if (!stock) return;
-            var data = stock[periodKey] || stock.all;
+            var data = stock.all;
             var priceCells = row.querySelectorAll(".col-price");
             var returnCell = row.querySelector(".col-return");
             var pnlCell = row.querySelector(".col-pnl");
@@ -1725,9 +2419,9 @@
           return { min: Math.max(min, 480000), max: Math.min(max, 580000) };
         }
 
-        function updateChart(periodKey) {
+        function updateChart() {
           if (!assetChart) return;
-          var sliced = sliceTimeline(periodKey);
+          var sliced = sliceTimeline();
           activeChartSeries = sliced.series;
           var bounds = calcChartBounds(sliced.series);
 
@@ -1745,29 +2439,172 @@
           assetChart.update();
         }
 
-        function applyPeriod(periodKey) {
-          if (!PERIODS[periodKey]) return;
-          state.period = periodKey;
-
-          periodSegment.querySelectorAll(".segment__btn").forEach(function (btn) {
-            var on = btn.getAttribute("data-period") === periodKey;
-            btn.classList.toggle("is-active", on);
-            btn.setAttribute("aria-selected", on ? "true" : "false");
-          });
-
-          if (periodLabel) periodLabel.textContent = PERIODS[periodKey].label;
-
-          var agentStats = getAgentPeriodStats(periodKey);
-          updateKpis(periodKey, agentStats);
+        function refreshDashboard() {
+          var agentStats = getAgentPeriodStats();
+          updateKpis(agentStats);
           updateAgentTiles(agentStats);
-          updateStockTable(periodKey);
+          updateStockTable();
           applyStockAgentFilter(state.stockAgent);
-          renderTradeHistory(periodKey);
-          updateChart(periodKey);
+          renderTradeHistory();
+          updateChart();
         }
 
-        function setPeriod(periodKey) {
-          applyPeriod(periodKey);
+        function getUnreadNotifyCount() {
+          return NOTIFICATIONS.filter(function (n) { return !n.read; }).length;
+        }
+
+        function updateNotifyBadge() {
+          var badge = document.querySelector('[data-ui="notify-badge"]');
+          if (!badge) return;
+          var count = getUnreadNotifyCount();
+          if (count > 0) {
+            badge.hidden = false;
+            badge.textContent = String(count);
+          } else {
+            badge.hidden = true;
+            badge.textContent = "0";
+          }
+        }
+
+        function getFilteredNotifications() {
+          if (state.notifyFilter === "all") return NOTIFICATIONS.slice();
+          return NOTIFICATIONS.filter(function (n) {
+            return n.category === state.notifyFilter;
+          });
+        }
+
+        function renderNotificationList() {
+          var list = document.querySelector('[data-ui="notify-list"]');
+          if (!list) return;
+
+          var items = getFilteredNotifications();
+          if (!items.length) {
+            list.innerHTML = '<li class="notify-empty">표시할 알림이 없습니다</li>';
+            return;
+          }
+
+          list.innerHTML = items
+            .map(function (n) {
+              var unreadCls = n.read ? "" : " is-unread";
+              var dot = n.read ? "" : '<span class="notify-item__dot" aria-hidden="true"></span>';
+              return (
+                '<li class="notify-item' + unreadCls + '" data-id="' + n.id + '" role="listitem">' +
+                '<div class="notify-item__body">' +
+                '<div class="notify-item__title">' + n.title + "</div>" +
+                '<div class="notify-item__sub">' + n.sub + "</div>" +
+                "</div>" +
+                '<div class="notify-item__meta">' +
+                '<span class="notify-item__time">' + n.time + "</span>" +
+                dot +
+                "</div>" +
+                "</li>"
+              );
+            })
+            .join("");
+        }
+
+        function setNotifyPanelOpen(open) {
+          var wrap = document.querySelector('[data-ui="notify-wrap"]');
+          var trigger = document.querySelector('[data-ui="notify-trigger"]');
+          var panel = document.querySelector('[data-ui="notify-panel"]');
+          if (!wrap || !trigger || !panel) return;
+
+          state.notifyOpen = open;
+          trigger.setAttribute("aria-expanded", open ? "true" : "false");
+          panel.hidden = !open;
+        }
+
+        function markNotificationRead(id) {
+          var item = NOTIFICATIONS.find(function (n) { return n.id === id; });
+          if (!item || item.read) return;
+          item.read = true;
+          updateNotifyBadge();
+          renderNotificationList();
+        }
+
+        function markAllNotificationsRead() {
+          NOTIFICATIONS.forEach(function (n) {
+            n.read = true;
+          });
+          updateNotifyBadge();
+          renderNotificationList();
+        }
+
+        function handleNotificationNavigate(item) {
+          if (item.navigate === "trade-history") {
+            var section = document.querySelector('[data-ui="trade-history-section"]');
+            if (section) {
+              section.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            setNotifyPanelOpen(false);
+            return;
+          }
+          if (item.navigate === "report-detail") {
+            var reportSection = document.querySelector('[data-ui="report-section"]');
+            if (reportSection) {
+              reportSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            setNotifyPanelOpen(false);
+          }
+        }
+
+        function initNotifications() {
+          var wrap = document.querySelector('[data-ui="notify-wrap"]');
+          var trigger = document.querySelector('[data-ui="notify-trigger"]');
+          var panel = document.querySelector('[data-ui="notify-panel"]');
+          var readAllBtn = document.querySelector('[data-ui="notify-read-all"]');
+          var tabs = document.querySelector('[data-ui="notify-tabs"]');
+          var list = document.querySelector('[data-ui="notify-list"]');
+          if (!wrap || !trigger || !panel) return;
+
+          updateNotifyBadge();
+          renderNotificationList();
+
+          trigger.addEventListener("click", function (e) {
+            e.stopPropagation();
+            setNotifyPanelOpen(!state.notifyOpen);
+          });
+
+          document.addEventListener("click", function (e) {
+            if (!state.notifyOpen) return;
+            if (!wrap.contains(e.target)) {
+              setNotifyPanelOpen(false);
+            }
+          });
+
+          panel.addEventListener("click", function (e) {
+            e.stopPropagation();
+          });
+
+          if (readAllBtn) {
+            readAllBtn.addEventListener("click", function () {
+              markAllNotificationsRead();
+            });
+          }
+
+          if (tabs) {
+            tabs.querySelectorAll(".notify-tabs__btn").forEach(function (btn) {
+              btn.addEventListener("click", function () {
+                state.notifyFilter = btn.getAttribute("data-filter") || "all";
+                tabs.querySelectorAll(".notify-tabs__btn").forEach(function (b) {
+                  b.classList.toggle("is-active", b === btn);
+                });
+                renderNotificationList();
+              });
+            });
+          }
+
+          if (list) {
+            list.addEventListener("click", function (e) {
+              var row = e.target.closest(".notify-item");
+              if (!row) return;
+              var id = row.getAttribute("data-id");
+              var item = NOTIFICATIONS.find(function (n) { return n.id === id; });
+              if (!item) return;
+              markNotificationRead(id);
+              handleNotificationNavigate(item);
+            });
+          }
         }
 
         function initStockAgentSelect() {
@@ -1858,6 +2695,155 @@
 
         function formatMoney(value) {
           return value.toLocaleString("ko-KR") + "원";
+        }
+
+        function renderWeeklyKpiCard(label, name, valueHtml) {
+          return (
+            '<div class="weekly-kpi">' +
+            '<p class="weekly-kpi__label">' + label + "</p>" +
+            '<p class="weekly-kpi__name">' + name + "</p>" +
+            '<div class="weekly-kpi__value">' + valueHtml + "</div>" +
+            "</div>"
+          );
+        }
+
+        function renderWeeklySummary(report) {
+          var row = document.querySelector('[data-ui="weekly-kpi-row"]');
+          if (!row || !report) return;
+          var s = report.summary;
+          row.innerHTML =
+            renderWeeklyKpiCard(
+              "주간 최고 성과 에이전트",
+              s.bestAgent.name,
+              signValueHtml(s.bestAgent.returnPct)
+            ) +
+            renderWeeklyKpiCard(
+              "주간 최저 성과 에이전트",
+              s.worstAgent.name,
+              signValueHtml(s.worstAgent.returnPct)
+            ) +
+            renderWeeklyKpiCard(
+              "최고 수익 기여 종목",
+              s.bestStock.name,
+              signValueHtml(s.bestStock.pnl, { isMoney: true })
+            ) +
+            renderWeeklyKpiCard(
+              "최대 손실 기여 종목",
+              s.worstStock.name,
+              signValueHtml(s.worstStock.pnl, { isMoney: true })
+            );
+        }
+
+        function renderWeeklyAgentCard(agent) {
+          var meta = AGENT_META[agent.key];
+          if (!meta) return "";
+          var contributionHtml =
+            '<span class="weekly-agent-card__contribution">' +
+            '<span class="weekly-agent-card__contribution-stock">' + agent.contributionStock + "</span>" +
+            '<span class="weekly-agent-card__contribution-value">' +
+            signValueHtml(agent.contributionPnl, { isMoney: true }) +
+            "</span>" +
+            "</span>";
+          return (
+            '<article class="weekly-agent-card" data-agent="' + agent.key + '">' +
+            '<div class="weekly-agent-card__head">' +
+            '<h3 class="weekly-agent-card__name">' + meta.name + "</h3>" +
+            '<span class="badge ' + meta.badgeClass + '">' + meta.badge + "</span>" +
+            "</div>" +
+            '<dl class="weekly-agent-card__stats">' +
+            '<div class="weekly-agent-card__stat">' +
+            "<dt>주간 자산</dt>" +
+            "<dd>" + formatMoney(agent.startAsset) + " → " + formatMoney(agent.endAsset) + "</dd>" +
+            "</div>" +
+            '<div class="weekly-agent-card__stat">' +
+            "<dt>주간 수익률</dt>" +
+            "<dd>" + signValueHtml(agent.returnPct) + "</dd>" +
+            "</div>" +
+            '<div class="weekly-agent-card__stat">' +
+            "<dt>" + agent.contributionLabel + "</dt>" +
+            "<dd>" + contributionHtml + "</dd>" +
+            "</div>" +
+            "</dl>" +
+            '<div class="weekly-agent-card__eval-block">' +
+            '<p class="weekly-agent-card__eval-label">자체 평가</p>' +
+            '<p class="weekly-agent-card__eval-text">' +
+            agent.selfEval +
+            "</p>" +
+            "</div>" +
+            '<div class="weekly-agent-card__eval-block">' +
+            '<p class="weekly-agent-card__eval-label">다음 주 판단</p>' +
+            '<p class="weekly-agent-card__eval-text">' + agent.nextWeek + "</p>" +
+            "</div>" +
+            "</article>"
+          );
+        }
+
+        function renderWeeklyAgents(report) {
+          var grid = document.querySelector('[data-ui="weekly-agent-grid"]');
+          if (!grid || !report) return;
+          grid.innerHTML = report.agents.map(renderWeeklyAgentCard).join("");
+        }
+
+        function renderWeeklyOverall(report) {
+          var container = document.querySelector('[data-ui="weekly-overall"]');
+          if (!container || !report) return;
+          container.innerHTML =
+            '<h3 class="weekly-overall__title">이번 주 종합 평가</h3>' +
+            '<div class="weekly-overall__body">' +
+            '<ul class="weekly-overall__list">' +
+            report.overall.map(function (line) { return "<li>" + line + "</li>"; }).join("") +
+            "</ul>" +
+            "</div>";
+        }
+
+        function renderWeeklyReport(weekKey) {
+          var report = WEEKLY_REPORTS[weekKey];
+          if (!report) return;
+          weeklyReportState.weekKey = weekKey;
+          renderWeeklySummary(report);
+          renderWeeklyAgents(report);
+          renderWeeklyOverall(report);
+        }
+
+        function initWeeklyReport() {
+          var wrap = document.querySelector('[data-ui="weekly-week-select"]');
+          if (!wrap) return;
+
+          var trigger = wrap.querySelector(".select-fake");
+          var menu = wrap.querySelector(".select-menu");
+          var label = wrap.querySelector('[data-ui="weekly-week-label"]');
+
+          function closeMenu() {
+            menu.hidden = true;
+            trigger.setAttribute("aria-expanded", "false");
+          }
+
+          trigger.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var open = menu.hidden;
+            menu.hidden = !open;
+            trigger.setAttribute("aria-expanded", open ? "true" : "false");
+          });
+
+          menu.querySelectorAll(".select-menu__item").forEach(function (item) {
+            item.addEventListener("click", function () {
+              var weekKey = item.getAttribute("data-week");
+              menu.querySelectorAll(".select-menu__item").forEach(function (el) {
+                el.classList.toggle("is-selected", el === item);
+              });
+              if (label && WEEKLY_REPORTS[weekKey]) {
+                label.textContent = WEEKLY_REPORTS[weekKey].label;
+              }
+              renderWeeklyReport(weekKey);
+              closeMenu();
+            });
+          });
+
+          document.addEventListener("click", function (e) {
+            if (!wrap.contains(e.target)) closeMenu();
+          });
+
+          renderWeeklyReport(weeklyReportState.weekKey);
         }
 
         function formatAxisMoney(value) {
@@ -1959,44 +2945,19 @@
               width: 1,
             },
             ticks: {
-              display: false,
+              color: "#8EA4C4",
+              font: { size: 12, family: "Pretendard, Noto Sans KR, sans-serif" },
               stepSize: 20000,
               autoSkip: false,
               maxTicksLimit: 6,
+              padding: 8,
+              align: "center",
+              callback: function (value) {
+                return formatAxisMoney(value);
+              },
             },
           };
         }
-
-        var yAxisLabelAlignPlugin = {
-          id: "yAxisLabelAlign",
-          afterDraw: function (chart) {
-            var yScale = chart.scales.y;
-            if (!yScale || !yScale.ticks.length) return;
-
-            var tickOpts = yScale.options.ticks;
-            var labelColor = "#8EA4C4";
-            var labelPadding = 12;
-            var labelFont = Chart.helpers.toFont({
-              size: 12,
-              family: "Pretendard, Noto Sans KR, sans-serif",
-            });
-            var ctx = chart.ctx;
-
-            ctx.save();
-            ctx.fillStyle = labelColor;
-            ctx.font = labelFont.string;
-            ctx.textAlign = "right";
-            ctx.textBaseline = "middle";
-
-            yScale.ticks.forEach(function (tick) {
-              var label = formatAxisMoney(tick.value);
-              var y = yScale.getPixelForValue(tick.value);
-              ctx.fillText(label, yScale.left - labelPadding, y);
-            });
-
-            ctx.restore();
-          },
-        };
 
         function initAssetChart() {
           var canvas = document.getElementById("asset-chart");
@@ -2005,7 +2966,6 @@
           if (typeof Chart !== "undefined") {
             var annotationLib = window["chartjs-plugin-annotation"];
             if (annotationLib) Chart.register(annotationLib);
-            Chart.register(yAxisLabelAlignPlugin);
           }
 
           var initialSlice = sliceTimeline("all");
@@ -2099,19 +3059,13 @@
           });
         }
 
-        if (periodSegment) {
-          periodSegment.querySelectorAll(".segment__btn").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-              setPeriod(btn.getAttribute("data-period"));
-            });
-          });
-        }
-
         initAssetChart();
         initAgentTileHover();
         initStockAgentSelect();
         initTradeSideSelect();
-        applyPeriod("all");
+        initNotifications();
+        initWeeklyReport();
+        refreshDashboard();
       })();
     </script>
   </body>
