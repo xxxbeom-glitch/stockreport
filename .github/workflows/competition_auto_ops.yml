@@ -1,0 +1,115 @@
+name: Competition Auto Ops
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no trigger persist, Slack dry-run on session)"
+        type: boolean
+        default: true
+      live_llm:
+        description: "Use live LLM if API keys configured"
+        type: boolean
+        default: false
+  schedule:
+    # KST regular session window approximations (UTC)
+    - cron: "0 0 * * 1-5"   # 09:00 KST — session open prep
+    - cron: "30 6 * * 1-5"  # 15:30 KST — regular close
+    - cron: "30 7 * * 1-5"  # 16:30 KST — after-hours
+    - cron: "0 11 * * 5"     # 20:00 KST Fri — session end + weekly report window
+
+env:
+  # LLM API keys (Repository Secrets)
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  # Role models — public values from ops/readiness.py RECOMMENDED_MODELS
+  COMPETITION_A_MAIN_MODEL: deepseek-v4-flash
+  COMPETITION_A_PARTNER_MODEL: gemini-2.5-flash-lite
+  COMPETITION_B_MAIN_MODEL: gemini-2.5-flash-lite
+  COMPETITION_B_PARTNER_MODEL: deepseek-v4-flash
+  COMPETITION_C_MAIN_MODEL: deepseek-v4-flash
+  COMPETITION_C_VALIDATOR_MODEL: gemini-2.5-flash-lite
+  COMPETITION_D_MAIN_MODEL: gemini-2.5-flash-lite
+  COMPETITION_D_VALIDATOR_MODEL: deepseek-v4-pro
+  GEMINI_EVENT_ANALYZER_MODEL: gemini-2.5-flash-lite
+  # Firebase — firebase_client._resolve_credentials() reads FIREBASE_SERVICE_ACCOUNT JSON directly
+  FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+  FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+  # Slack — COMPETITION_SLACK_WEBHOOK preferred; SLACK_WEBHOOK_URL also accepted by readiness
+  COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+  # Market data / event scan (existing secrets)
+  KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+  KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+  KIS_ACCOUNT_NO: ${{ secrets.KIS_ACCOUNT_NO }}
+  DART_API_KEY: ${{ secrets.DART_API_KEY }}
+  NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+  NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+  # Live ops: COMPETITION_USE_MOCK_LLM and COMPETITION_ALLOW_LOCAL_MIRROR must stay unset
+
+jobs:
+  competition-session:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt || pip install pykrx pandas requests google-generativeai openai firebase-admin
+
+      - name: Verify live ops readiness
+        run: |
+          python -c "
+          import json, sys
+          from src.trading.competition.ops.readiness import check_live_readiness
+          report = check_live_readiness(allow_local_mirror=False)
+          summary = {
+              'ready_for_live_ops': report['ready_for_live_ops'],
+              'blockers': report['blockers'],
+              'warnings': report['warnings'],
+              'firebase': report['firebase'],
+              'slack': report['slack'],
+          }
+          print(json.dumps(summary, ensure_ascii=False, indent=2))
+          sys.exit(0 if report['ready_for_live_ops'] else 1)
+          "
+
+      - name: Init competition accounts (idempotent)
+        run: python scripts/init_competition_accounts.py
+
+      - name: Event scan
+        run: python scripts/run_competition_event_scan.py --eligible-only --dry-run || true
+
+      - name: Build decision triggers
+        run: python scripts/build_decision_triggers.py --no-market-enrich
+
+      - name: Run competition session (strict entry filter)
+        env:
+          COMPETITION_SLACK_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+        run: |
+          EXTRA=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              EXTRA="$EXTRA --dry-run"
+            fi
+            if [ "${{ inputs.live_llm }}" = "true" ]; then
+              EXTRA="$EXTRA --live-llm"
+            fi
+          else
+            EXTRA="$EXTRA --live-llm"
+          fi
+          python scripts/run_competition_session.py $EXTRA
+
+      - name: Weekly report on Friday UTC 11:00 job
+        if: github.event.schedule == '0 11 * * 5' || github.event_name == 'workflow_dispatch'
+        run: python -c "from src.trading.competition.ops.weekly_report import build_weekly_report; build_weekly_report(force=True)"
+
+      - name: Upload competition data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: competition-data
+          path: data/competition/
+
