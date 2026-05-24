@@ -278,6 +278,11 @@ def enrich_universe_historical(
 
 
 def _load_foreign_net_map(trading_date: str) -> tuple[dict[str, float], list[str]]:
+    from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
+
+    if not krx_credentials_configured():
+        return {}, ["foreign_net_skipped:krx_credentials_missing"]
+
     from data.kr_market import _fetch_foreign_net_purchases_frame
 
     cache: dict[str, float] = {}

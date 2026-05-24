@@ -42,6 +42,14 @@ def recent_trading_dates(
     pykrx: Any | None = None,
 ) -> list[str]:
     """Walk backward from end_date to collect `count` weekday dates with OHLCV data."""
+    try:
+        from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
+
+        if not krx_credentials_configured():
+            return _weekday_fallback(end_date, count)
+    except Exception:
+        pass
+
     pykrx = pykrx or _pykrx_stock()
     if pykrx is None:
         return _weekday_fallback(end_date, count)
@@ -82,6 +90,14 @@ def list_market_tickers(
     *,
     pykrx: Any | None = None,
 ) -> tuple[list[str], str | None]:
+    try:
+        from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
+
+        if not krx_credentials_configured():
+            return [], "pykrx_skipped:krx_credentials_missing"
+    except Exception:
+        pass
+
     pykrx = pykrx or _pykrx_stock()
     if pykrx is None:
         return [], "pykrx_unavailable"
@@ -116,6 +132,14 @@ def collect_market_ohlcv_bulk(
       latest_close: ticker -> latest close price
       errors: collection errors
     """
+    try:
+        from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
+
+        if not krx_credentials_configured():
+            return {}, {}, ["pykrx_skipped:krx_credentials_missing"]
+    except Exception:
+        pass
+
     pykrx = pykrx or _pykrx_stock()
     tv_history: dict[str, list[int]] = defaultdict(list)
     latest_close: dict[str, int] = {}
@@ -170,6 +194,14 @@ def collect_all_stocks(
 
     Each record includes ticker, name, market, current_price_krw, avg_trading_value_20d_krw.
     """
+    try:
+        from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
+
+        if not krx_credentials_configured():
+            return [], ["pykrx_skipped:krx_credentials_missing"]
+    except Exception:
+        pass
+
     pykrx = pykrx or _pykrx_stock()
     errors: list[str] = []
     if pykrx is None:

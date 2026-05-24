@@ -178,6 +178,7 @@ def run_replay_single_day(
         from src.trading.competition.replay.data_validity import format_data_invalid_reason
 
         enrich = snapshot.get("enrich") or {}
+        universe_build = snapshot.get("universe_build") or {}
         base_err = str(enrich.get("error") or snapshot.get("error") or "snapshot_failed")
         err = format_data_invalid_reason(base=base_err, enrich=enrich if enrich else None)
         obs.log_pipeline(
@@ -188,6 +189,15 @@ def run_replay_single_day(
             provider_attempts=enrich.get("provider_attempts"),
             kis_configured=enrich.get("kis_configured"),
             krx_login_required=enrich.get("krx_login_required"),
+            **{k: universe_build.get(k) for k in (
+                "base_universe_count",
+                "base_universe_source",
+                "historical_price_enriched_count",
+                "price_filter_pass_count",
+                "liquidity_filter_pass_count",
+                "risk_filter_pass_count",
+                "final_eligible_universe_count",
+            ) if universe_build.get(k) is not None},
         )
         obs.finalize(
             {"ok": False, "replay_run_id": replay_run_id},

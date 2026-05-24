@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import uuid
 from typing import Any
 
@@ -12,7 +13,12 @@ from src.trading.competition.replay.evidence import (
     make_news_unverified_placeholder,
     make_price_evidence,
 )
-from src.trading.competition.universe.builder import load_eligible_universe
+from src.trading.competition.replay.universe_replay import (
+    build_eligible_universe_for_replay,
+    log_universe_counts,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def decision_at_iso(trading_date: str) -> str:
@@ -28,10 +34,27 @@ def build_close_snapshot(
     Sealed snapshot at market close for trading_date.
     All teams share the same snapshot_id.
     """
-    stocks = list(universe if universe is not None else load_eligible_universe())
+    universe_build: dict[str, Any] | None = None
+    if universe is None:
+        stocks, universe_build = build_eligible_universe_for_replay(trading_date)
+        log_universe_counts(universe_build)
+        if not stocks:
+            return {
+                "ok": False,
+                "error": "eligible_universe_empty",
+                "universe_build": universe_build.to_dict() if universe_build else {},
+            }
+    else:
+        stocks = list(universe)
+
     enrich = enrich_universe_historical(stocks, trading_date)
     if not enrich.get("ok"):
-        return {"ok": False, "error": enrich.get("error"), "enrich": enrich}
+        return {
+            "ok": False,
+            "error": enrich.get("error"),
+            "enrich": enrich,
+            "universe_build": universe_build.to_dict() if universe_build else None,
+        }
 
     decision_at = decision_at_iso(trading_date)
     snapshot_id = f"replay_{trading_date}_close_{uuid.uuid4().hex[:6]}"
@@ -85,6 +108,7 @@ def build_close_snapshot(
         "scout_meta": scout_meta,
         "evidence_records": [e.to_dict() for e in evidence_records],
         "enrich": enrich,
+        "universe_build": universe_build.to_dict() if universe_build else None,
         "constraints": {
             "no_web_search": True,
             "no_live_api_enrich": True,
