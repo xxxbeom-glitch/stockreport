@@ -144,6 +144,7 @@ def build_dashboard_payload() -> dict[str, Any]:
     ]
 
     return {
+        "dataSource": "live",
         "cashAmount": cash_total,
         "totalAssets": asset_total,
         "bestAgentKey": best_team_key,

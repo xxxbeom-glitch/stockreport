@@ -4,30 +4,31 @@ on:
   workflow_dispatch:
     inputs:
       replay_type:
-        description: "smoke_1day | short_5days | month | custom"
+        description: "smoke_1day | short_5days | month | full_audit | custom"
         type: choice
         options:
           - smoke_1day
           - short_5days
           - month
+          - full_audit
           - custom
         default: smoke_1day
       start_date:
-        description: "YYYYMMDD (smoke_1day ignores end_date)"
+        description: "YYYYMMDD start"
         type: string
-        default: "20260522"
+        default: "20241218"
       end_date:
-        description: "YYYYMMDD (optional for smoke)"
+        description: "YYYYMMDD end (month/custom/full_audit)"
         type: string
-        default: "20260522"
+        default: ""
       run_audit_ai:
         description: "Run audit committee AI evaluation"
         type: boolean
         default: false
-      send_slack_summary:
-        description: "Send REPLAY summary to Slack"
+      send_slack_reports:
+        description: "Send weekly/monthly report link Slack only"
         type: boolean
-        default: true
+        default: false
       persist_replay_results:
         description: "Save to data/competition/replay/ only"
         type: boolean
@@ -81,14 +82,16 @@ jobs:
               print('live session correctly blocked in replay mode')
           "
 
-      - name: Run REPLAY smoke
+      - name: Run REPLAY
         if: inputs.persist_replay_results == true
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
+          COMPETITION_DASHBOARD_BASE_URL: ${{ vars.COMPETITION_DASHBOARD_BASE_URL || 'http://127.0.0.1:8080' }}
         run: |
-          ARGS="--date ${{ inputs.start_date }}"
+          ARGS="--replay-type ${{ inputs.replay_type }} --date ${{ inputs.start_date }}"
+          if [ -n "${{ inputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ inputs.end_date }}"; fi
           if [ "${{ inputs.use_mock_llm }}" = "true" ]; then ARGS="$ARGS --mock-llm"; fi
-          if [ "${{ inputs.send_slack_summary }}" != "true" ]; then ARGS="$ARGS --no-slack"; fi
+          if [ "${{ inputs.send_slack_reports }}" = "true" ]; then ARGS="$ARGS"; else ARGS="$ARGS --no-slack"; fi
           if [ "${{ inputs.run_audit_ai }}" = "true" ]; then ARGS="$ARGS --run-audit-ai"; fi
           python scripts/run_competition_replay.py $ARGS
 

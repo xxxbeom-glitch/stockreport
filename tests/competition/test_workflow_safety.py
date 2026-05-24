@@ -113,6 +113,14 @@ class WorkflowSafetyTest(unittest.TestCase):
         event_block = self._block("Event scan (no persist)")
         self.assertIn("inputs.test_slack != true", event_block)
 
+    def test_replay_workflow_exists(self) -> None:
+        p = ROOT / ".github" / "workflows" / "competition_replay_audit.yml"
+        self.assertTrue(p.is_file())
+        text = p.read_text(encoding="utf-8")
+        self.assertIn("send_slack_reports", text)
+        self.assertIn("short_5days", text)
+        self.assertIn("full_audit", text)
+
 
 if __name__ == "__main__":
     if str(ROOT) not in sys.path:

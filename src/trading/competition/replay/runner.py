@@ -1,7 +1,8 @@
-"""REPLAY smoke runner — isolated from LIVE, next-day fill rule."""
+"""REPLAY runner — isolated from LIVE, next-day fill rule."""
 
 from __future__ import annotations
 
+import copy
 import os
 import uuid
 from typing import Any
@@ -16,67 +17,6 @@ from src.trading.competition.replay.snapshot_builder import build_close_snapshot
 from src.trading.competition.replay.store import ReplayStore
 from src.trading.competition.runtime import replay_meta
 from src.trading.competition.teams.pipeline import run_decisions_for_triggers
-
-
-def _replay_slack_summary(manifest: dict[str, Any]) -> str:
-    lines = [
-        "[AI 투자 경쟁앱 / REPLAY] 1일 검증 완료",
-        f"기준 시점: {manifest.get('decision_at')} 장 종료 후 판단",
-        f"replay_run_id: {manifest.get('replay_run_id')}",
-        f"실제 주문: 없음",
-        f"LIVE 계좌 반영: 없음",
-        f"미래 데이터 검사: {manifest.get('leakage_summary', 'N/A')}",
-        "",
-    ]
-    for tid in TEAM_IDS:
-        t = manifest.get("teams", {}).get(tid, {})
-        if t.get("fill"):
-            f = t["fill"]
-            lines.append(
-                f"팀 {tid}: {t.get('action')} → 체결 {f.get('ticker')} "
-                f"{f.get('quantity')}주 @ {int(f.get('fill_price_krw', 0)):,}원 "
-                f"({f.get('fill_at')}) | 현금 {t.get('cash_krw', 0):,}원"
-            )
-        else:
-            lines.append(
-                f"팀 {tid}: {t.get('action', 'N/A')} | "
-                f"상태: {t.get('status', 'no_fill')} | 현금 {t.get('cash_krw', 0):,}원"
-            )
-    limits = manifest.get("limitations") or []
-    if limits:
-        lines.append("")
-        lines.append("제한: " + "; ".join(limits))
-    return "\n".join(lines)
-
-
-def send_replay_slack(manifest: dict[str, Any], *, dry_run: bool = False) -> dict[str, Any]:
-    import json
-    import urllib.request
-
-    message = _replay_slack_summary(manifest)
-    if dry_run:
-        return {"ok": True, "dry_run": True, "message": message}
-
-    webhook = (
-        os.getenv("COMPETITION_SLACK_WEBHOOK", "").strip()
-        or os.getenv("SLACK_WEBHOOK_URL", "").strip()
-    )
-    if not webhook:
-        return {"ok": False, "error": "no_webhook", "message": message}
-
-    body = json.dumps({"text": message}, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        webhook,
-        data=body,
-        headers={"Content-Type": "application/json; charset=utf-8"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            raw = resp.read().decode("utf-8", errors="replace").strip()
-            return {"ok": resp.status < 300 and raw == "ok", "response_body": raw, "message": message}
-    except Exception as exc:
-        return {"ok": False, "error": str(exc), "message": message}
 
 
 def _build_triggers_from_snapshot(snapshot: dict[str, Any], session_id: str) -> list[DecisionTrigger]:
@@ -116,6 +56,7 @@ def _apply_fill(
     quantity: int,
     fill_price: int,
     fill_at: str,
+    fill_date: str,
     decision: dict[str, Any],
     fill_meta: dict[str, Any],
 ) -> dict[str, Any]:
@@ -133,6 +74,9 @@ def _apply_fill(
             "name": name,
             "quantity": quantity,
             "avg_price_krw": fill_price,
+            "current_price_krw": fill_price,
+            "eval_return_pct": 0.0,
+            "eval_pnl_krw": 0,
             "target_price_krw": decision.get("target_price"),
             "buy_reason_label": decision.get("reason_label"),
             "buy_reason_detail": decision.get("reason_detail"),
@@ -144,26 +88,31 @@ def _apply_fill(
     acc["total_assets_krw"] = acc["cash_krw"] + pos_val
 
     trade = {
+        "trade_id": f"tr_{uuid.uuid4().hex[:10]}",
         "team_id": team_id,
         "ticker": ticker,
         "name": name,
         "quantity": quantity,
+        "side": "buy",
         "fill_price_krw": fill_price,
         "fill_at": fill_at,
+        "fill_date": fill_date,
+        "executed_at": fill_at,
         "fees_krw": fee,
+        "reason_label": decision.get("reason_label"),
         **fill_meta,
-        **decision.get("leakage_audit", {}),
     }
     return {"ok": True, "trade": trade}
 
 
-def run_replay_smoke(
-    trading_date: str = "20260522",
+def run_replay_single_day(
+    trading_date: str,
     *,
+    accounts: dict[str, dict[str, Any]] | None = None,
+    campaign_id: str | None = None,
     force_mock: bool = False,
-    send_slack: bool = True,
-    slack_dry_run: bool = False,
     run_audit_ai: bool = False,
+    sync_firestore: bool = True,
 ) -> dict[str, Any]:
     os.environ["COMPETITION_EXECUTION_MODE"] = "replay_smoke"
     os.environ.setdefault("COMPETITION_LIVE_SCHEDULE_DISABLED", "1")
@@ -183,7 +132,11 @@ def run_replay_smoke(
     triggers = _build_triggers_from_snapshot(snapshot, session_id)
     decisions_out = run_decisions_for_triggers(triggers, force_mock=force_mock)
 
-    accounts = initial_replay_accounts()
+    if accounts is None:
+        accounts = initial_replay_accounts()
+    else:
+        accounts = copy.deepcopy(accounts)
+
     fill_date = next_trading_date_after(trading_date)
     limitations: list[str] = []
     if not fill_date:
@@ -254,21 +207,17 @@ def run_replay_smoke(
         qty = int(decision.get("quantity") or 0)
         alloc = int(decision.get("allocation_krw") or 0)
 
-        fill_meta = {
-            **replay_meta(
-                replay_run_id=replay_run_id,
-                as_of_from=trading_date,
-                as_of_to=fill_date or trading_date,
-            ),
-            "decision_at": snapshot["decision_at"],
-            "fill_price_source": price_src or "pykrx_open_next_session",
-            "fill_is_simulated_from_real_historical_price": True,
-            "actual_market_order_sent": False,
-            "costs_applied": False,
-            "cost_model": "costs_not_implemented",
-        }
-
         if not fill_date:
+            fill_meta = {
+                **replay_meta(
+                    replay_run_id=replay_run_id,
+                    as_of_from=trading_date,
+                    as_of_to=trading_date,
+                ),
+                "decision_at": snapshot["decision_at"],
+                "costs_applied": False,
+                "cost_model": "costs_not_implemented",
+            }
             result["status"] = "pending_fill_no_next_session_data"
             store.append_jsonl("pending_orders.jsonl", {**decision, **fill_meta, "status": "pending"})
             team_results[team_id] = result
@@ -289,6 +238,21 @@ def run_replay_smoke(
         if qty <= 0:
             qty = 1
 
+        fill_meta = {
+            **replay_meta(
+                replay_run_id=replay_run_id,
+                as_of_from=trading_date,
+                as_of_to=fill_date,
+            ),
+            "decision_at": snapshot["decision_at"],
+            "fill_at": fill_at,
+            "fill_price_source": price_src,
+            "fill_is_simulated_from_real_historical_price": True,
+            "actual_market_order_sent": False,
+            "costs_applied": False,
+            "cost_model": "costs_not_implemented",
+        }
+
         name = (row or {}).get("name", ticker)
         fill_out = _apply_fill(
             accounts,
@@ -298,6 +262,7 @@ def run_replay_smoke(
             quantity=qty,
             fill_price=open_px,
             fill_at=fill_at,
+            fill_date=fill_date,
             decision=decision,
             fill_meta=fill_meta,
         )
@@ -334,6 +299,7 @@ def run_replay_smoke(
         "ok": leakage_summary != "FAIL",
         "replay_run_id": replay_run_id,
         "session_id": session_id,
+        "campaign_id": campaign_id,
         "trading_date": trading_date,
         "decision_at": snapshot["decision_at"],
         "fill_date": fill_date,
@@ -356,7 +322,39 @@ def run_replay_smoke(
         }
     )
 
-    if send_slack:
-        manifest["slack"] = send_replay_slack(manifest, dry_run=slack_dry_run)
+    firestore_sync = {"skipped": not sync_firestore}
+    if sync_firestore:
+        from src.trading.competition.dashboard.replay_payload import build_replay_dashboard_payload
+        from src.trading.competition.replay.firestore_store import sync_replay_run
 
+        try:
+            payload = build_replay_dashboard_payload(replay_run_id, prefer_local=True)
+            firestore_sync = sync_replay_run(
+                replay_run_id,
+                manifest=manifest,
+                dashboard_payload=payload,
+            )
+        except Exception as exc:
+            firestore_sync = {"ok": False, "error": str(exc)}
+
+    manifest["firestore_sync"] = firestore_sync
+    store.save_manifest(manifest)
     return manifest
+
+
+def run_replay_smoke(
+    trading_date: str = "20260522",
+    *,
+    force_mock: bool = False,
+    send_slack: bool = False,
+    slack_dry_run: bool = False,
+    run_audit_ai: bool = False,
+) -> dict[str, Any]:
+    """Single-day smoke — no Slack summary (policy: report links only)."""
+    _ = send_slack, slack_dry_run
+    return run_replay_single_day(
+        trading_date,
+        force_mock=force_mock,
+        run_audit_ai=run_audit_ai,
+        sync_firestore=True,
+    )

@@ -25,6 +25,11 @@ COLLECTION_NOTIFICATIONS: Final[str] = "competition_notifications"
 COLLECTION_WEEKLY_REPORTS: Final[str] = "competition_weekly_reports"
 COLLECTION_POST_SELL_TRACKING: Final[str] = "competition_post_sell_tracking"
 COLLECTION_AI_USAGE_LOGS: Final[str] = "competition_ai_usage_logs"
+# REPLAY-only Firestore (never write LIVE competition_* account collections)
+COLLECTION_REPLAY_RUNS: Final[str] = "competition_replay_runs"
+COLLECTION_REPLAY_CAMPAIGNS: Final[str] = "competition_replay_campaigns"
+COLLECTION_REPLAY_WEEKLY_REPORTS: Final[str] = "competition_replay_weekly_reports"
+COLLECTION_REPLAY_MONTHLY_REPORTS: Final[str] = "competition_replay_monthly_reports"
 
 CONFIG_DOC_ID: Final[str] = "app"
 

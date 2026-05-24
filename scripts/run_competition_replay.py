@@ -1,5 +1,5 @@
 # -*- coding: utf-8
-"""Run REPLAY smoke/audit — isolated from LIVE accounts."""
+"""Run REPLAY smoke/campaign — isolated from LIVE accounts."""
 
 from __future__ import annotations
 
@@ -35,9 +35,9 @@ _MODEL_DEFAULTS = {
 for _k, _v in _MODEL_DEFAULTS.items():
     os.environ.setdefault(_k, _v)
 
-os.environ.setdefault("COMPETITION_EXECUTION_MODE", "replay_smoke")
 os.environ.setdefault("COMPETITION_LIVE_SCHEDULE_DISABLED", "1")
 
+from src.trading.competition.replay.campaign import run_replay_campaign  # noqa: E402
 from src.trading.competition.replay.runner import run_replay_smoke  # noqa: E402
 
 
@@ -48,21 +48,43 @@ def main() -> int:
         except Exception:
             pass
 
-    parser = argparse.ArgumentParser(description="REPLAY smoke run (no LIVE writes)")
-    parser.add_argument("--date", default="20260522", help="Decision trading date YYYYMMDD")
+    parser = argparse.ArgumentParser(description="REPLAY run (no LIVE writes)")
+    parser.add_argument(
+        "--replay-type",
+        default="smoke_1day",
+        choices=["smoke_1day", "short_5days", "month", "full_audit", "custom"],
+    )
+    parser.add_argument("--date", default="20241218", help="Start trading date YYYYMMDD")
+    parser.add_argument("--end-date", default="", help="End date for month/custom/full_audit")
     parser.add_argument("--mock-llm", action="store_true")
-    parser.add_argument("--no-slack", action="store_true")
+    parser.add_argument("--no-slack", action="store_true", help="Disable Slack report links")
     parser.add_argument("--slack-dry-run", action="store_true")
     parser.add_argument("--run-audit-ai", action="store_true")
     args = parser.parse_args()
 
-    result = run_replay_smoke(
-        args.date,
-        force_mock=args.mock_llm,
-        send_slack=not args.no_slack,
-        slack_dry_run=args.slack_dry_run,
-        run_audit_ai=args.run_audit_ai,
+    end = args.end_date.strip() or None
+    os.environ["COMPETITION_EXECUTION_MODE"] = (
+        "replay_audit" if args.replay_type == "full_audit" else "replay_smoke"
     )
+
+    if args.replay_type == "smoke_1day":
+        result = run_replay_smoke(
+            args.date,
+            force_mock=args.mock_llm,
+            send_slack=False,
+            run_audit_ai=args.run_audit_ai,
+        )
+    else:
+        result = run_replay_campaign(
+            args.replay_type,
+            args.date,
+            end,
+            force_mock=args.mock_llm,
+            send_slack_reports=not args.no_slack,
+            slack_dry_run=args.slack_dry_run,
+            run_audit_ai=args.run_audit_ai,
+        )
+
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result.get("ok") else 1
 

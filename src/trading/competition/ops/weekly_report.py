@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.trading.competition.constants import TEAM_IDS, TEAM_META, TEAM_TO_AGENT
+from src.trading.competition.constants import INITIAL_CASH_KRW, TEAM_IDS, TEAM_META, TEAM_TO_AGENT
 from src.trading.competition.execution.market_session import is_weekly_report_window
 from src.trading.competition.models import now_kst_iso
 from src.trading.competition.storage.accounts import load_all_accounts
