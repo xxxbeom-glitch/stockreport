@@ -1,4 +1,4 @@
-"""Build sealed point-in-time snapshot for replay (pykrx only)."""
+"""Build sealed point-in-time snapshot for replay (KIS OHLCV primary, pykrx bulk fallback)."""
 
 from __future__ import annotations
 

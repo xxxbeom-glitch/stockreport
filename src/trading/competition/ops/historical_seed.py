@@ -118,28 +118,82 @@ def _pykrx_stock() -> Any | None:
         return None
 
 
+def _replay_prev_trading_date(trading_date: str) -> str | None:
+    from datetime import datetime, timedelta
+
+    from src.trading.competition.replay.data_provider import list_trading_dates_result
+
+    start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=30)).strftime("%Y%m%d")
+    cal = list_trading_dates_result(start, trading_date)
+    dates = cal.get("dates") or []
+    if len(dates) >= 2:
+        return dates[-2]
+    return None
+
+
 def enrich_universe_historical(
     stocks: list[dict[str, Any]],
     trading_date: str,
 ) -> dict[str, Any]:
-    """Attach change_rate_pct and tv_ratio from pykrx OHLCV for trading_date."""
+    """Attach change_rate_pct and tv_ratio for trading_date (KIS-first when KIS keys present)."""
+    from src.trading.competition.replay.data_provider import _kis_ready, enrich_universe_rows_kis
+    from src.trading.competition.replay.pykrx_safe import krx_credentials_configured, safe_pykrx_call
     from src.trading.competition.universe.collector import recent_trading_dates
+
+    provider_attempts: list[dict[str, Any]] = []
+    errors: list[str] = []
+
+    if not stocks:
+        return {
+            "ok": False,
+            "error": "eligible_universe_empty",
+            "failures": [],
+            "errors": errors,
+            "provider_attempts": provider_attempts,
+        }
+
+    min_enriched = max(10, len(stocks) // 100)
+    kis_out: dict[str, Any] = {}
+
+    if _kis_ready():
+        prev_date = _replay_prev_trading_date(trading_date)
+        kis_out = enrich_universe_rows_kis(stocks, trading_date, prev_date)
+        provider_attempts.append(
+            {
+                "provider": "kis_per_ticker",
+                "ok": bool(kis_out.get("ok")),
+                "enriched": kis_out.get("enriched"),
+                "primary_source": kis_out.get("source"),
+            }
+        )
+        if int(kis_out.get("enriched") or 0) >= min_enriched:
+            kis_out["provider_attempts"] = provider_attempts
+            kis_out.setdefault("primary_source", "kis_per_ticker")
+            return kis_out
+        errors.extend(kis_out.get("errors") or [])
+        errors.append(f"kis:insufficient_enriched:{kis_out.get('enriched')}/{len(stocks)}")
+
+    if not krx_credentials_configured():
+        return {
+            "ok": False,
+            "error": "market_data_unavailable",
+            "detail": "KIS historical OHLCV insufficient and KRX_ID/KRX_PW not set for pykrx fallback",
+            "failures": kis_out.get("failures", []) if _kis_ready() else [],
+            "errors": errors,
+            "provider_attempts": provider_attempts,
+            "krx_login_required": not _kis_ready(),
+            "kis_configured": _kis_ready(),
+        }
 
     pykrx = _pykrx_stock()
     if pykrx is None:
-        if stocks:
-            from datetime import datetime, timedelta
-
-            from src.trading.competition.replay.data_provider import (
-                enrich_universe_rows_kis,
-                list_trading_dates_result,
-            )
-
-            start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=20)).strftime("%Y%m%d")
-            cal_dates = list_trading_dates_result(start, trading_date).get("dates") or []
-            prev_date = cal_dates[-2] if len(cal_dates) >= 2 else None
-            return enrich_universe_rows_kis(stocks, trading_date, prev_date)
-        return {"ok": False, "error": "pykrx_unavailable", "failures": []}
+        return {
+            "ok": False,
+            "error": "pykrx_unavailable",
+            "failures": [],
+            "errors": errors,
+            "provider_attempts": provider_attempts,
+        }
 
     dates = recent_trading_dates(trading_date, 2, pykrx=pykrx)
     if trading_date not in dates:
@@ -148,17 +202,16 @@ def enrich_universe_historical(
     prev_date = dates[-2] if len(dates) >= 2 else None
 
     ohlcv: dict[str, dict[str, dict[str, int]]] = {}
-    errors: list[str] = []
     for date in dates[-2:]:
         ohlcv[date] = {}
         for market in ("KOSPI", "KOSDAQ"):
-            try:
-                frame = pykrx.get_market_ohlcv(date, market=market)
-            except Exception as exc:
-                errors.append(f"{market}/{date}:{type(exc).__name__}")
-                continue
-            if frame is None or len(frame) == 0:
-                errors.append(f"{market}/{date}:empty")
+            frame, meta = safe_pykrx_call(
+                f"get_market_ohlcv:{market}:{date}",
+                lambda d=date, m=market: pykrx.get_market_ohlcv(d, market=m),
+            )
+            provider_attempts.append(meta)
+            if not meta.get("ok"):
+                errors.append(f"{market}/{date}:{meta.get('error_code')}")
                 continue
             for ticker, row in frame.iterrows():
                 code = str(ticker).zfill(6)
@@ -170,12 +223,24 @@ def enrich_universe_historical(
                 ohlcv[date][code] = {"close": close, "tv": tv}
 
     bulk_missing = not ohlcv.get(trading_date)
-    if bulk_missing and stocks:
-        from src.trading.competition.replay.data_provider import enrich_universe_rows_kis
-
+    if bulk_missing and stocks and _kis_ready():
+        prev_date = _replay_prev_trading_date(trading_date)
         kis_out = enrich_universe_rows_kis(stocks, trading_date, prev_date)
         kis_out["errors"] = errors + (kis_out.get("errors") or [])
-        return kis_out
+        kis_out["provider_attempts"] = provider_attempts + [
+            {"provider": "kis_per_ticker_fallback", "ok": bool(kis_out.get("ok"))}
+        ]
+        if int(kis_out.get("enriched") or 0) >= min_enriched:
+            return kis_out
+        return {
+            "ok": False,
+            "error": "market_data_unavailable",
+            "detail": "pykrx bulk empty and KIS per-ticker enrich insufficient",
+            "enriched": kis_out.get("enriched"),
+            "failures": kis_out.get("failures") or [],
+            "errors": errors + (kis_out.get("errors") or []),
+            "provider_attempts": provider_attempts,
+        }
 
     failures: list[dict[str, str]] = []
     enriched = 0
@@ -199,12 +264,16 @@ def enrich_universe_historical(
             row["data_sources"].append("pykrx_historical")
         enriched += 1
 
+    ok = enriched >= min_enriched
     return {
-        "ok": True,
+        "ok": ok,
+        "error": None if ok else "insufficient_priced_universe",
         "enriched": enriched,
         "failures": failures,
         "errors": errors,
         "prev_trading_date": prev_date,
+        "provider_attempts": provider_attempts,
+        "primary_source": "pykrx_bulk",
     }
 
 

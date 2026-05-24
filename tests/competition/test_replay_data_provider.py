@@ -35,6 +35,19 @@ class ReplayDataProviderTests(unittest.TestCase):
         self.assertEqual(result["dates"], [])
         self.assertEqual(result["error"], "trading_calendar_unavailable")
 
+    def test_pykrx_ohlcv_skipped_without_krx_creds(self) -> None:
+        with patch.object(data_provider, "_kis_ready", return_value=False):
+            with patch(
+                "src.trading.competition.replay.pykrx_safe.krx_credentials_configured",
+                return_value=False,
+            ):
+                mapped, source, errors = data_provider._load_ticker_ohlcv_map(
+                    "005930", "20260101", "20260102"
+                )
+        self.assertEqual(mapped, {})
+        self.assertIsNone(source)
+        self.assertTrue(any("krx_credentials_missing" in e for e in errors))
+
     def test_short_5days_resolve_uses_provider(self) -> None:
         with patch(
             "src.trading.competition.replay.calendar.list_trading_dates_result",

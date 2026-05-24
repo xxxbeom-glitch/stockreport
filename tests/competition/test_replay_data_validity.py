@@ -7,12 +7,46 @@ import unittest
 
 from src.trading.competition.constants import INITIAL_CASH_KRW, TEAM_IDS
 from src.trading.competition.replay.data_validity import (
+    format_data_invalid_reason,
     validate_replay_run_outcome,
     validate_snapshot_for_replay,
 )
 
 
 class ReplayDataValidityTests(unittest.TestCase):
+    def test_enrich_failure_reason_includes_provider_attempts(self) -> None:
+        enrich = {
+            "ok": False,
+            "error": "market_data_unavailable",
+            "detail": "KIS insufficient",
+            "provider_attempts": [
+                {"provider": "kis_per_ticker", "ok": False, "error_code": "kis:empty"},
+            ],
+        }
+        snap = {
+            "ok": True,
+            "eligible_universe": [{"ticker": "005930"}],
+            "universe_count": 1,
+            "team_scouts": {tid: [] for tid in TEAM_IDS},
+            "enrich": enrich,
+        }
+        v = validate_snapshot_for_replay(snap)
+        self.assertFalse(v["valid"])
+        self.assertIn("market_data_unavailable", v["reason"])
+        self.assertIn("failed_inputs=", v["reason"])
+        self.assertIn("kis_per_ticker", v["reason"])
+
+    def test_format_data_invalid_reason(self) -> None:
+        reason = format_data_invalid_reason(
+            base="market_data_unavailable",
+            enrich={
+                "detail": "no providers",
+                "provider_attempts": [{"call": "get_market_ohlcv", "ok": False, "error_code": "krx_empty_or_non_json_response"}],
+            },
+        )
+        self.assertIn("failed_inputs=", reason)
+        self.assertIn("krx_empty_or_non_json_response", reason)
+
     def test_rejects_empty_universe(self) -> None:
         snap = {"ok": True, "eligible_universe": [], "universe_count": 0, "team_scouts": {}}
         v = validate_snapshot_for_replay(snap)

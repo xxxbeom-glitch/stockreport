@@ -175,8 +175,20 @@ def run_replay_single_day(
 
     snapshot = build_close_snapshot(trading_date)
     if not snapshot.get("ok"):
-        err = str(snapshot.get("error") or "snapshot_failed")
-        obs.log_pipeline("snapshot_build", "error", detail=err)
+        from src.trading.competition.replay.data_validity import format_data_invalid_reason
+
+        enrich = snapshot.get("enrich") or {}
+        base_err = str(enrich.get("error") or snapshot.get("error") or "snapshot_failed")
+        err = format_data_invalid_reason(base=base_err, enrich=enrich if enrich else None)
+        obs.log_pipeline(
+            "snapshot_build",
+            "error",
+            error=base_err,
+            detail=enrich.get("detail"),
+            provider_attempts=enrich.get("provider_attempts"),
+            kis_configured=enrich.get("kis_configured"),
+            krx_login_required=enrich.get("krx_login_required"),
+        )
         obs.finalize(
             {"ok": False, "replay_run_id": replay_run_id},
             status="failed",
@@ -184,7 +196,13 @@ def run_replay_single_day(
             force_mock=force_mock,
             campaign_progress=campaign_progress,
         )
-        return {"ok": False, "replay_run_id": replay_run_id, "error": snapshot.get("error")}
+        return {
+            "ok": False,
+            "replay_run_id": replay_run_id,
+            "error": base_err,
+            "enrich": enrich,
+            "failure_summary": err,
+        }
 
     from src.trading.competition.replay.data_validity import validate_snapshot_for_replay
 

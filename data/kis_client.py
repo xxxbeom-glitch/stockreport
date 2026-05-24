@@ -166,7 +166,20 @@ class KISClient:
         try:
             res = requests.post(url, json=body, timeout=15)
             res.raise_for_status()
-            token = str(res.json().get("access_token", ""))
+            text = (res.text or "").strip()
+            if not text:
+                logger.warning("KIS token issue empty response status=%s", res.status_code)
+                return None
+            try:
+                payload = res.json()
+            except json.JSONDecodeError:
+                logger.warning(
+                    "KIS token issue non-json status=%s body_prefix=%r",
+                    res.status_code,
+                    text[:120],
+                )
+                return None
+            token = str(payload.get("access_token", ""))
             if token:
                 self._write_cached_token(token)
                 return token
@@ -201,7 +214,20 @@ class KISClient:
                     return None
                 res = requests.get(f"{self.base_url}{path}", headers=headers, params=params, timeout=15)
             res.raise_for_status()
-            data = res.json()
+            text = (res.text or "").strip()
+            if not text:
+                logger.debug("KIS GET empty body tr_id=%s status=%s", tr_id, res.status_code)
+                return None
+            try:
+                data = res.json()
+            except json.JSONDecodeError:
+                logger.warning(
+                    "KIS GET non-json tr_id=%s status=%s body_prefix=%r",
+                    tr_id,
+                    res.status_code,
+                    text[:120],
+                )
+                return None
             if str(data.get("rt_cd", "0")) not in {"0", ""}:
                 logger.debug("KIS rt_cd error %s: %s", tr_id, data.get("msg1"))
                 return None

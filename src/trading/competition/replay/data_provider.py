@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import redirect_stderr
 from datetime import datetime, timedelta
 import io
@@ -53,6 +54,10 @@ def _bars_to_date_map(bars: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
 
 
 def _pykrx_session_dates(start: str, end: str) -> tuple[list[str], list[str]]:
+    from src.trading.competition.replay.pykrx_safe import krx_credentials_configured, safe_pykrx_call
+
+    if not krx_credentials_configured():
+        return [], ["pykrx_skipped:krx_credentials_missing"]
     pykrx = _pykrx()
     if pykrx is None:
         return [], ["pykrx_unavailable"]
@@ -64,14 +69,14 @@ def _pykrx_session_dates(start: str, end: str) -> tuple[list[str], list[str]]:
     while cur <= end_dt:
         if cur.weekday() < 5:
             candidate = cur.strftime("%Y%m%d")
-            try:
-                buf = io.StringIO()
-                with redirect_stderr(buf):
-                    frame = pykrx.get_market_ohlcv(candidate, market="KOSPI")
-                if frame is not None and len(frame) > 0:
-                    dates.append(candidate)
-            except Exception as exc:
-                errors.append(f"pykrx_session:{candidate}:{type(exc).__name__}")
+            frame, meta = safe_pykrx_call(
+                f"get_market_ohlcv:KOSPI:{candidate}",
+                lambda c=candidate: pykrx.get_market_ohlcv(c, market="KOSPI"),
+            )
+            if not meta.get("ok"):
+                errors.append(f"pykrx_session:{candidate}:{meta.get('error_code')}")
+            elif frame is not None and len(frame) > 0:
+                dates.append(candidate)
         cur += timedelta(days=1)
     return dates, errors
 
@@ -150,36 +155,46 @@ def _load_ticker_ohlcv_map(ticker: str, start: str, end: str) -> tuple[dict[str,
         except Exception as exc:
             errors.append(f"kis:{type(exc).__name__}:{exc}")
 
+    from src.trading.competition.replay.pykrx_safe import krx_credentials_configured, safe_pykrx_call
+
+    if not krx_credentials_configured():
+        errors.append("pykrx_skipped:krx_credentials_missing")
+        return {}, None, errors
+
     pykrx = _pykrx()
     if pykrx is None:
         errors.append("pykrx_unavailable")
         return {}, None, errors
 
     code = ticker.zfill(6)
-    buf = io.StringIO()
-    try:
-        with redirect_stderr(buf):
-            frame = pykrx.get_market_ohlcv_by_date(start, end, code)
-        if frame is not None and len(frame) > 0:
-            mapped: dict[str, dict[str, int]] = {}
-            for idx, row in frame.iterrows():
-                d = idx.strftime("%Y%m%d") if hasattr(idx, "strftime") else str(idx)[:8]
-                try:
-                    mapped[d] = {
-                        "open": int(float(row.get("시가", 0) or 0)),
-                        "high": int(float(row.get("고가", 0) or 0)),
-                        "low": int(float(row.get("저가", 0) or 0)),
-                        "close": int(float(row.get("종가", 0) or 0)),
-                        "tv": int(float(row.get("거래대금", 0) or 0)),
-                    }
-                except (TypeError, ValueError):
-                    continue
-            if mapped:
-                _OHLCV_CACHE[key] = mapped
-                return mapped, "pykrx_by_ticker", errors
-        errors.append("pykrx:empty")
-    except Exception as exc:
-        errors.append(f"pykrx:{type(exc).__name__}:{exc}")
+    frame, meta = safe_pykrx_call(
+        f"get_market_ohlcv_by_date:{code}",
+        lambda: pykrx.get_market_ohlcv_by_date(start, end, code),
+    )
+    if not meta.get("ok"):
+        errors.append(f"pykrx:{meta.get('error_code')}")
+    if frame is not None:
+        try:
+            if len(frame) > 0:
+                mapped: dict[str, dict[str, int]] = {}
+                for idx, row in frame.iterrows():
+                    d = idx.strftime("%Y%m%d") if hasattr(idx, "strftime") else str(idx)[:8]
+                    try:
+                        mapped[d] = {
+                            "open": int(float(row.get("시가", 0) or 0)),
+                            "high": int(float(row.get("고가", 0) or 0)),
+                            "low": int(float(row.get("저가", 0) or 0)),
+                            "close": int(float(row.get("종가", 0) or 0)),
+                            "tv": int(float(row.get("거래대금", 0) or 0)),
+                        }
+                    except (TypeError, ValueError):
+                        continue
+                if mapped:
+                    _OHLCV_CACHE[key] = mapped
+                    return mapped, "pykrx_by_ticker", errors
+        except Exception as exc:
+            errors.append(f"pykrx_map:{type(exc).__name__}")
+    errors.append("pykrx:empty")
 
     return {}, None, errors
 
@@ -238,40 +253,72 @@ def next_trading_date_after(trading_date: str) -> tuple[str | None, str | None, 
     return None, None, (result.get("errors") or []) + ["no_next_session"]
 
 
+def _enrich_one_row_kis(
+    row: dict[str, Any],
+    trading_date: str,
+    prev_date: str | None,
+) -> tuple[bool, list[str]]:
+    ticker = str(row.get("ticker", "")).zfill(6)
+    day, source, errs = ohlcv_for_ticker_date(ticker, trading_date)
+    if not day or day["close"] <= 0:
+        return False, errs[:1] or [f"ohlcv_missing:{ticker}:{trading_date}"]
+    row["current_price_krw"] = day["close"]
+    row["current_trading_value_krw"] = day.get("tv") or 0
+    avg_tv = float(row.get("avg_trading_value_20d_krw") or 0)
+    if avg_tv > 0 and day.get("tv", 0) > 0:
+        row["tv_ratio_20d"] = day["tv"] / avg_tv
+    if prev_date:
+        prev, _, _ = ohlcv_for_ticker_date(ticker, prev_date)
+        if prev and prev["close"] > 0:
+            row["change_rate_pct"] = (day["close"] - prev["close"]) / prev["close"] * 100
+    row.setdefault("data_sources", [])
+    tag = "kis_historical" if source and str(source).startswith("kis") else "replay_ohlcv"
+    if tag not in row["data_sources"]:
+        row["data_sources"].append(tag)
+    return True, errs
+
+
 def enrich_universe_rows_kis(
     stocks: list[dict[str, Any]],
     trading_date: str,
     prev_date: str | None,
 ) -> dict[str, Any]:
-    """Per-ticker KIS/pykrx OHLCV when bulk pykrx market load is unavailable."""
+    """Per-ticker KIS OHLCV (primary for REPLAY on GitHub Actions)."""
     failures: list[dict[str, str]] = []
     enriched = 0
     errors: list[str] = []
-    for row in stocks:
-        ticker = str(row.get("ticker", "")).zfill(6)
-        day, _, errs = ohlcv_for_ticker_date(ticker, trading_date)
-        errors.extend(errs[:1])
-        if not day or day["close"] <= 0:
-            failures.append({"ticker": ticker, "reason": "ohlcv_missing_on_as_of_date"})
-            continue
-        row["current_price_krw"] = day["close"]
-        row["current_trading_value_krw"] = day.get("tv") or 0
-        avg_tv = float(row.get("avg_trading_value_20d_krw") or 0)
-        if avg_tv > 0 and day.get("tv", 0) > 0:
-            row["tv_ratio_20d"] = day["tv"] / avg_tv
-        if prev_date:
-            prev, _, _ = ohlcv_for_ticker_date(ticker, prev_date)
-            if prev and prev["close"] > 0:
-                row["change_rate_pct"] = (day["close"] - prev["close"]) / prev["close"] * 100
-        row.setdefault("data_sources", [])
-        if "kis_historical" not in row["data_sources"]:
-            row["data_sources"].append("kis_historical")
-        enriched += 1
+    workers = min(16, max(4, len(stocks) // 50))
+
+    def _task(row: dict[str, Any]) -> tuple[dict[str, Any], bool, list[str]]:
+        row_copy = dict(row)
+        ok_row, errs = _enrich_one_row_kis(row_copy, trading_date, prev_date)
+        return row_copy, ok_row, errs
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_task, row): row for row in stocks}
+        for fut in as_completed(futures):
+            orig = futures[fut]
+            try:
+                row_copy, ok_row, errs = fut.result()
+            except Exception as exc:
+                failures.append({"ticker": str(orig.get("ticker")), "reason": type(exc).__name__})
+                errors.append(f"kis_worker:{type(exc).__name__}")
+                continue
+            orig.clear()
+            orig.update(row_copy)
+            if ok_row:
+                enriched += 1
+            else:
+                failures.append(
+                    {"ticker": str(orig.get("ticker")), "reason": "ohlcv_missing_on_as_of_date"}
+                )
+                errors.extend(errs[:1])
+
     return {
-        "ok": enriched > 0 or not stocks,
+        "ok": enriched > 0,
         "enriched": enriched,
         "failures": failures,
-        "errors": errors,
+        "errors": errors[:50],
         "prev_trading_date": prev_date,
         "source": "kis_per_ticker",
     }

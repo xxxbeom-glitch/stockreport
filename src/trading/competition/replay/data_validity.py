@@ -22,6 +22,48 @@ def _scout_candidate_count(snapshot: dict[str, Any]) -> int:
     return total
 
 
+def _provider_failure_summary(attempts: list[dict[str, Any]]) -> list[str]:
+    out: list[str] = []
+    for att in attempts:
+        if att.get("ok"):
+            continue
+        label = str(att.get("provider") or att.get("call") or "provider")
+        code = str(att.get("error_code") or att.get("error") or "failed")
+        out.append(f"{label}:{code}")
+    return out
+
+
+def format_data_invalid_reason(
+    *,
+    base: str,
+    enrich: dict[str, Any] | None = None,
+    extra: str | None = None,
+) -> str:
+    """Human-readable reason including which market-data inputs failed."""
+    parts = [base]
+    if extra:
+        parts.append(extra)
+    if enrich:
+        detail = enrich.get("detail")
+        if detail:
+            parts.append(str(detail))
+        failed_inputs: list[str] = []
+        if enrich.get("error"):
+            failed_inputs.append(f"enrich:{enrich.get('error')}")
+        if enrich.get("krx_login_required"):
+            failed_inputs.append("krx_credentials")
+        if enrich.get("kis_configured") is False:
+            failed_inputs.append("kis_credentials")
+        provider_failures = _provider_failure_summary(enrich.get("provider_attempts") or [])
+        failed_inputs.extend(provider_failures)
+        errs = enrich.get("errors") or []
+        if errs and not provider_failures:
+            failed_inputs.extend(str(e) for e in errs[:3])
+        if failed_inputs:
+            parts.append("failed_inputs=" + ",".join(failed_inputs[:8]))
+    return " | ".join(parts)
+
+
 def validate_snapshot_for_replay(snapshot: dict[str, Any]) -> dict[str, Any]:
     """Fail fast when OHLCV/universe/scout inputs are missing."""
     if not snapshot.get("ok"):
@@ -36,10 +78,13 @@ def validate_snapshot_for_replay(snapshot: dict[str, Any]) -> dict[str, Any]:
 
     enrich = snapshot.get("enrich") or {}
     if enrich and enrich.get("ok") is False:
+        base = str(enrich.get("error") or "universe_enrich_failed")
         return {
             "valid": False,
             "data_status": "data_invalid",
-            "reason": str(enrich.get("error") or "universe_enrich_failed"),
+            "reason": format_data_invalid_reason(base=base, enrich=enrich),
+            "failed_inputs": _provider_failure_summary(enrich.get("provider_attempts") or [])
+            + ([f"enrich:{base}"] if base else []),
             "universe_count": int(snapshot.get("universe_count") or 0),
             "priced_universe_count": _priced_universe_count(snapshot),
             "scout_candidate_count": _scout_candidate_count(snapshot),
