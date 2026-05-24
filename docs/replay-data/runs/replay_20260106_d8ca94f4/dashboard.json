@@ -105,7 +105,7 @@
   "weeklyReports": {},
   "monthlyReports": {},
   "finalReport": null,
-  "competitionStatus": "kis_rate_limit_paused",
+  "competitionStatus": "checkpoint_waiting_resume",
   "operatingDays": 1,
   "auditSummary": {
     "leakageStatus": "PASS",
