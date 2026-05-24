@@ -26,9 +26,9 @@ class WorkflowSafetyTest(unittest.TestCase):
     def test_workflow_file_exists(self) -> None:
         self.assertTrue(WORKFLOW.is_file())
 
-    def test_slack_webhook_mapping_unchanged(self) -> None:
+    def test_slack_webhook_mapping_uses_trading_secret(self) -> None:
         self.assertIn(
-            "COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}",
+            "COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TRADING }}",
             self.text,
         )
 
