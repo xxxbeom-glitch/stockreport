@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-24T23:26:16.824817+09:00",
+  "updatedAt": "2026-05-25T01:43:31.082529+09:00",
   "dashboardBaseUrl": "https://xxxbeom-glitch.github.io/stockreport",
   "dashboardPath": "/template/dashboard_desktop/",
   "dataRoot": "/docs/replay-data",
@@ -17,7 +17,88 @@
       "campaignId": null,
       "leakageSummary": "PASS",
       "dashboardPath": "runs/replay_20241218_dca68242/dashboard.json"
+    },
+    {
+      "replayRunId": "replay_20260102_c3205a2b",
+      "tradingDate": "20260102",
+      "campaignId": "month_20260102_20260130_1b51cb",
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20260102_c3205a2b/dashboard.json"
+    },
+    {
+      "replayRunId": "replay_20260105_7fbf18b9",
+      "tradingDate": "20260105",
+      "campaignId": "month_20260102_20260130_1b51cb",
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20260105_7fbf18b9/dashboard.json"
+    },
+    {
+      "replayRunId": "replay_20260106_d8ca94f4",
+      "tradingDate": "20260106",
+      "campaignId": "month_20260102_20260130_1b51cb",
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20260106_d8ca94f4/dashboard.json"
+    },
+    {
+      "replayRunId": "replay_20260107_d7d0f04a",
+      "tradingDate": "20260107",
+      "campaignId": "month_20260102_20260130_1b51cb",
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20260107_d7d0f04a/dashboard.json"
+    },
+    {
+      "replayRunId": "replay_20260108_4663625a",
+      "tradingDate": "20260108",
+      "campaignId": "month_20260102_20260130_1b51cb",
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20260108_4663625a/dashboard.json"
     }
   ],
-  "campaigns": {}
+  "campaigns": {
+    "month_20260102_20260130_1b51cb": {
+      "campaignId": "month_20260102_20260130_1b51cb",
+      "replayType": "month",
+      "startDate": "20260102",
+      "endDate": "20260130",
+      "leakageSummary": "PASS",
+      "competitionStatus": "kis_rate_limit_paused",
+      "needsResume": true,
+      "nextTradingDate": "20260109",
+      "progressLabel": "1월 리플레이 진행 중 · 5 / 21 거래일 완료",
+      "daysCompleted": 5,
+      "daysTotal": 21,
+      "lastCompletedDate": "20260108",
+      "weeklyReportKeys": [
+        "w1",
+        "w2"
+      ],
+      "monthlyReportKeys": [
+        "m202601"
+      ],
+      "doNotResume": false,
+      "campaignKind": null,
+      "canonicalCampaignId": null,
+      "dashboardPath": "campaigns/month_20260102_20260130_1b51cb/dashboard.json",
+      "batchStatus": "kis_rate_limit_paused",
+      "publicStatus": "자동 재개 대기(KIS 제한)",
+      "resumeReason": "kis_rate_limit_exceeded",
+      "lastBatchAt": "2026-05-25T01:43:30+09:00",
+      "kisRequestsUsed": 34,
+      "kisRequestsBudget": 80,
+      "lastBatchKisRequests": 34,
+      "performanceStatus": "development_validation_only",
+      "formalStrategyPerformanceAllowed": false,
+      "validationDashboardLabel": "개발 검증 데이터 (정식 전략 성과 아님)",
+      "unverifiedItemIds": [
+        "C_SUPPLY_HISTORICAL",
+        "UNIVERSE_AS_OF_DATE",
+        "RISK_AS_OF_DATE"
+      ],
+      "weekly": [],
+      "monthly": [],
+      "hasFinal": false,
+      "hasAuditSummary": false,
+      "hasCampaignDashboard": true
+    }
+  }
 }

@@ -3,12 +3,32 @@
   "replayType": "month",
   "startDate": "20260102",
   "endDate": "20260130",
-  "competitionStatus": "month_completed",
-  "needsResume": false,
-  "progressLabel": "1월 리플레이 진행 중 · 7 / 7 거래일 완료",
-  "daysCompleted": 7,
-  "daysTotal": 7,
+  "leakageSummary": "PASS",
+  "competitionStatus": "kis_rate_limit_paused",
+  "needsResume": true,
+  "nextTradingDate": "20260109",
+  "progressLabel": "1월 리플레이 진행 중 · 5 / 21 거래일 완료",
+  "daysCompleted": 5,
+  "daysTotal": 21,
+  "lastCompletedDate": "20260108",
+  "weeklyReportKeys": [
+    "w1",
+    "w2"
+  ],
+  "monthlyReportKeys": [
+    "m202601"
+  ],
   "doNotResume": false,
+  "campaignKind": null,
+  "canonicalCampaignId": null,
+  "dashboardPath": "campaigns/month_20260102_20260130_1b51cb/dashboard.json",
+  "batchStatus": "kis_rate_limit_paused",
+  "publicStatus": "자동 재개 대기(KIS 제한)",
+  "resumeReason": "kis_rate_limit_exceeded",
+  "lastBatchAt": "2026-05-25T01:43:30+09:00",
+  "kisRequestsUsed": 34,
+  "kisRequestsBudget": 80,
+  "lastBatchKisRequests": 34,
   "performanceStatus": "development_validation_only",
   "formalStrategyPerformanceAllowed": false,
   "validationDashboardLabel": "개발 검증 데이터 (정식 전략 성과 아님)",
@@ -16,7 +36,5 @@
     "C_SUPPLY_HISTORICAL",
     "UNIVERSE_AS_OF_DATE",
     "RISK_AS_OF_DATE"
-  ],
-  "dashboardPath": "campaigns/month_20260102_20260130_1b51cb/dashboard.json",
-  "validationStatusPath": "campaigns/month_20260102_20260130_1b51cb/validation_status.json"
+  ]
 }
