@@ -23,6 +23,13 @@ _REDACT_KEY_RE = re.compile(
     r"(api[_-]?key|secret|token|webhook|password|credential|authorization|private_key|service_account)",
     re.I,
 )
+# Observability metric keys that contain "token" but are not secrets.
+_REDACT_KEY_ALLOWLIST = frozenset(
+    {
+        "token_issue_calls",
+        "token_source",
+    }
+)
 _SECRET_VALUE_RE = re.compile(
     r"(sk-[a-zA-Z0-9]{8,}|AIza[0-9A-Za-z_-]{20,}|Bearer\s+\S+|https?://hooks\.slack\.com/\S+)",
     re.I,
@@ -57,7 +64,7 @@ def redact_value(value: Any) -> Any:
 def redact_record(record: dict[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for key, value in record.items():
-        if _REDACT_KEY_RE.search(str(key)):
+        if key not in _REDACT_KEY_ALLOWLIST and _REDACT_KEY_RE.search(str(key)):
             out[key] = "[REDACTED]"
             continue
         out[key] = redact_value(value)
@@ -77,6 +84,27 @@ def workflow_run_context() -> dict[str, Any]:
             "github_sha": (os.getenv("GITHUB_SHA") or "")[:12] or None,
         }
     )
+
+
+def _kis_auth_observability_fields(kis_auth: dict[str, Any]) -> dict[str, Any]:
+    """Safe subset for execution_meta — no secrets."""
+    return {
+        k: kis_auth.get(k)
+        for k in (
+            "error",
+            "http_status",
+            "error_code",
+            "error_description",
+            "msg_cd",
+            "msg1",
+            "endpoint_mode",
+            "base_url",
+            "token_issue_calls",
+            "app_key_len",
+            "app_secret_len",
+        )
+        if kis_auth.get(k) is not None
+    }
 
 
 def providers_configuration() -> dict[str, Any]:
@@ -233,14 +261,18 @@ class RunObservability:
         primary: str | None = None,
         fallback: str | None = None,
         error_summary: str | None = None,
+        **extra: Any,
     ) -> None:
+        payload: dict[str, Any] = dict(extra)
+        if error_summary:
+            payload.setdefault("error_summary", error_summary)
         self.log_pipeline(
             "api_connection",
             "ok" if ok else "error",
             service=service,
             primary=primary,
             fallback=fallback,
-            error_summary=error_summary,
+            **payload,
         )
 
     def log_strategy_trace(
@@ -277,6 +309,7 @@ class RunObservability:
         strategy_diff: dict[str, Any] | None = None,
         force_mock: bool = False,
         campaign_progress: dict[str, Any] | None = None,
+        kis_auth: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         ended_at = now_kst_iso()
         providers = providers_configuration()
@@ -309,6 +342,8 @@ class RunObservability:
         if strategy_diff:
             meta["strategy_differentiation"] = strategy_diff
             _write_json(self.root / "strategy_differentiation.json", strategy_diff)
+        if kis_auth:
+            meta["kis_auth"] = _kis_auth_observability_fields(kis_auth)
 
         _write_json(self.root / "execution_meta.json", meta)
         public = build_public_audit_summary(meta, manifest)

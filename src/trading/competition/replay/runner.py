@@ -154,6 +154,7 @@ def run_replay_single_day(
 
     from src.trading.competition.replay.observability import (
         RunObservability,
+        _kis_auth_observability_fields,
         compute_strategy_differentiation,
         providers_configuration,
     )
@@ -179,22 +180,29 @@ def run_replay_single_day(
         obs.log_api_connection(
             "kis_auth",
             ok=bool(kis_auth.get("ok")),
+            error_summary=str(kis_auth.get("error") or "") if not kis_auth.get("ok") else None,
+            error=kis_auth.get("error"),
             token_issue_calls=kis_auth.get("token_issue_calls"),
             http_status=kis_auth.get("http_status"),
+            error_code=kis_auth.get("error_code"),
+            error_description=kis_auth.get("error_description"),
             msg_cd=kis_auth.get("msg_cd"),
             msg1=kis_auth.get("msg1"),
+            endpoint_mode=kis_auth.get("endpoint_mode"),
+            base_url=kis_auth.get("base_url"),
             app_key_len=kis_auth.get("app_key_len"),
             app_secret_len=kis_auth.get("app_secret_len"),
         )
         if not kis_auth.get("ok"):
             err = str(kis_auth.get("error") or "kis_auth_failed")
-            obs.log_pipeline("kis_preflight", "error", **{k: v for k, v in kis_auth.items() if k != "ok"})
+            obs.log_pipeline("kis_preflight", "error", **_kis_auth_observability_fields(kis_auth))
             obs.finalize(
                 {"ok": False, "replay_run_id": replay_run_id},
                 status="kis_auth_failed",
                 failure_summary=err,
                 force_mock=force_mock,
                 campaign_progress=campaign_progress,
+                kis_auth=kis_auth,
             )
             return {
                 "ok": False,
