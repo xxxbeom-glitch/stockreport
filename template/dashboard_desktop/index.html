@@ -2375,6 +2375,7 @@
         var dataMode = "live";
         var replayRunId = null;
         var campaignId = null;
+        var campaignProgress = null;
         var replayRuns = [];
         var auditSummary = null;
         var teamDecisions = [];
@@ -2870,7 +2871,15 @@
           }
 
           if (meta) {
-            if (dataMode === "replay" && replayMeta) {
+            if (dataMode === "replay" && campaignProgress && campaignProgress.progressLabel) {
+              meta.textContent = campaignProgress.progressLabel;
+              if (campaignId) {
+                meta.textContent += " · campaign " + campaignId;
+              }
+              if (campaignProgress.needsResume && campaignProgress.nextTradingDate) {
+                meta.textContent += " · 다음 거래일 " + campaignProgress.nextTradingDate;
+              }
+            } else if (dataMode === "replay" && replayMeta) {
               meta.textContent =
                 "REPLAY · decision " + (replayMeta.decisionAt || "-") +
                 " · fill " + (replayMeta.fillDate || "-") +
@@ -3842,8 +3851,16 @@
               if (!replayRunId && replayRuns.length) {
                 replayRunId = replayRuns[0].replayRunId;
               }
+              var progressP = Promise.resolve();
+              if (campaignId && useReplayPagesJson() && CompetitionReplayPages.loadCampaignMeta) {
+                progressP = CompetitionReplayPages.loadCampaignMeta(campaignId).then(function (meta) {
+                  campaignProgress = meta;
+                });
+              }
               if (!replayRunId && campaignId && useReplayPagesJson()) {
-                return CompetitionReplayPages.loadCampaignBundle(campaignId).then(function (reports) {
+                return progressP.then(function () {
+                  return CompetitionReplayPages.loadCampaignBundle(campaignId);
+                }).then(function (reports) {
                   WEEKLY_REPORTS = reports.weeklyReports || {};
                   MONTHLY_REPORTS = reports.monthlyReports || {};
                   FINAL_REPORT = reports.finalReport || null;
@@ -3869,7 +3886,9 @@
                 );
                 return;
               }
-              return loadReplayDashboard(replayRunId);
+              return progressP.then(function () {
+                return loadReplayDashboard(replayRunId);
+              });
             })
             .catch(function (err) {
               showReplayEmptyState("REPLAY 데이터 로드 실패: " + (err && err.message ? err.message : "unknown"));

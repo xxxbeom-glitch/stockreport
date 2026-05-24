@@ -12,23 +12,35 @@ on:
           - month
           - full_audit
           - custom
-        default: smoke_1day
+        default: month
       start_date:
-        description: "YYYYMMDD start"
+        description: "YYYYMMDD — 새 campaign 시작일 (month/custom)"
         type: string
-        default: "20241218"
+        default: "20260102"
       end_date:
         description: "YYYYMMDD end (month/custom/full_audit)"
         type: string
         default: ""
+      campaign_id:
+        description: "이어 실행할 campaign_id (resume 시 필수)"
+        type: string
+        default: ""
+      resume_existing_campaign:
+        description: "기존 campaign 이어서 실행 (chunk 최대 5거래일)"
+        type: boolean
+        default: false
+      chunk_size_trading_days:
+        description: "한 번의 실행에서 처리할 최대 거래일 수"
+        type: number
+        default: 5
       run_audit_ai:
         description: "Run audit committee AI evaluation"
         type: boolean
         default: false
       send_slack_reports:
-        description: "Send weekly/monthly report link Slack only"
+        description: "주간/월간 리포트 링크 Slack 발송"
         type: boolean
-        default: false
+        default: true
       persist_replay_results:
         description: "Save to data/competition/replay/ only"
         type: boolean
@@ -88,24 +100,81 @@ jobs:
               print('live session correctly blocked in replay mode')
           "
 
+      - name: List resumable campaigns
+        if: inputs.resume_existing_campaign != true
+        run: |
+          python -c "
+          import json
+          from src.trading.competition.replay.campaign_resume import list_resumable_campaigns
+          rows = list_resumable_campaigns()
+          print('## Resumable REPLAY campaigns')
+          if not rows:
+              print('(none — start a new month/full_audit run)')
+          for r in rows:
+              print(f\"- \`{r['campaign_id']}\` — {r.get('progress_label','')}\")
+          " >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run REPLAY
         if: inputs.persist_replay_results == true
+        id: replay
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
         run: |
           ARGS="--replay-type ${{ inputs.replay_type }} --date ${{ inputs.start_date }}"
+          ARGS="$ARGS --chunk-size-trading-days ${{ inputs.chunk_size_trading_days }}"
           if [ -n "${{ inputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ inputs.end_date }}"; fi
           if [ "${{ inputs.use_mock_llm }}" = "true" ]; then ARGS="$ARGS --mock-llm"; fi
-          if [ "${{ inputs.send_slack_reports }}" = "true" ]; then ARGS="$ARGS"; else ARGS="$ARGS --no-slack"; fi
+          if [ "${{ inputs.send_slack_reports }}" != "true" ]; then ARGS="$ARGS --no-slack"; fi
           if [ "${{ inputs.run_audit_ai }}" = "true" ]; then ARGS="$ARGS --run-audit-ai"; fi
-          python scripts/run_competition_replay.py $ARGS
+          if [ "${{ inputs.resume_existing_campaign }}" = "true" ]; then
+            ARGS="$ARGS --resume-existing-campaign --campaign-id ${{ inputs.campaign_id }}"
+          fi
+          python scripts/run_competition_replay.py $ARGS | tee replay_result.json
+          echo "ok=$(python -c \"import json;print('true' if json.load(open('replay_result.json')).get('ok') else 'false')\")" >> "$GITHUB_OUTPUT"
+
+      - name: Campaign resume summary
+        if: inputs.persist_replay_results == true && always()
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          p = Path('replay_result.json')
+          if not p.is_file():
+              raise SystemExit(0)
+          r = json.loads(p.read_text(encoding='utf-8'))
+          cid = r.get('campaign_id','')
+          lines = [
+              '## REPLAY chunk result',
+              f\"- **campaign_id**: \`{cid}\`\",
+              f\"- **progress**: {r.get('progress_label','')}\",
+              f\"- **chunk dates**: {', '.join(r.get('chunk_processed_dates') or []) or '(none)'}\",
+              f\"- **needs_resume**: {r.get('needs_resume')}\",
+              f\"- **status**: {r.get('competition_status')}\",
+          ]
+          if r.get('needs_resume'):
+              lines.append('')
+              lines.append('다음 주차 이어 실행: `resume_existing_campaign=true`, `campaign_id=' + cid + '`')
+          Path('$GITHUB_STEP_SUMMARY').write_text(
+              Path('$GITHUB_STEP_SUMMARY').read_text(encoding='utf-8') + '\n' + '\n'.join(lines) + '\n',
+              encoding='utf-8',
+          )
+          "
 
       - name: Publish public REPLAY JSON for GitHub Pages
-        if: inputs.persist_replay_results == true
-        run: python scripts/publish_replay_pages_data.py
+        if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
+        run: |
+          CID="${{ inputs.campaign_id }}"
+          if [ -z "$CID" ] && [ -f replay_result.json ]; then
+            CID=$(python -c "import json;print(json.load(open('replay_result.json')).get('campaign_id',''))")
+          fi
+          if [ -n "$CID" ]; then
+            python scripts/publish_replay_pages_data.py --campaign "$CID"
+          else
+            python scripts/publish_replay_pages_data.py
+          fi
 
       - name: Commit replay public data
-        if: inputs.persist_replay_results == true
+        if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

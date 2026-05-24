@@ -1,21 +1,29 @@
-"""Multi-day REPLAY campaign orchestration."""
+"""Multi-day REPLAY campaign orchestration (resumable chunks)."""
 
 from __future__ import annotations
 
-import json
 import os
-import uuid
-from pathlib import Path
 from typing import Any
 
 from src.trading.competition.replay.calendar import resolve_replay_dates_with_meta
-from src.trading.competition.replay.firestore_store import sync_replay_campaign
-from src.trading.competition.replay.reports import (
-    build_replay_monthly_reports,
-    build_replay_weekly_reports,
-    save_campaign_reports,
+from src.trading.competition.replay.campaign_resume import (
+    TERMINAL_STATUSES,
+    camp_dir,
+    chunk_week_key_for_slack,
+    find_run_for_trading_date,
+    init_campaign_manifest,
+    is_terminal_status,
+    load_accounts_from_run,
+    load_checkpoint,
+    load_manifest,
+    mark_day_completed,
+    new_campaign_id,
+    remaining_trading_dates,
+    save_checkpoint,
+    save_manifest,
+    sync_manifest_progress,
 )
-from src.trading.competition.replay.runner import run_replay_single_day
+from src.trading.competition.replay.firestore_store import sync_replay_campaign
 from src.trading.competition.replay.finalize import finalize_full_audit_campaign, is_campaign_ended
 from src.trading.competition.replay.final_report import build_replay_final_report, save_final_report
 from src.trading.competition.replay.period import (
@@ -23,15 +31,19 @@ from src.trading.competition.replay.period import (
     FULL_AUDIT_START,
     is_full_audit_complete,
 )
+from src.trading.competition.replay.reports import (
+    _month_key_from_date,
+    build_replay_monthly_reports,
+    build_replay_weekly_reports,
+    save_campaign_reports,
+)
+from src.trading.competition.replay.runner import run_replay_single_day
 from src.trading.competition.replay.slack_reports import (
     send_fatal_replay_error,
     send_final_report_link,
     send_monthly_report_link,
     send_weekly_report_link,
 )
-from src.trading.competition.runtime import COMPETITION_ROOT
-
-CAMPAIGNS_ROOT = COMPETITION_ROOT / "replay" / "campaigns"
 
 
 def run_replay_campaign(
@@ -40,157 +52,278 @@ def run_replay_campaign(
     end_date: str | None = None,
     *,
     force_mock: bool = False,
-    send_slack_reports: bool = False,
+    send_slack_reports: bool = True,
     slack_dry_run: bool = False,
     run_audit_ai: bool = False,
+    campaign_id: str | None = None,
+    resume_existing_campaign: bool = False,
+    chunk_size_trading_days: int = 5,
 ) -> dict[str, Any]:
     os.environ["COMPETITION_EXECUTION_MODE"] = (
         "replay_audit" if replay_type == "full_audit" else "replay_smoke"
     )
     os.environ.setdefault("COMPETITION_LIVE_SCHEDULE_DISABLED", "1")
 
+    period_start = start_date
+    period_end = end_date or start_date
     if replay_type == "full_audit":
+        period_start = FULL_AUDIT_START
+        period_end = FULL_AUDIT_END
         start_date = FULL_AUDIT_START
         end_date = FULL_AUDIT_END
 
-    dates, date_meta = resolve_replay_dates_with_meta(replay_type, start_date, end_date)
-    if not dates:
-        detail = date_meta.get("error") or "; ".join(date_meta.get("errors") or []) or "unknown"
-        err = {
-            "ok": False,
-            "error": "data_collection_failed",
-            "sub_error": "no_trading_dates",
-            "replay_type": replay_type,
-            "date_resolution": date_meta,
+    chunk_size = chunk_size_trading_days
+    env_cap = int(os.getenv("REPLAY_MAX_DAYS", "0") or "0")
+    if env_cap > 0:
+        chunk_size = min(chunk_size, env_cap)
+
+    if resume_existing_campaign:
+        if not campaign_id:
+            return {"ok": False, "error": "campaign_id_required_for_resume"}
+        if not camp_dir(campaign_id).is_dir():
+            return {"ok": False, "error": "campaign_not_found", "campaign_id": campaign_id}
+        manifest = load_manifest(campaign_id)
+        if is_terminal_status(manifest.get("competition_status")):
+            return {
+                "ok": True,
+                "campaign_id": campaign_id,
+                "competition_status": manifest.get("competition_status"),
+                "already_completed": True,
+                "progress_label": manifest.get("progress_label"),
+                "needs_resume": False,
+            }
+        planned_dates = list(
+            manifest.get("planned_trading_dates") or manifest.get("trading_dates") or []
+        )
+        replay_type = str(manifest.get("replay_type") or replay_type)
+    else:
+        if campaign_id:
+            return {
+                "ok": False,
+                "error": "campaign_id_only_with_resume",
+                "hint": "Set resume_existing_campaign=true to continue",
+            }
+        dates, date_meta = resolve_replay_dates_with_meta(replay_type, start_date, end_date)
+        if not dates:
+            detail = date_meta.get("error") or "; ".join(date_meta.get("errors") or []) or "unknown"
+            err = {
+                "ok": False,
+                "error": "data_collection_failed",
+                "sub_error": "no_trading_dates",
+                "replay_type": replay_type,
+                "date_resolution": date_meta,
+            }
+            if send_slack_reports:
+                err["slack"] = send_fatal_replay_error(
+                    f"REPLAY 거래일 조회 실패 (KIS·pykrx 모두 실패): {detail}",
+                    dry_run=slack_dry_run,
+                )
+            return err
+        planned_dates = dates
+        period_start = planned_dates[0]
+        period_end = planned_dates[-1]
+        campaign_id = new_campaign_id(replay_type, period_start, period_end)
+        camp_dir(campaign_id).mkdir(parents=True, exist_ok=True)
+        manifest = init_campaign_manifest(
+            campaign_id=campaign_id,
+            replay_type=replay_type,
+            planned_dates=planned_dates,
+            chunk_size=chunk_size,
+            period_start=period_start,
+            period_end=period_end,
+        )
+        save_checkpoint(
+            campaign_id,
+            {
+                "campaign_id": campaign_id,
+                "planned_trading_dates": planned_dates,
+                "completed_dates": {},
+                "run_ids": [],
+                "accounts": None,
+            },
+        )
+        save_manifest(campaign_id, manifest)
+        sync_replay_campaign(campaign_id, manifest)
+
+    remaining, checkpoint = remaining_trading_dates(campaign_id)
+    if not remaining:
+        manifest = load_manifest(campaign_id)
+        return {
+            **manifest,
+            "ok": True,
+            "chunk_processed_dates": [],
+            "already_completed": is_terminal_status(manifest.get("competition_status")),
         }
-        if send_slack_reports:
-            err["slack"] = send_fatal_replay_error(
-                f"REPLAY 거래일 조회 실패 (KIS·pykrx 모두 실패): {detail}",
-                dry_run=slack_dry_run,
-            )
-        return err
 
-    max_days = int(os.getenv("REPLAY_MAX_DAYS", "0") or "0")
-    if max_days > 0:
-        dates = dates[:max_days]
-
-    campaign_id = f"{replay_type}_{dates[0]}_{dates[-1]}_{uuid.uuid4().hex[:6]}"
-    camp_dir = CAMPAIGNS_ROOT / campaign_id
-    camp_dir.mkdir(parents=True, exist_ok=True)
-
-    accounts: dict[str, dict[str, Any]] | None = None
-    run_ids: list[str] = []
+    chunk_dates = remaining[:chunk_size]
+    accounts = checkpoint.get("accounts")
+    if accounts:
+        accounts = dict(accounts)
+    run_ids = list(checkpoint.get("run_ids") or [])
     leakage_statuses: list[str] = []
+    chunk_new_dates: list[str] = []
     last_day_result: dict[str, Any] | None = None
 
-    for trading_date in dates:
+    for trading_date in chunk_dates:
         if is_campaign_ended(campaign_id):
             return {
                 "ok": False,
                 "campaign_id": campaign_id,
                 "error": "campaign_already_ended",
-                "competition_status": "ended",
+                "competition_status": load_manifest(campaign_id).get("competition_status"),
             }
+
+        existing_run = find_run_for_trading_date(campaign_id, trading_date)
+        if existing_run:
+            loaded = load_accounts_from_run(existing_run)
+            if loaded:
+                accounts = loaded
+            if existing_run not in run_ids:
+                run_ids.append(existing_run)
+            checkpoint = mark_day_completed(
+                campaign_id,
+                trading_date=trading_date,
+                replay_run_id=existing_run,
+                accounts=accounts or {},
+                checkpoint=checkpoint,
+            )
+            continue
 
         day_result = run_replay_single_day(
             trading_date,
             accounts=accounts,
             campaign_id=campaign_id,
             force_mock=force_mock,
-            run_audit_ai=run_audit_ai and trading_date == dates[-1],
+            run_audit_ai=run_audit_ai and trading_date == planned_dates[-1],
             sync_firestore=True,
         )
         if not day_result.get("ok") and day_result.get("error"):
-            manifest = {
-                "ok": False,
-                "campaign_id": campaign_id,
-                "replay_type": replay_type,
-                "error": day_result.get("error"),
-                "run_ids": run_ids,
-            }
-            (camp_dir / "manifest.json").write_text(
-                json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+            manifest = load_manifest(campaign_id)
+            manifest.update(
+                {
+                    "ok": False,
+                    "error": day_result.get("error"),
+                    "failed_trading_date": trading_date,
+                    "chunk_processed_dates": chunk_new_dates,
+                }
+            )
+            sync_manifest_progress(
+                campaign_id, manifest, checkpoint, planned_dates=planned_dates
             )
             if send_slack_reports:
                 manifest["slack"] = send_fatal_replay_error(
-                    f"REPLAY 중단: {day_result.get('error')}", dry_run=slack_dry_run
+                    f"REPLAY chunk 중단 ({trading_date}): {day_result.get('error')}",
+                    dry_run=slack_dry_run,
                 )
             return manifest
 
         accounts = day_result.get("accounts")
-        run_ids.append(day_result["replay_run_id"])
+        rid = day_result["replay_run_id"]
+        checkpoint = mark_day_completed(
+            campaign_id,
+            trading_date=trading_date,
+            replay_run_id=rid,
+            accounts=accounts or {},
+            checkpoint=checkpoint,
+        )
+        run_ids = list(checkpoint.get("run_ids") or [])
         leakage_statuses.append(str(day_result.get("leakage_summary") or ""))
+        chunk_new_dates.append(trading_date)
         last_day_result = day_result
 
-    leakage_summary = "PASS" if all(s == "PASS" for s in leakage_statuses if s) else "LIMITED"
-    if "FAIL" in leakage_statuses:
+    manifest = load_manifest(campaign_id)
+    manifest = sync_manifest_progress(
+        campaign_id, manifest, checkpoint, planned_dates=planned_dates
+    )
+
+    all_leakage = list(manifest.get("leakage_statuses") or [])
+    all_leakage.extend(leakage_statuses)
+    leakage_summary = "PASS" if all(s == "PASS" for s in all_leakage if s) else "LIMITED"
+    if "FAIL" in all_leakage:
         leakage_summary = "FAIL"
+    manifest["leakage_summary"] = leakage_summary
+    manifest["leakage_statuses"] = all_leakage
 
     weekly = build_replay_weekly_reports(campaign_id, run_ids, leakage_summary=leakage_summary)
     monthly = build_replay_monthly_reports(campaign_id, run_ids, leakage_summary=leakage_summary)
     report_sync = save_campaign_reports(campaign_id, weekly, monthly)
+    manifest["weekly_report_keys"] = [r["week_key"] for r in weekly]
+    manifest["monthly_report_keys"] = [r["month_key"] for r in monthly]
+    manifest["report_sync"] = report_sync
+
+    remaining_after, _ = remaining_trading_dates(campaign_id)
+    campaign_complete = len(remaining_after) == 0
+
+    slack_out: dict[str, Any] = {"weekly": None, "monthly": None, "final": None}
+    sent_weekly = list(manifest.get("slack_sent_weekly_keys") or [])
+    sent_monthly = list(manifest.get("slack_sent_monthly_keys") or [])
+
+    if send_slack_reports and chunk_new_dates:
+        wk = chunk_week_key_for_slack(chunk_new_dates)
+        if wk and wk not in sent_weekly:
+            rep = next((r for r in weekly if r.get("week_key") == wk), None)
+            if rep:
+                slack_out["weekly"] = send_weekly_report_link(
+                    rep, campaign_id=campaign_id, dry_run=slack_dry_run
+                )
+                sent_weekly.append(wk)
 
     final_report: dict[str, Any] | None = None
-    full_audit_ended = bool(
-        replay_type == "full_audit" and accounts and dates and is_full_audit_complete(dates[-1])
-    )
-    if full_audit_ended:
-        ended_manifest = finalize_full_audit_campaign(
-            campaign_id,
-            accounts,
-            last_trading_date=dates[-1],
-            run_ids=run_ids,
-        )
-        accounts = ended_manifest.get("final_accounts") or accounts
-        final_report = build_replay_final_report(
-            campaign_id,
-            run_ids,
-            accounts,
-            last_trading_date=dates[-1],
-            leakage_summary=leakage_summary,
-            last_manifest=last_day_result,
-        )
-        final_report["save"] = save_final_report(campaign_id, final_report)
+    full_audit_ended = False
 
-    slack_out: dict[str, Any] = {"weekly": [], "monthly": [], "final": None}
-    if send_slack_reports:
-        for rep in weekly:
-            slack_out["weekly"].append(
-                send_weekly_report_link(rep, campaign_id=campaign_id, dry_run=slack_dry_run)
+    if campaign_complete:
+        last_date = planned_dates[-1]
+        if replay_type == "full_audit" and is_full_audit_complete(last_date):
+            full_audit_ended = True
+            ended_manifest = finalize_full_audit_campaign(
+                campaign_id,
+                accounts or {},
+                last_trading_date=last_date,
+                run_ids=run_ids,
             )
-        for rep in monthly:
-            slack_out["monthly"].append(
-                send_monthly_report_link(rep, campaign_id=campaign_id, dry_run=slack_dry_run)
+            accounts = ended_manifest.get("final_accounts") or accounts
+            manifest.update(ended_manifest)
+            final_report = build_replay_final_report(
+                campaign_id,
+                run_ids,
+                accounts or {},
+                last_trading_date=last_date,
+                leakage_summary=leakage_summary,
+                last_manifest=last_day_result,
             )
-        if full_audit_ended and final_report:
-            slack_out["final"] = send_final_report_link(
-                final_report, campaign_id=campaign_id, dry_run=slack_dry_run
-            )
+            final_report["save"] = save_final_report(campaign_id, final_report)
+            manifest["final_report_id"] = final_report.get("report_id")
+            manifest["competition_status"] = "ended"
+            manifest["decisions_frozen"] = True
+            if send_slack_reports and final_report:
+                slack_out["final"] = send_final_report_link(
+                    final_report, campaign_id=campaign_id, dry_run=slack_dry_run
+                )
+        else:
+            manifest["competition_status"] = "month_completed"
+            manifest["decisions_frozen"] = True
+            mk = _month_key_from_date(planned_dates[-1])
+            if send_slack_reports and mk not in sent_monthly:
+                rep = next((r for r in monthly if r.get("month_key") == mk), None)
+                if rep:
+                    slack_out["monthly"] = send_monthly_report_link(
+                        rep, campaign_id=campaign_id, dry_run=slack_dry_run
+                    )
+                    sent_monthly.append(mk)
 
-    manifest = {
-        "ok": leakage_summary != "FAIL",
-        "campaign_id": campaign_id,
-        "replay_type": replay_type,
-        "start_date": dates[0],
-        "end_date": dates[-1],
-        "trading_dates": dates,
-        "run_ids": run_ids,
-        "leakage_summary": leakage_summary,
-        "weekly_report_keys": [r["week_key"] for r in weekly],
-        "monthly_report_keys": [r["month_key"] for r in monthly],
-        "affects_live_account": False,
-        "execution_mode": os.environ.get("COMPETITION_EXECUTION_MODE"),
-        "report_sync": report_sync,
-        "final_report_id": final_report.get("report_id") if final_report else None,
-        "competition_status": "ended" if full_audit_ended else "active",
-        "decisions_frozen": full_audit_ended,
-        "period_start": FULL_AUDIT_START if replay_type == "full_audit" else dates[0],
-        "period_end": FULL_AUDIT_END if replay_type == "full_audit" else dates[-1],
-        "final_accounts": accounts if full_audit_ended else None,
-        "slack": slack_out if send_slack_reports else {"skipped": True},
-    }
-    (camp_dir / "manifest.json").write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    manifest["slack_sent_weekly_keys"] = sent_weekly
+    manifest["slack_sent_monthly_keys"] = sent_monthly
+    manifest["slack"] = slack_out if send_slack_reports else {"skipped": True}
+    manifest["ok"] = leakage_summary != "FAIL"
+    manifest["chunk_processed_dates"] = chunk_new_dates
+    manifest["chunk_size_trading_days"] = chunk_size
+    manifest["needs_resume"] = not campaign_complete and not full_audit_ended
+    manifest["execution_mode"] = os.environ.get("COMPETITION_EXECUTION_MODE")
+    manifest["trading_dates"] = planned_dates
+    manifest["start_date"] = planned_dates[0]
+    manifest["end_date"] = planned_dates[-1]
+
+    manifest["campaign_id"] = campaign_id
+    sync_manifest_progress(campaign_id, manifest, checkpoint, planned_dates=planned_dates)
     sync_replay_campaign(campaign_id, manifest)
     return manifest

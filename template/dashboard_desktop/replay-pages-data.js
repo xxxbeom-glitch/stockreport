@@ -33,6 +33,33 @@
     return fetchPublicJson("/index.json");
   }
 
+  function loadCampaignMeta(campaignId) {
+    return loadIndex().then(function (idx) {
+      return (idx.campaigns || {})[campaignId] || null;
+    });
+  }
+
+  function listResumableCampaigns() {
+    return loadIndex().then(function (idx) {
+      var camps = idx.campaigns || {};
+      return Object.keys(camps)
+        .filter(function (cid) {
+          var c = camps[cid];
+          return c && c.needsResume && c.competitionStatus === "active";
+        })
+        .map(function (cid) {
+          var c = camps[cid];
+          return {
+            campaignId: cid,
+            progressLabel: c.progressLabel,
+            nextTradingDate: c.nextTradingDate,
+            daysCompleted: c.daysCompleted,
+            daysTotal: c.daysTotal,
+          };
+        });
+    });
+  }
+
   function loadRunDashboard(runId) {
     return fetchPublicJson("/runs/" + encodeURIComponent(runId) + "/dashboard.json");
   }
@@ -112,6 +139,8 @@
     replayPublicDataRoot: replayPublicDataRoot,
     loadRunDashboard: loadRunDashboard,
     loadCampaignBundle: loadCampaignBundle,
+    loadCampaignMeta: loadCampaignMeta,
+    listResumableCampaigns: listResumableCampaigns,
     listRunsFromIndex: listRunsFromIndex,
     mergeReports: mergeReports,
   };

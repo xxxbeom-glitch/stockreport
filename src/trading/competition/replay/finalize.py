@@ -29,7 +29,7 @@ def is_campaign_ended(campaign_id: str | None) -> bool:
     if not campaign_id:
         return False
     manifest = load_campaign_manifest(campaign_id)
-    return manifest.get("competition_status") == "ended"
+    return manifest.get("competition_status") in ("ended", "month_completed")
 
 
 def mark_accounts_to_market(

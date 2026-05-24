@@ -60,6 +60,22 @@ def main() -> int:
     parser.add_argument("--no-slack", action="store_true", help="Disable Slack report links")
     parser.add_argument("--slack-dry-run", action="store_true")
     parser.add_argument("--run-audit-ai", action="store_true")
+    parser.add_argument(
+        "--campaign-id",
+        default="",
+        help="Existing campaign id (required when --resume-existing-campaign)",
+    )
+    parser.add_argument(
+        "--resume-existing-campaign",
+        action="store_true",
+        help="Continue an in-progress campaign from checkpoint",
+    )
+    parser.add_argument(
+        "--chunk-size-trading-days",
+        type=int,
+        default=5,
+        help="Max trading days per Actions run (default 5)",
+    )
     args = parser.parse_args()
 
     end = args.end_date.strip() or None
@@ -83,6 +99,9 @@ def main() -> int:
             send_slack_reports=not args.no_slack,
             slack_dry_run=args.slack_dry_run,
             run_audit_ai=args.run_audit_ai,
+            campaign_id=args.campaign_id.strip() or None,
+            resume_existing_campaign=args.resume_existing_campaign,
+            chunk_size_trading_days=max(1, args.chunk_size_trading_days),
         )
 
     print(json.dumps(result, ensure_ascii=False, indent=2))

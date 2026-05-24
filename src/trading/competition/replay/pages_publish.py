@@ -118,6 +118,14 @@ def publish_campaign_reports(campaign_id: str) -> dict[str, list[str]]:
 def _campaign_meta(campaign_id: str) -> dict[str, Any]:
     manifest_path = LOCAL_REPLAY_ROOT / "campaigns" / campaign_id / "manifest.json"
     m = _read_json(manifest_path)
+    planned = m.get("planned_trading_dates") or m.get("trading_dates") or []
+    completed = m.get("completed_trading_dates") or list((m.get("completed_dates") or {}).keys())
+    n_done = m.get("days_completed")
+    if n_done is None:
+        n_done = len(completed)
+    n_total = m.get("days_total")
+    if n_total is None:
+        n_total = len(planned)
     return {
         "campaignId": campaign_id,
         "replayType": m.get("replay_type"),
@@ -125,6 +133,14 @@ def _campaign_meta(campaign_id: str) -> dict[str, Any]:
         "endDate": m.get("end_date"),
         "leakageSummary": m.get("leakage_summary"),
         "competitionStatus": m.get("competition_status"),
+        "needsResume": m.get("needs_resume"),
+        "nextTradingDate": m.get("next_trading_date"),
+        "progressLabel": m.get("progress_label"),
+        "daysCompleted": n_done,
+        "daysTotal": n_total,
+        "lastCompletedDate": m.get("last_completed_date"),
+        "weeklyReportKeys": m.get("weekly_report_keys") or [],
+        "monthlyReportKeys": m.get("monthly_report_keys") or [],
     }
 
 
