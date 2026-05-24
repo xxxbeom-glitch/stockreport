@@ -1968,6 +1968,24 @@
         </article>
       </section>
 
+      <section class="weekly-section final-section" aria-label="REPLAY 최종 결과" data-ui="final-report-section" hidden>
+        <article class="card content-card weekly-card">
+          <div class="content-card__header weekly-card__header">
+            <div class="weekly-card__headline">
+              <h2 class="content-card__title">REPLAY 최종 결과</h2>
+              <p class="weekly-card__sub" data-ui="final-report-sub">2026년 1~4월 AI 투자대결 최종 종합 리포트</p>
+            </div>
+          </div>
+          <div class="content-card__body weekly-card__body">
+            <div class="weekly-kpi-row" data-ui="final-kpi-row"></div>
+            <div class="weekly-agent-grid" data-ui="final-agent-grid"></div>
+            <div class="weekly-overall" data-ui="final-benchmark"></div>
+            <div class="weekly-overall" data-ui="final-audit"></div>
+            <div class="weekly-overall" data-ui="final-overall"></div>
+          </div>
+        </article>
+      </section>
+
       <section class="weekly-section monthly-section" aria-label="월간 성과 평가 리포트" data-ui="monthly-report-section">
         <article class="card content-card weekly-card">
           <div class="content-card__header weekly-card__header">
@@ -2362,6 +2380,7 @@
         var replayMeta = null;
         var competitionLoaded = false;
         var MONTHLY_REPORTS = {};
+        var FINAL_REPORT = null;
         var urlReportKey = null;
         var urlReportType = null;
 
@@ -2750,6 +2769,13 @@
             '<p class="audit-panel__value">' + (auditSummary.ruleViolationCount != null ? auditSummary.ruleViolationCount : "-") + "</p></div>" +
             '<div class="audit-panel__item"><p class="audit-panel__label">평가위원회</p>' +
             '<p class="audit-panel__value">' + committeeText + "</p></div>" +
+            '<div class="audit-panel__item"><p class="audit-panel__label">거래 비용 모델</p>' +
+            '<p class="audit-panel__value audit-panel__value--warn">' +
+            (auditSummary.costModel || "costs_not_implemented") + "</p>" +
+            (auditSummary.costsWarning
+              ? '<p class="audit-panel__sub audit-panel__sub--warn">' + auditSummary.costsWarning + "</p>"
+              : "") +
+            "</div>" +
             '<div class="audit-panel__item"><p class="audit-panel__label">LIVE 시작 가능</p>' +
             '<p class="audit-panel__value ' + (auditSummary.liveReady ? "audit-panel__value--pass" : "audit-panel__value--fail") + '">' +
             (auditSummary.liveReady ? "가능" : "불가") + "</p>" +
@@ -2817,6 +2843,12 @@
           var monthlySection = document.querySelector('[data-ui="monthly-report-section"]');
           if (monthlySection) {
             monthlySection.style.display = dataMode === "replay" ? "" : "none";
+          }
+          var finalSection = document.querySelector('[data-ui="final-report-section"]');
+          if (finalSection) {
+            var showFinal = dataMode === "replay" && FINAL_REPORT;
+            finalSection.hidden = !showFinal;
+            finalSection.style.display = showFinal ? "" : "none";
           }
 
           if (banner) {
@@ -3512,11 +3544,13 @@
           if (data.notifications) NOTIFICATIONS = data.notifications;
           if (data.weeklyReports) WEEKLY_REPORTS = data.weeklyReports;
           if (data.monthlyReports) MONTHLY_REPORTS = data.monthlyReports;
+          if (data.finalReport) FINAL_REPORT = data.finalReport;
           auditSummary = data.auditSummary || null;
           teamDecisions = data.teamDecisions || [];
           replayMeta = data.replayMeta || null;
           if (data.campaignId) campaignId = data.campaignId;
           rebuildReportSelectors();
+          renderFinalReport();
           applyUrlReportFocus();
         }
 
@@ -3547,6 +3581,10 @@
         }
 
         function applyUrlReportFocus() {
+          if (urlReportType === "final" && FINAL_REPORT) {
+            renderFinalReport();
+            return;
+          }
           if (!urlReportKey) return;
           if (urlReportType === "monthly" && MONTHLY_REPORTS[urlReportKey]) {
             renderMonthlyReport(urlReportKey);
@@ -3554,6 +3592,84 @@
           }
           if (WEEKLY_REPORTS[urlReportKey]) {
             renderWeeklyReport(urlReportKey);
+          }
+        }
+
+        function renderFinalReport() {
+          var report = FINAL_REPORT;
+          var section = document.querySelector('[data-ui="final-report-section"]');
+          if (!section) return;
+          if (!report) {
+            section.hidden = true;
+            return;
+          }
+          section.hidden = false;
+          section.style.display = "";
+          var sub = document.querySelector('[data-ui="final-report-sub"]');
+          if (sub) sub.textContent = (report.period && report.period.label) || report.label || "최종 종합 리포트";
+          var kpiRow = document.querySelector('[data-ui="final-kpi-row"]');
+          var grid = document.querySelector('[data-ui="final-agent-grid"]');
+          var benchmark = document.querySelector('[data-ui="final-benchmark"]');
+          var audit = document.querySelector('[data-ui="final-audit"]');
+          var overall = document.querySelector('[data-ui="final-overall"]');
+          var teams = report.teams || [];
+          if (kpiRow && teams.length) {
+            var winner = teams[0];
+            var loser = teams[teams.length - 1];
+            kpiRow.innerHTML =
+              renderWeeklyKpiCard("최종 1위", winner.display_name || winner.team_id, signValueHtml(winner.cumulative_return_pct)) +
+              renderWeeklyKpiCard("최종 4위", loser.display_name || loser.team_id, signValueHtml(loser.cumulative_return_pct));
+          }
+          if (grid) {
+            grid.innerHTML = teams.map(function (t) {
+              var flow = (report.monthly_flow && report.monthly_flow[t.team_id]) || [];
+              var flowText = flow.map(function (m) { return m.label + " " + m.return_pct + "%"; }).join(" → ");
+              return renderWeeklyAgentCard({
+                key: t.agent_key,
+                startAsset: 500000,
+                endAsset: t.final_assets_krw,
+                returnPct: t.cumulative_return_pct,
+                contributionLabel: "최종 순위 " + t.rank,
+                contributionStock: flowText || "-",
+                contributionPnl: (t.vs_benchmark && t.vs_benchmark.alpha_pct != null) ? t.vs_benchmark.alpha_pct : 0,
+                tierEval: "REPLAY full_audit 종료",
+                selfEval: (report.committee_verdicts && report.committee_verdicts[t.team_id]) || "",
+                nextWeek: (report.live_readiness && report.live_readiness.conclusion) || "",
+              });
+            }).join("");
+          }
+          var bm = report.benchmark || {};
+          if (benchmark) {
+            var bmLines = [
+              "KOSPI " + (bm.kospi_return_pct != null ? bm.kospi_return_pct + "%" : "미검증"),
+              "KOSDAQ " + (bm.kosdaq_return_pct != null ? bm.kosdaq_return_pct + "%" : "미검증"),
+              "가중 벤치마크(60/40) " + (bm.blended_return_pct != null ? bm.blended_return_pct + "%" : "미검증"),
+            ];
+            if (bm.note) bmLines.push(bm.note);
+            benchmark.innerHTML =
+              '<h3 class="weekly-overall__title">벤치마크 대비</h3><div class="weekly-overall__body"><ul class="weekly-overall__list">' +
+              bmLines.map(function (line) { return "<li>" + line + "</li>"; }).join("") + "</ul></div>";
+          }
+          var ac = report.audit_counts || {};
+          if (audit) {
+            audit.innerHTML =
+              '<h3 class="weekly-overall__title">감사 집계</h3><div class="weekly-overall__body"><ul class="weekly-overall__list">' +
+              "<li>미래 데이터 침범 " + (ac.future_data_leakage_count || 0) + "건</li>" +
+              "<li>규칙 위반 " + (ac.rule_violation_count || 0) + "건</li>" +
+              "<li>검증 불가 근거 " + (ac.unverified_evidence_count || 0) + "건</li>" +
+              "</ul></div>";
+          }
+          if (overall) {
+            var lines = report.overall || [];
+            if (report.best_decision) {
+              lines = lines.concat(["최고 수익 판단: " + JSON.stringify(report.best_decision)]);
+            }
+            if (report.worst_decision) {
+              lines = lines.concat(["최대 손실 판단: " + JSON.stringify(report.worst_decision)]);
+            }
+            overall.innerHTML =
+              '<h3 class="weekly-overall__title">최종 종합</h3><div class="weekly-overall__body"><ul class="weekly-overall__list">' +
+              lines.map(function (line) { return "<li>" + line + "</li>"; }).join("") + "</ul></div>";
           }
         }
 

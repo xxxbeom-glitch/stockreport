@@ -129,7 +129,20 @@ def _build_audit_summary(manifest: dict[str, Any], code_audit: dict[str, Any]) -
         committee_status = "completed"
         committee_verdict = committee.get("summary") or committee.get("conclusion")
 
-    live_ready = leakage == "PASS" and int(code_failures or 0) == 0 and not manifest.get("reset_required_before_live")
+    cost_model = str(manifest.get("cost_model") or code_audit.get("cost_model") or "costs_not_implemented")
+    costs_not_implemented = cost_model == "costs_not_implemented" or manifest.get("costs_applied") is False
+    live_ready = (
+        leakage == "PASS"
+        and int(code_failures or 0) == 0
+        and not manifest.get("reset_required_before_live")
+        and not costs_not_implemented
+    )
+    limitations = list(manifest.get("limitations") or code_audit.get("limitations") or [])
+    costs_warning = (
+        "매매 수수료·세금·제비용 미반영 — REPLAY 총자산·수익률은 비용 제외 기준 (LIVE 시작 전 P0)"
+        if costs_not_implemented
+        else None
+    )
 
     return {
         "leakageStatus": leakage,
@@ -137,7 +150,9 @@ def _build_audit_summary(manifest: dict[str, Any], code_audit: dict[str, Any]) -
         "committeeStatus": committee_status,
         "committeeVerdict": committee_verdict,
         "liveReady": live_ready,
-        "limitations": manifest.get("limitations") or code_audit.get("limitations") or [],
+        "costModel": cost_model,
+        "costsWarning": costs_warning,
+        "limitations": limitations,
         "affectsLiveAccount": manifest.get("affects_live_account", False),
     }
 
@@ -283,6 +298,12 @@ def _build_from_manifest(
 
     audit_summary = _build_audit_summary(manifest, code_audit)
     reports = load_campaign_reports(cid) if cid else {"weeklyReports": {}, "monthlyReports": {}}
+    final_report = reports.get("finalReport")
+    campaign_manifest: dict[str, Any] = {}
+    if cid:
+        from src.trading.competition.replay.finalize import load_campaign_manifest
+
+        campaign_manifest = load_campaign_manifest(cid)
 
     return {
         "dataSource": "replay",
@@ -301,6 +322,8 @@ def _build_from_manifest(
         "notifications": [],
         "weeklyReports": reports.get("weeklyReports") or {},
         "monthlyReports": reports.get("monthlyReports") or {},
+        "finalReport": final_report,
+        "competitionStatus": campaign_manifest.get("competition_status"),
         "operatingDays": 1,
         "teams": {tid: agent_meta[TEAM_TO_AGENT[tid]] for tid in TEAM_IDS},
         "auditSummary": audit_summary,
@@ -333,6 +356,7 @@ def build_replay_dashboard_payload(
                 reps = load_campaign_reports(campaign_id)
                 payload["weeklyReports"] = reps.get("weeklyReports") or {}
                 payload["monthlyReports"] = reps.get("monthlyReports") or {}
+                payload["finalReport"] = reps.get("finalReport")
             return payload
         if fb and fb.get("manifest"):
             return _build_from_manifest(replay_run_id, fb["manifest"], campaign_id=campaign_id)

@@ -16,8 +16,16 @@ from src.trading.competition.replay.reports import (
     save_campaign_reports,
 )
 from src.trading.competition.replay.runner import run_replay_single_day
+from src.trading.competition.replay.finalize import finalize_full_audit_campaign, is_campaign_ended
+from src.trading.competition.replay.final_report import build_replay_final_report, save_final_report
+from src.trading.competition.replay.period import (
+    FULL_AUDIT_END,
+    FULL_AUDIT_START,
+    is_full_audit_complete,
+)
 from src.trading.competition.replay.slack_reports import (
     send_fatal_replay_error,
+    send_final_report_link,
     send_monthly_report_link,
     send_weekly_report_link,
 )
@@ -41,6 +49,10 @@ def run_replay_campaign(
     )
     os.environ.setdefault("COMPETITION_LIVE_SCHEDULE_DISABLED", "1")
 
+    if replay_type == "full_audit":
+        start_date = FULL_AUDIT_START
+        end_date = FULL_AUDIT_END
+
     dates = resolve_replay_dates(replay_type, start_date, end_date)
     if not dates:
         err = {"ok": False, "error": "no_trading_dates", "replay_type": replay_type}
@@ -59,8 +71,17 @@ def run_replay_campaign(
     accounts: dict[str, dict[str, Any]] | None = None
     run_ids: list[str] = []
     leakage_statuses: list[str] = []
+    last_day_result: dict[str, Any] | None = None
 
     for trading_date in dates:
+        if is_campaign_ended(campaign_id):
+            return {
+                "ok": False,
+                "campaign_id": campaign_id,
+                "error": "campaign_already_ended",
+                "competition_status": "ended",
+            }
+
         day_result = run_replay_single_day(
             trading_date,
             accounts=accounts,
@@ -89,6 +110,7 @@ def run_replay_campaign(
         accounts = day_result.get("accounts")
         run_ids.append(day_result["replay_run_id"])
         leakage_statuses.append(str(day_result.get("leakage_summary") or ""))
+        last_day_result = day_result
 
     leakage_summary = "PASS" if all(s == "PASS" for s in leakage_statuses if s) else "LIMITED"
     if "FAIL" in leakage_statuses:
@@ -98,7 +120,29 @@ def run_replay_campaign(
     monthly = build_replay_monthly_reports(campaign_id, run_ids, leakage_summary=leakage_summary)
     report_sync = save_campaign_reports(campaign_id, weekly, monthly)
 
-    slack_out: dict[str, Any] = {"weekly": [], "monthly": []}
+    final_report: dict[str, Any] | None = None
+    full_audit_ended = bool(
+        replay_type == "full_audit" and accounts and dates and is_full_audit_complete(dates[-1])
+    )
+    if full_audit_ended:
+        ended_manifest = finalize_full_audit_campaign(
+            campaign_id,
+            accounts,
+            last_trading_date=dates[-1],
+            run_ids=run_ids,
+        )
+        accounts = ended_manifest.get("final_accounts") or accounts
+        final_report = build_replay_final_report(
+            campaign_id,
+            run_ids,
+            accounts,
+            last_trading_date=dates[-1],
+            leakage_summary=leakage_summary,
+            last_manifest=last_day_result,
+        )
+        final_report["save"] = save_final_report(campaign_id, final_report)
+
+    slack_out: dict[str, Any] = {"weekly": [], "monthly": [], "final": None}
     if send_slack_reports:
         for rep in weekly:
             slack_out["weekly"].append(
@@ -107,6 +151,10 @@ def run_replay_campaign(
         for rep in monthly:
             slack_out["monthly"].append(
                 send_monthly_report_link(rep, campaign_id=campaign_id, dry_run=slack_dry_run)
+            )
+        if full_audit_ended and final_report:
+            slack_out["final"] = send_final_report_link(
+                final_report, campaign_id=campaign_id, dry_run=slack_dry_run
             )
 
     manifest = {
@@ -123,6 +171,12 @@ def run_replay_campaign(
         "affects_live_account": False,
         "execution_mode": os.environ.get("COMPETITION_EXECUTION_MODE"),
         "report_sync": report_sync,
+        "final_report_id": final_report.get("report_id") if final_report else None,
+        "competition_status": "ended" if full_audit_ended else "active",
+        "decisions_frozen": full_audit_ended,
+        "period_start": FULL_AUDIT_START if replay_type == "full_audit" else dates[0],
+        "period_end": FULL_AUDIT_END if replay_type == "full_audit" else dates[-1],
+        "final_accounts": accounts if full_audit_ended else None,
         "slack": slack_out if send_slack_reports else {"skipped": True},
     }
     (camp_dir / "manifest.json").write_text(

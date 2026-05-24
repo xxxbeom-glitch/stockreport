@@ -74,9 +74,10 @@ def resolve_replay_dates(
         return list_trading_dates(f"{y}{m:02d}01", month_end)
 
     if replay_type == "full_audit":
-        start = start_date or "20260101"
-        end = end_date or "20260430"
-        return list_trading_dates(start, end)
+        from src.trading.competition.replay.period import FULL_AUDIT_END, FULL_AUDIT_START
+
+        _ = start_date, end_date
+        return list_trading_dates(FULL_AUDIT_START, FULL_AUDIT_END)
 
     if replay_type == "custom":
         if not end_date:

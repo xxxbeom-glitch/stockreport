@@ -71,7 +71,8 @@ class ReplayAuditSystemTest(unittest.TestCase):
 
     def test_workflow_live_schedule_disabled(self) -> None:
         wf = (ROOT / ".github" / "workflows" / "competition_auto_ops.yml").read_text(encoding="utf-8")
-        self.assertIn("LIVE schedule disabled", wf)
+        self.assertIn("COMPETITION_LIVE_SCHEDULE_DISABLED", wf)
+        self.assertIn("PAUSED until REPLAY", wf)
         self.assertIsNone(re.search(r"^  schedule:\s*$", wf, re.MULTILINE))
 
     def test_replay_workflow_exists(self) -> None:

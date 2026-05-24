@@ -53,10 +53,14 @@ class ReplayCalendarTests(unittest.TestCase):
     def test_smoke_single_date(self) -> None:
         self.assertEqual(resolve_replay_dates("smoke_1day", "20241218"), ["20241218"])
 
-    def test_full_audit_range(self) -> None:
-        with patch("src.trading.competition.replay.calendar._is_session_date", return_value=True):
-            dates = resolve_replay_dates("full_audit", "20260105", "20260109")
-        self.assertEqual(len(dates), 5)
+    def test_full_audit_uses_fixed_period(self) -> None:
+        with patch("src.trading.competition.replay.calendar.list_trading_dates") as mock_list:
+            mock_list.return_value = ["20260102", "20260103"]
+            from src.trading.competition.replay.period import FULL_AUDIT_END, FULL_AUDIT_START
+
+            dates = resolve_replay_dates("full_audit", "20241218", "20241220")
+        mock_list.assert_called_once_with(FULL_AUDIT_START, FULL_AUDIT_END)
+        self.assertEqual(dates, ["20260102", "20260103"])
 
 
 class ReplayFirestoreIsolationTests(unittest.TestCase):

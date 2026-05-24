@@ -30,6 +30,7 @@ COLLECTION_REPLAY_RUNS: Final[str] = "competition_replay_runs"
 COLLECTION_REPLAY_CAMPAIGNS: Final[str] = "competition_replay_campaigns"
 COLLECTION_REPLAY_WEEKLY_REPORTS: Final[str] = "competition_replay_weekly_reports"
 COLLECTION_REPLAY_MONTHLY_REPORTS: Final[str] = "competition_replay_monthly_reports"
+COLLECTION_REPLAY_FINAL_REPORTS: Final[str] = "competition_replay_final_reports"
 
 CONFIG_DOC_ID: Final[str] = "app"
 

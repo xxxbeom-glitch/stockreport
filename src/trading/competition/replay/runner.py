@@ -114,6 +114,23 @@ def run_replay_single_day(
     run_audit_ai: bool = False,
     sync_firestore: bool = True,
 ) -> dict[str, Any]:
+    from src.trading.competition.replay.finalize import is_campaign_ended
+    from src.trading.competition.replay.period import FULL_AUDIT_END
+
+    if campaign_id and is_campaign_ended(campaign_id):
+        return {
+            "ok": False,
+            "error": "campaign_ended_no_new_decisions",
+            "campaign_id": campaign_id,
+            "competition_status": "ended",
+        }
+    if trading_date > FULL_AUDIT_END:
+        return {
+            "ok": False,
+            "error": "trading_date_after_full_audit_period",
+            "trading_date": trading_date,
+        }
+
     os.environ["COMPETITION_EXECUTION_MODE"] = "replay_smoke"
     os.environ.setdefault("COMPETITION_LIVE_SCHEDULE_DISABLED", "1")
 
@@ -282,6 +299,10 @@ def run_replay_single_day(
     if "FAIL" in leakage_statuses:
         leakage_summary = "FAIL"
 
+    cost_notice = "costs_not_implemented: 수수료·세금·제비용 미반영 (LIVE 시작 전 P0)"
+    if cost_notice not in limitations:
+        limitations.append(cost_notice)
+
     committee: dict[str, Any] = {"skipped": True, "reason": "run_audit_ai=false"}
     if run_audit_ai:
         from src.trading.competition.audit.committee import run_audit_committee
@@ -308,7 +329,9 @@ def run_replay_single_day(
         "accounts": accounts,
         "leakage_summary": leakage_summary,
         "code_audit_failures": code_audit_fails,
-        "limitations": list(set(limitations)),
+        "limitations": list(dict.fromkeys(limitations)),
+        "cost_model": "costs_not_implemented",
+        "costs_applied": False,
         "scout_meta": snapshot.get("scout_meta"),
         "committee": committee,
         **replay_meta(replay_run_id=replay_run_id, as_of_from=trading_date, as_of_to=fill_date or trading_date),

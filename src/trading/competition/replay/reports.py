@@ -217,12 +217,23 @@ def save_campaign_reports(
     return {"weekly_firestore": fs_weekly, "monthly_firestore": fs_monthly}
 
 
+def load_campaign_final_report(campaign_id: str) -> dict[str, Any] | None:
+    from src.trading.competition.replay.final_report import load_final_report
+
+    return load_final_report(campaign_id)
+
+
 def load_campaign_reports(campaign_id: str) -> dict[str, Any]:
     camp_dir = CAMPAIGNS_ROOT / campaign_id / "reports"
     weekly: dict[str, Any] = {}
     monthly: dict[str, Any] = {}
+    final_report: dict[str, Any] | None = None
+    final_path = camp_dir / "final.json"
+    if final_path.is_file():
+        final_report = _read_json(final_path)
+
     if not camp_dir.is_dir():
-        return {"weeklyReports": weekly, "monthlyReports": monthly}
+        return {"weeklyReports": weekly, "monthlyReports": monthly, "finalReport": final_report}
     for p in camp_dir.glob("weekly_*.json"):
         data = _read_json(p)
         if data:
@@ -231,4 +242,4 @@ def load_campaign_reports(campaign_id: str) -> dict[str, Any]:
         data = _read_json(p)
         if data:
             monthly[data.get("month_key") or p.stem.replace("monthly_", "")] = data
-    return {"weeklyReports": weekly, "monthlyReports": monthly}
+    return {"weeklyReports": weekly, "monthlyReports": monthly, "finalReport": final_report}

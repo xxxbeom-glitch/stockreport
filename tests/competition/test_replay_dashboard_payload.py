@@ -8,6 +8,7 @@ from pathlib import Path
 
 from src.trading.competition.dashboard.payload import build_dashboard_payload
 from src.trading.competition.dashboard.replay_payload import (
+    _build_audit_summary,
     build_replay_dashboard_payload,
     list_replay_runs,
 )
@@ -38,6 +39,15 @@ class ReplayDashboardPayloadTests(unittest.TestCase):
         self.assertIn("auditSummary", replay)
         self.assertIn("teamDecisions", replay)
         self.assertNotIn("auditSummary", live)
+
+    def test_replay_costs_warning_visible(self) -> None:
+        summary = _build_audit_summary(
+            {"cost_model": "costs_not_implemented", "costs_applied": False, "leakage_summary": "PASS"},
+            {},
+        )
+        self.assertEqual(summary["costModel"], "costs_not_implemented")
+        self.assertTrue(summary["costsWarning"])
+        self.assertFalse(summary["liveReady"])
 
     def test_replay_manifest_roundtrip(self) -> None:
         for manifest_path in REPLAY_ROOT.glob("*/manifest.json"):

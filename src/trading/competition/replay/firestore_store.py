@@ -7,6 +7,7 @@ from typing import Any
 
 from src.trading.competition.constants import (
     COLLECTION_REPLAY_CAMPAIGNS,
+    COLLECTION_REPLAY_FINAL_REPORTS,
     COLLECTION_REPLAY_MONTHLY_REPORTS,
     COLLECTION_REPLAY_RUNS,
     COLLECTION_REPLAY_WEEKLY_REPORTS,
@@ -59,6 +60,21 @@ def sync_replay_weekly_report(report_id: str, report: dict[str, Any]) -> dict[st
 
 def sync_replay_monthly_report(report_id: str, report: dict[str, Any]) -> dict[str, Any]:
     return _set_doc(COLLECTION_REPLAY_MONTHLY_REPORTS, report_id, report)
+
+
+def sync_replay_final_report(report_id: str, report: dict[str, Any]) -> dict[str, Any]:
+    return _set_doc(COLLECTION_REPLAY_FINAL_REPORTS, report_id, report)
+
+
+def load_replay_final_report_firestore(report_id: str) -> dict[str, Any] | None:
+    client, _ = firestore_client()
+    if not client:
+        return None
+    try:
+        snap = client.collection(COLLECTION_REPLAY_FINAL_REPORTS).document(report_id).get()
+        return snap.to_dict() if snap.exists else None
+    except Exception:
+        return None
 
 
 def load_replay_run_firestore(replay_run_id: str) -> dict[str, Any] | None:
