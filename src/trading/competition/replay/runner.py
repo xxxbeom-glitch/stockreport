@@ -171,6 +171,38 @@ def run_replay_single_day(
         primary="KIS" if prov.get("kis_configured") else None,
         fallback="pykrx" if prov.get("pykrx_available") else None,
     )
+
+    if prov.get("kis_configured"):
+        from data.kis_client import preflight_kis_auth
+
+        kis_auth = preflight_kis_auth()
+        obs.log_api_connection(
+            "kis_auth",
+            ok=bool(kis_auth.get("ok")),
+            token_issue_calls=kis_auth.get("token_issue_calls"),
+            http_status=kis_auth.get("http_status"),
+            msg_cd=kis_auth.get("msg_cd"),
+            msg1=kis_auth.get("msg1"),
+            app_key_len=kis_auth.get("app_key_len"),
+            app_secret_len=kis_auth.get("app_secret_len"),
+        )
+        if not kis_auth.get("ok"):
+            err = str(kis_auth.get("error") or "kis_auth_failed")
+            obs.log_pipeline("kis_preflight", "error", **{k: v for k, v in kis_auth.items() if k != "ok"})
+            obs.finalize(
+                {"ok": False, "replay_run_id": replay_run_id},
+                status="kis_auth_failed",
+                failure_summary=err,
+                force_mock=force_mock,
+                campaign_progress=campaign_progress,
+            )
+            return {
+                "ok": False,
+                "replay_run_id": replay_run_id,
+                "error": "kis_auth_failed",
+                "kis_auth": kis_auth,
+            }
+
     obs.log_pipeline("run_start", "ok", force_mock=force_mock)
 
     snapshot = build_close_snapshot(trading_date)

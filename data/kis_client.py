@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import requests
 from dotenv import load_dotenv
+from requests import HTTPError
 
 import config
 
@@ -119,20 +121,58 @@ def _credentials_ready() -> bool:
     return bool(config.KIS_APP_KEY and config.KIS_APP_SECRET)
 
 
-def _app_key_secret() -> tuple[str, str]:
-    app_key = config.KIS_APP_KEY
-    app_secret = config.KIS_APP_SECRET
-    if len(app_key) > len(app_secret) * 2:
-        return app_secret, app_key
-    return app_key, app_secret
+def credentials_diagnostics() -> dict[str, Any]:
+    """Safe env check — never logs secret values."""
+    return {
+        "configured": _credentials_ready(),
+        "app_key_len": len((config.KIS_APP_KEY or "").strip()),
+        "app_secret_len": len((config.KIS_APP_SECRET or "").strip()),
+        "base_url": BASE_URL,
+        "token_path": str(TOKEN_CACHE_PATH),
+    }
+
+
+def _kis_app_credentials() -> tuple[str, str]:
+    """Use KIS_APP_KEY / KIS_APP_SECRET as documented (no silent swap)."""
+    return (config.KIS_APP_KEY or "").strip(), (config.KIS_APP_SECRET or "").strip()
+
+
+def _safe_kis_error_from_response(res: requests.Response) -> dict[str, Any]:
+    meta: dict[str, Any] = {"http_status": res.status_code}
+    text = (res.text or "").strip()
+    if not text:
+        return meta
+    try:
+        body = res.json()
+        if isinstance(body, dict):
+            for key in ("msg_cd", "msg1", "error_code", "error_description", "rt_cd"):
+                val = body.get(key)
+                if val not in (None, ""):
+                    meta[key] = str(val)[:500]
+    except json.JSONDecodeError:
+        meta["body_prefix"] = text[:200]
+    return meta
 
 
 class KISClient:
     """KIS OpenAPI wrapper with token cache and safe None fallbacks."""
 
+    _token_lock = threading.Lock()
+
     def __init__(self) -> None:
         self.base_url = BASE_URL
         self.token_cache_path = TOKEN_CACHE_PATH
+        self._memory_token: str | None = None
+        self._memory_issued_at: datetime | None = None
+        self._token_issue_calls: int = 0
+        self.last_auth_error: dict[str, Any] = {}
+
+    def _token_still_valid(self) -> bool:
+        return bool(
+            self._memory_token
+            and self._memory_issued_at
+            and _now() - self._memory_issued_at < TOKEN_TTL
+        )
 
     def _read_cached_token(self) -> str | None:
         if not self.token_cache_path.exists():
@@ -142,6 +182,8 @@ class KISClient:
             token = str(data.get("access_token", ""))
             issued_at = datetime.fromisoformat(str(data.get("issued_at", "")).replace("Z", "+00:00"))
             if token and _now() - issued_at < TOKEN_TTL:
+                self._memory_token = token
+                self._memory_issued_at = issued_at
                 return token
         except Exception as exc:
             logger.debug("KIS token cache read failed: %s", exc)
@@ -149,49 +191,89 @@ class KISClient:
 
     def _write_cached_token(self, token: str) -> None:
         self.token_cache_path.parent.mkdir(parents=True, exist_ok=True)
-        payload = {"access_token": token, "issued_at": _now().isoformat()}
+        issued = _now()
+        self._memory_issued_at = issued
+        payload = {"access_token": token, "issued_at": issued.isoformat()}
         self.token_cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    def _get_token(self, force_refresh: bool = False) -> str | None:
-        """Issue and cache access_token (valid ~1 day)."""
-        if not _credentials_ready():
-            return None
-        if not force_refresh:
-            cached = self._read_cached_token()
-            if cached:
-                return cached
+    def _issue_token_http(self) -> dict[str, Any]:
+        """Single POST /oauth2/tokenP — caller must hold _token_lock."""
+        self._token_issue_calls += 1
+        app_key, app_secret = _kis_app_credentials()
         url = f"{self.base_url}/oauth2/tokenP"
-        app_key, app_secret = _app_key_secret()
         body = {"grant_type": "client_credentials", "appkey": app_key, "appsecret": app_secret}
         try:
             res = requests.post(url, json=body, timeout=15)
-            res.raise_for_status()
+            if res.status_code >= 400:
+                meta = _safe_kis_error_from_response(res)
+                meta.update({"ok": False, "error": "kis_auth_failed", "endpoint": "/oauth2/tokenP"})
+                logger.warning("KIS token issue failed: %s", meta)
+                return meta
             text = (res.text or "").strip()
             if not text:
+                meta = {"ok": False, "error": "kis_auth_failed", "http_status": res.status_code, "detail": "empty_body"}
                 logger.warning("KIS token issue empty response status=%s", res.status_code)
-                return None
+                return meta
             try:
                 payload = res.json()
             except json.JSONDecodeError:
-                logger.warning(
-                    "KIS token issue non-json status=%s body_prefix=%r",
-                    res.status_code,
-                    text[:120],
-                )
-                return None
+                meta = {
+                    "ok": False,
+                    "error": "kis_auth_failed",
+                    "http_status": res.status_code,
+                    "body_prefix": text[:200],
+                }
+                logger.warning("KIS token issue non-json: %s", meta)
+                return meta
             token = str(payload.get("access_token", ""))
-            if token:
-                self._write_cached_token(token)
-                return token
+            if not token:
+                meta = {"ok": False, "error": "kis_auth_failed", "http_status": res.status_code, "detail": "no_access_token"}
+                meta.update({k: payload.get(k) for k in ("msg_cd", "msg1") if payload.get(k)})
+                logger.warning("KIS token issue missing access_token: %s", meta)
+                return meta
+            self._memory_token = token
+            self._write_cached_token(token)
+            return {"ok": True, "http_status": res.status_code}
+        except HTTPError as exc:
+            res = exc.response
+            meta = _safe_kis_error_from_response(res) if res is not None else {"http_status": None}
+            meta.update({"ok": False, "error": "kis_auth_failed", "detail": type(exc).__name__})
+            logger.warning("KIS token issue HTTP error: %s", meta)
+            return meta
         except Exception as exc:
-            logger.warning("KIS token issue failed: %s", exc)
-        return None
+            meta = {"ok": False, "error": "kis_auth_failed", "detail": type(exc).__name__}
+            logger.warning("KIS token issue failed: %s", meta)
+            return meta
+
+    def ensure_token(self, *, force_refresh: bool = False) -> str | None:
+        """Thread-safe token: memory → disk → one tokenP issue."""
+        if not _credentials_ready():
+            self.last_auth_error = {"ok": False, "error": "kis_credentials_missing"}
+            return None
+        with self._token_lock:
+            if not force_refresh and self._token_still_valid():
+                return self._memory_token
+            if not force_refresh and not self._memory_token:
+                cached = self._read_cached_token()
+                if cached:
+                    return cached
+            if force_refresh:
+                self._memory_token = None
+                self._memory_issued_at = None
+            result = self._issue_token_http()
+            self.last_auth_error = result
+            if result.get("ok"):
+                return self._memory_token
+            return None
+
+    def _get_token(self, force_refresh: bool = False) -> str | None:
+        return self.ensure_token(force_refresh=force_refresh)
 
     def _headers(self, tr_id: str) -> dict[str, str] | None:
-        token = self._get_token()
+        token = self.ensure_token()
         if not token:
             return None
-        app_key, app_secret = _app_key_secret()
+        app_key, app_secret = _kis_app_credentials()
         return {
             "content-type": "application/json; charset=utf-8",
             "authorization": f"Bearer {token}",
@@ -208,7 +290,9 @@ class KISClient:
         try:
             res = requests.get(f"{self.base_url}{path}", headers=headers, params=params, timeout=15)
             if res.status_code in {401, 403}:
-                self._get_token(force_refresh=True)
+                meta = _safe_kis_error_from_response(res)
+                logger.warning("KIS GET auth error tr_id=%s %s", tr_id, meta)
+                self.ensure_token(force_refresh=True)
                 headers = self._headers(tr_id)
                 if not headers:
                     return None
@@ -229,9 +313,21 @@ class KISClient:
                 )
                 return None
             if str(data.get("rt_cd", "0")) not in {"0", ""}:
-                logger.debug("KIS rt_cd error %s: %s", tr_id, data.get("msg1"))
+                logger.warning(
+                    "KIS rt_cd error tr_id=%s msg_cd=%s msg1=%s",
+                    tr_id,
+                    data.get("msg_cd"),
+                    data.get("msg1"),
+                )
                 return None
             return data
+        except HTTPError as exc:
+            res = exc.response
+            if res is not None:
+                logger.warning("KIS GET HTTP error tr_id=%s %s", tr_id, _safe_kis_error_from_response(res))
+            else:
+                logger.debug("KIS GET failed %s: %s", tr_id, exc)
+            return None
         except Exception as exc:
             logger.debug("KIS GET failed %s: %s", tr_id, exc)
             return None
@@ -552,6 +648,31 @@ def get_daily_ohlcv_range(ticker: str, start_yyyymmdd: str, end_yyyymmdd: str) -
 
 def credentials_ready() -> bool:
     return _credentials_ready()
+
+
+def preflight_kis_auth(*, force_refresh: bool = False) -> dict[str, Any]:
+    """
+    Issue or reuse KIS token once before bulk REPLAY calls.
+  On failure returns kis_auth_failed with safe KIS msg_cd/msg1 (no secrets).
+    """
+    diag = credentials_diagnostics()
+    if not diag["configured"]:
+        return {**diag, "ok": False, "error": "kis_credentials_missing"}
+
+    client = _client()
+    token = client.ensure_token(force_refresh=force_refresh)
+    out: dict[str, Any] = {
+        **diag,
+        "ok": bool(token),
+        "token_issue_calls": client._token_issue_calls,
+    }
+    if token:
+        out["token_source"] = "memory_or_disk_cache"
+        return out
+    err = dict(client.last_auth_error or {})
+    err.setdefault("error", "kis_auth_failed")
+    out.update(err)
+    return out
 
 
 def get_top_volume(market: str = "KOSPI", n: int = 5) -> list[dict[str, Any]] | None:

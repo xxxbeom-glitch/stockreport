@@ -235,10 +235,21 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
     Build as-of trading_date eligible universe for REPLAY snapshot.
     Never calls pykrx without KRX_ID/KRX_PW.
     """
+    from src.trading.competition.replay.data_provider import _kis_ready
     from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
 
     counts = UniverseStageCounts(trading_date=trading_date)
     base: list[dict[str, Any]] = []
+
+    if _kis_ready() and not krx_credentials_configured():
+        from data.kis_client import preflight_kis_auth
+
+        auth = preflight_kis_auth()
+        if not auth.get("ok"):
+            counts.collection_errors.append(str(auth.get("error") or "kis_auth_failed"))
+            counts.filter_exclusion_counts = {"kis_auth_failed": 1}
+            logger.error("replay_universe kis_auth_failed %s", auth)
+            return [], counts
 
     if krx_credentials_configured():
         base, errs = collect_all_stocks(trading_date)
