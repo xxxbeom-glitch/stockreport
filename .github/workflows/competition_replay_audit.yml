@@ -1,4 +1,4 @@
-name: REPLAY · 과거 투자 검증
+name: "REPLAY · 과거 투자 검증"
 
 on:
   workflow_dispatch:
