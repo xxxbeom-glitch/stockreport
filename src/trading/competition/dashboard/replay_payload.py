@@ -479,6 +479,9 @@ def build_campaign_dashboard_payload(
     payload["latestReplayRunId"] = latest_run_id
     payload["campaignId"] = campaign_id
     payload["competitionStatus"] = manifest.get("competition_status")
+    from src.trading.competition.replay.validation_contract import load_campaign_validation_status
+
+    validation = load_campaign_validation_status(campaign_id)
     payload["campaignProgress"] = {
         "campaignId": campaign_id,
         "replayType": manifest.get("replay_type"),
@@ -493,7 +496,20 @@ def build_campaign_dashboard_payload(
         "lastCompletedDate": manifest.get("last_completed_date"),
         "doNotResume": manifest.get("do_not_resume"),
         "campaignKind": manifest.get("campaign_kind"),
+        "performanceStatus": validation.get("performanceStatus"),
+        "formalStrategyPerformanceAllowed": validation.get("formalStrategyPerformanceAllowed"),
+        "validationDashboardLabel": validation.get("dashboardLabel"),
     }
+    payload["campaignValidation"] = {
+        "performanceStatus": validation.get("performanceStatus"),
+        "formalStrategyPerformanceAllowed": bool(validation.get("formalStrategyPerformanceAllowed")),
+        "dashboardLabel": validation.get("dashboardLabel"),
+        "unverifiedItems": validation.get("unverifiedItems") or [],
+        "contractDocument": validation.get("contractDocument"),
+    }
+    if payload.get("replayMeta") is not None:
+        payload["replayMeta"]["performanceStatus"] = validation.get("performanceStatus")
+        payload["replayMeta"]["formalStrategyPerformanceAllowed"] = validation.get("formalStrategyPerformanceAllowed")
 
     trade_history: dict[str, list] = {f"agent{i}": [] for i in range(1, 5)}
     fill_date = synthetic_manifest.get("fill_date") or ""

@@ -1,0 +1,22 @@
+{
+  "campaignId": "month_20260102_20260130_1b51cb",
+  "replayType": "month",
+  "startDate": "20260102",
+  "endDate": "20260130",
+  "competitionStatus": "month_completed",
+  "needsResume": false,
+  "progressLabel": "1월 리플레이 진행 중 · 7 / 7 거래일 완료",
+  "daysCompleted": 7,
+  "daysTotal": 7,
+  "doNotResume": false,
+  "performanceStatus": "development_validation_only",
+  "formalStrategyPerformanceAllowed": false,
+  "validationDashboardLabel": "개발 검증 데이터 (정식 전략 성과 아님)",
+  "unverifiedItemIds": [
+    "C_SUPPLY_HISTORICAL",
+    "UNIVERSE_AS_OF_DATE",
+    "RISK_AS_OF_DATE"
+  ],
+  "dashboardPath": "campaigns/month_20260102_20260130_1b51cb/dashboard.json",
+  "validationStatusPath": "campaigns/month_20260102_20260130_1b51cb/validation_status.json"
+}

@@ -19,6 +19,7 @@ from src.trading.competition.replay.observability import (
     load_run_public_audit_summary,
 )
 from src.trading.competition.replay.reports import load_campaign_reports
+from src.trading.competition.replay.validation_contract import merge_validation_into_meta
 from src.trading.competition.runtime import COMPETITION_ROOT
 
 KST = ZoneInfo("Asia/Seoul")
@@ -157,6 +158,7 @@ def publish_campaign_meta(campaign_id: str) -> Path | None:
         "canonicalCampaignId": manifest.get("canonical_campaign_id"),
         "dashboardPath": f"campaigns/{campaign_id}/dashboard.json",
     }
+    meta = merge_validation_into_meta(meta, campaign_id)
     path = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "meta.json"
     _write_json(path, meta)
     return path
