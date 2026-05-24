@@ -88,6 +88,26 @@ class WorkflowSafetyTest(unittest.TestCase):
         ):
             self.assertIn(key, self.text)
 
+    def test_workflow_korean_display_name(self) -> None:
+        self.assertRegex(self.text, r"^name: AI 투자 경쟁 자동 운용", re.MULTILINE)
+
+    def test_slack_test_input_present(self) -> None:
+        self.assertIn("test_slack:", self.text)
+        self.assertIn("Slack 연결 테스트 메시지 발송", self.text)
+
+    def test_slack_test_step_gated(self) -> None:
+        block = self._block("Send Slack connection test message")
+        self.assertIn("inputs.test_slack == true", block)
+        self.assertIn("test_competition_slack.py", block)
+
+    def test_slack_test_excludes_session_and_writes(self) -> None:
+        session_block = self._block("Run competition session (live)")
+        self.assertIn("inputs.test_slack != true", session_block)
+        init_block = self._block("Init competition accounts (idempotent)")
+        self.assertIn("inputs.test_slack != true", init_block)
+        event_block = self._block("Event scan (no persist)")
+        self.assertIn("inputs.test_slack != true", event_block)
+
 
 if __name__ == "__main__":
     if str(ROOT) not in sys.path:
