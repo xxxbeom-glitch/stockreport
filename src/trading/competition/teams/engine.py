@@ -48,9 +48,22 @@ def _call_llm_json(provider: str, model: str, prompt: str, *, agent: str) -> dic
 
 
 def _build_prompt(team_input: dict[str, Any]) -> str:
+    import os
+
+    replay_note = ""
+    if (os.getenv("COMPETITION_EXECUTION_MODE") or "").startswith("replay"):
+        replay_note = (
+            "REPLAY MODE: Use ONLY the JSON INPUT below. "
+            "No web search, no external API calls, no prices or news after decision_at. "
+            "If data is insufficient, return HOLD or WAIT.\n"
+        )
     return (
+        f"{replay_note}"
         "You are an AI trading team. Return ONLY valid JSON matching the decision schema.\n"
-        "Rules: HOLD/WAIT if uncertain; BUY requires evidence_ids, target_price, review_conditions.\n"
+        "Required fields for BUY: action, ticker, quantity, allocation_krw, order_type, "
+        "target_price, reason_label, reason_detail, review_conditions (array), evidence_ids (array).\n"
+        "Rules: HOLD/WAIT if uncertain; BUY requires evidence_ids from INPUT, target_price, review_conditions.\n"
+        "reason_label must be a short Korean label (required).\n"
         f"INPUT:\n{json.dumps(team_input, ensure_ascii=False)}"
     )
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.trading.competition.runtime import assert_live_session_allowed
+
 from src.trading.competition.decision.pipeline import run_trigger_build
 from src.trading.competition.decision.triggers import build_all_decision_triggers
 from src.trading.competition.execution.accounting import capture_team_snapshots
@@ -28,6 +30,7 @@ def run_competition_session(
     venue: str = "KRX",
 ) -> dict[str, Any]:
     """End-to-end: triggers → decisions → validate/fill → execute → expire pending → snapshot."""
+    assert_live_session_allowed()
     session_ctx = get_session_context()
 
     if persist_triggers and not dry_run:

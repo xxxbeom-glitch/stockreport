@@ -19,14 +19,20 @@ on:
         description: "휴장일/거래시간 외 Slack 알림 테스트 (시장 닫힘일 때만 발송)"
         type: boolean
         default: false
-  schedule:
-    # KST regular session window approximations (UTC)
-    - cron: "0 0 * * 1-5"   # 09:00 KST — session open prep
-    - cron: "30 6 * * 1-5"  # 15:30 KST — regular close
-    - cron: "30 7 * * 1-5"  # 16:30 KST — after-hours
-    - cron: "0 11 * * 5"     # 20:00 KST Fri — session end + weekly report window
+      reset_competition_seed:
+        description: "seed run 데이터 초기화 (4팀 50만원 복원, 수동 확인 필요)"
+        type: boolean
+        default: false
+  # LIVE schedule disabled until replay validation passes (see docs/ai_trading_competition/REPLAY_AUDIT_SYSTEM_FINAL_REPORT.md)
+  # To re-enable: restore schedule block and set COMPETITION_LIVE_SCHEDULE_DISABLED=0 in workflow env.
+  # schedule:
+  #   - cron: "0 0 * * 1-5"
+  #   - cron: "30 6 * * 1-5"
+  #   - cron: "30 7 * * 1-5"
+  #   - cron: "0 11 * * 5"
 
 env:
+  COMPETITION_LIVE_SCHEDULE_DISABLED: "1"
   # LLM API keys (Repository Secrets)
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
   DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -107,35 +113,46 @@ jobs:
           echo "Ran: readiness, KST session/holiday check, Slack closed notice (only when market not tradable)."
           echo "Skipped: account init, triggers, session, weekly report, AI, Firebase writes."
 
+      - name: Reset competition seed data
+        if: github.event_name == 'workflow_dispatch' && inputs.reset_competition_seed == true
+        run: python scripts/reset_competition_seed.py --confirm
+
+      - name: Seed reset complete summary
+        if: github.event_name == 'workflow_dispatch' && inputs.reset_competition_seed == true
+        run: |
+          echo "Competition seed reset complete."
+          echo "Ran: clear seed trades/decisions/snapshots, restore 4 teams to 500,000 KRW cash."
+          echo "Skipped: mock_trading, schedule live session, AI, new seed run."
+
       - name: Reject ambiguous manual live inputs
-        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == false && inputs.live_llm == false
+        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == false && inputs.live_llm == false
         run: |
           echo "::error::Manual session refused: set dry_run=false AND live_llm=true to run a live session."
           echo "dry_run=false with live_llm=false is ambiguous and may write accounts/trades — not allowed."
           exit 1
 
       - name: Init competition accounts (idempotent)
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == false && inputs.live_llm == true)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == false && inputs.live_llm == true)
         run: python scripts/init_competition_accounts.py
 
       - name: Verify competition isolation (manual safe check)
-        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == true
+        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == true
         run: python scripts/init_competition_accounts.py --verify-isolation
 
       - name: Event scan (no persist)
-        if: github.event_name != 'workflow_dispatch' || inputs.test_slack != true && inputs.test_market_closed_notice != true
+        if: github.event_name != 'workflow_dispatch' || inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true
         run: python scripts/run_competition_event_scan.py --eligible-only --dry-run || true
 
       - name: Build decision triggers (live persist)
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == false && inputs.live_llm == true)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == false && inputs.live_llm == true)
         run: python scripts/build_decision_triggers.py --no-market-enrich
 
       - name: Build decision triggers (manual dry-run, no persist)
-        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == true
+        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == true
         run: python scripts/build_decision_triggers.py --no-market-enrich --dry-run
 
       - name: Run competition session (live)
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == false && inputs.live_llm == true)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == false && inputs.live_llm == true)
         env:
           COMPETITION_SLACK_DRY_RUN: "0"
         run: python scripts/run_competition_session.py --live-llm
@@ -145,14 +162,14 @@ jobs:
         run: python -c "from src.trading.competition.ops.weekly_report import build_weekly_report; build_weekly_report(force=True)"
 
       - name: Manual dry-run summary
-        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == true
+        if: github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == true
         run: |
           echo "Manual dry-run complete."
           echo "Ran: readiness, isolation verify, event scan (--dry-run), trigger build (--dry-run)."
           echo "Skipped: account init, session, weekly report, Slack send."
 
       - name: Upload competition data artifact
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.dry_run == false && inputs.live_llm == true)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.test_slack != true && inputs.test_market_closed_notice != true && inputs.reset_competition_seed != true && inputs.dry_run == false && inputs.live_llm == true)
         uses: actions/upload-artifact@v4
         with:
           name: competition-data

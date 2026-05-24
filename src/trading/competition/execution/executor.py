@@ -41,6 +41,8 @@ def execute_decision(
     session_id: str = "",
     fill_price: float | None = None,
     order_status: str = "filled",
+    executed_at: str | None = None,
+    execution_meta: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create order + trade and update account/positions."""
     action = str(decision.get("action") or "")
@@ -60,7 +62,8 @@ def execute_decision(
 
     order_id = f"ord_{uuid.uuid4().hex[:12]}"
     trade_id = f"trd_{uuid.uuid4().hex[:12]}"
-    ts = now_kst_iso()
+    ts = executed_at or now_kst_iso()
+    meta = dict(execution_meta or {})
 
     account = load_account(team_id)
     if not account:
@@ -157,6 +160,7 @@ def execute_decision(
         "idempotency_key": decision.get("decision_id", ""),
         "created_at": ts,
         "updated_at": ts,
+        **meta,
     }
     trade = {
         "trade_id": trade_id,
@@ -173,6 +177,7 @@ def execute_decision(
         "reason_label": decision.get("reason_label", ""),
         "reason_detail": decision.get("reason_detail", ""),
         "executed_at": ts,
+        **meta,
     }
 
     append_order(order)

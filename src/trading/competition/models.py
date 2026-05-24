@@ -284,6 +284,8 @@ class AppConfig:
     fee_buy_rate: float = 0.0
     fee_sell_rate: float = 0.0
     tax_sell_rate: float = 0.0
+    run_mode: str = "live"
+    seed_run: dict[str, Any] = field(default_factory=dict)
     updated_at: str = field(default_factory=now_kst_iso)
 
     def to_firestore(self) -> dict[str, Any]:
@@ -298,6 +300,8 @@ class AppConfig:
             fee_buy_rate=float(data.get("fee_buy_rate", 0)),
             fee_sell_rate=float(data.get("fee_sell_rate", 0)),
             tax_sell_rate=float(data.get("tax_sell_rate", 0)),
+            run_mode=str(data.get("run_mode", "live")),
+            seed_run=dict(data.get("seed_run") or {}),
             updated_at=data.get("updated_at", now_kst_iso()),
         )
 

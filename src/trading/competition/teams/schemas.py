@@ -84,6 +84,13 @@ def normalize_decision(data: dict[str, Any]) -> dict[str, Any]:
     out["allocation_krw"] = int(out.get("allocation_krw") or 0)
     out["evidence_ids"] = list(out.get("evidence_ids") or [])
     out["review_conditions"] = list(out.get("review_conditions") or [])
+    order_type = str(data.get("order_type") or "")
+    if order_type.upper() in VALID_ORDER_TYPES:
+        out["order_type"] = order_type.upper()
+    elif out.get("action") in ORDER_ACTIONS:
+        out["order_type"] = "MARKET"
+    else:
+        out["order_type"] = "NONE"
     if out.get("action") in ("HOLD", "WAIT"):
         out["order_type"] = "NONE"
         out["ticker"] = out.get("ticker")

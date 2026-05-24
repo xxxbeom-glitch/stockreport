@@ -1,0 +1,100 @@
+name: AI 투자 경쟁 리플레이 검증
+
+on:
+  workflow_dispatch:
+    inputs:
+      replay_type:
+        description: "smoke_1day | short_5days | month | custom"
+        type: choice
+        options:
+          - smoke_1day
+          - short_5days
+          - month
+          - custom
+        default: smoke_1day
+      start_date:
+        description: "YYYYMMDD (smoke_1day ignores end_date)"
+        type: string
+        default: "20260522"
+      end_date:
+        description: "YYYYMMDD (optional for smoke)"
+        type: string
+        default: "20260522"
+      run_audit_ai:
+        description: "Run audit committee AI evaluation"
+        type: boolean
+        default: false
+      send_slack_summary:
+        description: "Send REPLAY summary to Slack"
+        type: boolean
+        default: true
+      persist_replay_results:
+        description: "Save to data/competition/replay/ only"
+        type: boolean
+        default: true
+      use_mock_llm:
+        description: "Use mock LLM (no API calls)"
+        type: boolean
+        default: false
+
+env:
+  COMPETITION_EXECUTION_MODE: replay_smoke
+  COMPETITION_LIVE_SCHEDULE_DISABLED: "1"
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  COMPETITION_A_MAIN_MODEL: deepseek-v4-flash
+  COMPETITION_A_PARTNER_MODEL: gemini-2.5-flash-lite
+  COMPETITION_B_MAIN_MODEL: gemini-2.5-flash-lite
+  COMPETITION_B_PARTNER_MODEL: deepseek-v4-flash
+  COMPETITION_C_MAIN_MODEL: deepseek-v4-flash
+  COMPETITION_C_VALIDATOR_MODEL: gemini-2.5-flash-lite
+  COMPETITION_D_MAIN_MODEL: gemini-2.5-flash-lite
+  COMPETITION_D_VALIDATOR_MODEL: deepseek-v4-pro
+  COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TRADING }}
+  FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+  FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+jobs:
+  replay-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt || pip install pykrx pandas requests google-generativeai openai firebase-admin
+
+      - name: Guard — no live session
+        run: |
+          python -c "
+          import os
+          os.environ['COMPETITION_EXECUTION_MODE']='replay_smoke'
+          from src.trading.competition.runtime import assert_live_session_allowed
+          try:
+              assert_live_session_allowed()
+              raise SystemExit('live session should be blocked')
+          except RuntimeError:
+              print('live session correctly blocked in replay mode')
+          "
+
+      - name: Run REPLAY smoke
+        if: inputs.persist_replay_results == true
+        env:
+          COMPETITION_EXECUTION_MODE: replay_smoke
+        run: |
+          ARGS="--date ${{ inputs.start_date }}"
+          if [ "${{ inputs.use_mock_llm }}" = "true" ]; then ARGS="$ARGS --mock-llm"; fi
+          if [ "${{ inputs.send_slack_summary }}" != "true" ]; then ARGS="$ARGS --no-slack"; fi
+          if [ "${{ inputs.run_audit_ai }}" = "true" ]; then ARGS="$ARGS --run-audit-ai"; fi
+          python scripts/run_competition_replay.py $ARGS
+
+      - name: Upload replay artifact
+        if: inputs.persist_replay_results == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: competition-replay-${{ inputs.start_date }}
+          path: data/competition/replay/

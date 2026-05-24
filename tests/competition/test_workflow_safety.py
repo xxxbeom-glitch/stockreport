@@ -100,7 +100,12 @@ class WorkflowSafetyTest(unittest.TestCase):
         self.assertIn("inputs.test_slack == true", block)
         self.assertIn("test_competition_slack.py", block)
 
-    def test_slack_test_excludes_session_and_writes(self) -> None:
+    def test_live_schedule_disabled_in_workflow(self) -> None:
+        self.assertIn("LIVE schedule disabled", self.text)
+        self.assertIsNone(re.search(r"^  schedule:\s*$", self.text, re.MULTILINE))
+
+    def test_live_schedule_disabled_env(self) -> None:
+        self.assertIn("COMPETITION_LIVE_SCHEDULE_DISABLED", self.text)
         session_block = self._block("Run competition session (live)")
         self.assertIn("inputs.test_slack != true", session_block)
         init_block = self._block("Init competition accounts (idempotent)")
