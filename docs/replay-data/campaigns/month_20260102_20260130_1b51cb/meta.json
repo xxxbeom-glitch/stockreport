@@ -25,7 +25,7 @@
   "batchStatus": "checkpoint_waiting_resume",
   "publicStatus": "자동 재개 대기",
   "resumeReason": "kis_request_budget_reached",
-  "lastBatchAt": "2026-05-25T05:45:53+09:00",
+  "lastBatchAt": "2026-05-25T06:42:00+09:00",
   "kisRequestsUsed": 80,
   "kisRequestsBudget": 80,
   "lastBatchKisRequests": 80,
