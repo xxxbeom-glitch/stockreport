@@ -76,6 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -104,9 +106,35 @@ jobs:
         if: inputs.resume_existing_campaign != true
         run: python scripts/find_replay_campaign.py >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Run REPLAY
-        if: inputs.persist_replay_results == true
-        id: replay
+      - name: Run REPLAY (resume existing campaign)
+        if: inputs.persist_replay_results == true && inputs.resume_existing_campaign == true
+        id: replay_resume
+        env:
+          COMPETITION_EXECUTION_MODE: replay_smoke
+          REPLAY_RESUME_CAMPAIGN: "true"
+          REPLAY_CAMPAIGN_ID: ${{ inputs.campaign_id }}
+        run: |
+          set -o pipefail
+          if [ -z "${REPLAY_CAMPAIGN_ID}" ]; then
+            echo "campaign_id is required when resume_existing_campaign=true"
+            exit 1
+          fi
+          ARGS="--replay-type ${{ inputs.replay_type }} --date ${{ inputs.start_date }}"
+          ARGS="$ARGS --chunk-size-trading-days ${{ inputs.chunk_size_trading_days }}"
+          ARGS="$ARGS --result-out replay_result.json"
+          ARGS="$ARGS --resume-existing-campaign --campaign-id ${REPLAY_CAMPAIGN_ID}"
+          if [ -n "${{ inputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ inputs.end_date }}"; fi
+          if [ "${{ inputs.use_mock_llm }}" = "true" ]; then ARGS="$ARGS --mock-llm"; fi
+          if [ "${{ inputs.send_slack_reports }}" != "true" ]; then ARGS="$ARGS --no-slack"; fi
+          if [ "${{ inputs.run_audit_ai }}" = "true" ]; then ARGS="$ARGS --run-audit-ai"; fi
+          python scripts/run_competition_replay.py $ARGS
+          EXIT_CODE=$?
+          python scripts/replay_workflow_outputs.py replay_result.json
+          exit $EXIT_CODE
+
+      - name: Run REPLAY (new campaign)
+        if: inputs.persist_replay_results == true && inputs.resume_existing_campaign != true
+        id: replay_new
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
         run: |
@@ -118,13 +146,18 @@ jobs:
           if [ "${{ inputs.use_mock_llm }}" = "true" ]; then ARGS="$ARGS --mock-llm"; fi
           if [ "${{ inputs.send_slack_reports }}" != "true" ]; then ARGS="$ARGS --no-slack"; fi
           if [ "${{ inputs.run_audit_ai }}" = "true" ]; then ARGS="$ARGS --run-audit-ai"; fi
-          if [ "${{ inputs.resume_existing_campaign }}" = "true" ]; then
-            ARGS="$ARGS --resume-existing-campaign --campaign-id ${{ inputs.campaign_id }}"
-          fi
           python scripts/run_competition_replay.py $ARGS
           EXIT_CODE=$?
           python scripts/replay_workflow_outputs.py replay_result.json
           exit $EXIT_CODE
+
+      - name: Resolve replay outputs
+        if: inputs.persist_replay_results == true && always()
+        id: replay
+        run: |
+          if [ -f replay_result.json ]; then
+            python scripts/replay_workflow_outputs.py replay_result.json
+          fi
 
       - name: Publish public REPLAY JSON for GitHub Pages
         if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
@@ -145,11 +178,33 @@ jobs:
           git add docs/replay-data/
           if git diff --staged --quiet; then
             echo "No public replay JSON changes — skip commit"
-            exit 0
+          else
+            git commit -m "chore: publish replay report data"
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
-          git commit -m "chore: publish replay report data"
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+      - uses: actions/configure-pages@v5
+        if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
+        with:
+          path: .
+
+      - id: pages_deploy
+        uses: actions/deploy-pages@v4
+        if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
+        environment:
+          name: github-pages
+          url: ${{ steps.pages_deploy.outputs.page_url }}
+
+      - name: Pages URL summary
+        if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true' && steps.pages_deploy.outputs.page_url != ''
+        run: |
+          echo "## GitHub Pages" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Dashboard base: ${{ steps.pages_deploy.outputs.page_url }}template/dashboard_desktop/?mode=replay" >> "$GITHUB_STEP_SUMMARY"
+          echo "- campaign_id: \`${{ steps.replay.outputs.campaign_id }}\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload replay artifact
         if: inputs.persist_replay_results == true

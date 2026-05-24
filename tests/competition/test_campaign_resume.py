@@ -298,6 +298,153 @@ class CampaignChunkRunTests(unittest.TestCase):
             mock_run.assert_called_once()
             self.assertEqual(mock_run.call_args[0][0], "20260103")
 
+    def test_resume_must_not_create_new_campaign_id(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dates = ["20260102", "20260103", "20260106", "20260107", "20260108", "20260109"]
+            patches = [
+                mock.patch.object(cr, "CAMPAIGNS_ROOT", root / "campaigns"),
+                mock.patch.object(cr, "COMPETITION_ROOT", root),
+                mock.patch.object(finalize_mod, "CAMPAIGNS_ROOT", root / "campaigns"),
+            ]
+            with patches[0], patches[1], patches[2]:
+                with mock.patch(
+                    "src.trading.competition.replay.campaign.is_campaign_ended",
+                    return_value=False,
+                ):
+                    with mock.patch(
+                        "src.trading.competition.replay.campaign.resolve_replay_dates_with_meta",
+                        return_value=(dates, {"ok": True}),
+                    ):
+                        with mock.patch(
+                            "src.trading.competition.replay.campaign.ensure_campaign_for_resume",
+                            return_value=(False, {}, "campaign_not_found_firestore"),
+                        ):
+                            r = campaign_mod.run_replay_campaign(
+                                "month",
+                                "20260102",
+                                None,
+                                send_slack_reports=False,
+                                resume_existing_campaign=True,
+                                campaign_id="month_20260102_20260130_1b51cb",
+                            )
+            self.assertFalse(r.get("ok"))
+            self.assertEqual(r.get("error"), "campaign_not_found_firestore")
+            self.assertTrue(r.get("resume_requested"))
+
+    def test_resume_continues_from_day_six_after_five_completed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            cid = "month_20260102_20260130_1b51cb"
+            planned = [
+                "20260102",
+                "20260105",
+                "20260106",
+                "20260107",
+                "20260108",
+                "20260109",
+                "20260112",
+            ]
+            completed_runs = {
+                d: f"replay_{d}_done" for d in planned[:5]
+            }
+            for d, rid in completed_runs.items():
+                run_dir = root / "replay" / rid
+                run_dir.mkdir(parents=True)
+                (run_dir / "manifest.json").write_text(
+                    json.dumps(
+                        {
+                            "replay_run_id": rid,
+                            "campaign_id": cid,
+                            "trading_date": d,
+                            "accounts": {
+                                "A": {"cash_krw": 400000, "positions": [], "total_assets_krw": 400000}
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+            manifest = cr.init_campaign_manifest(
+                campaign_id=cid,
+                replay_type="month",
+                planned_dates=planned,
+                chunk_size=5,
+                period_start="20260102",
+                period_end="20260130",
+            )
+            manifest["days_completed"] = 5
+            manifest["days_total"] = 21
+            manifest["completed_trading_dates"] = list(planned[:5])
+            manifest["completed_dates"] = completed_runs
+            manifest["run_ids"] = list(completed_runs.values())
+            manifest["next_trading_date"] = "20260109"
+            manifest["needs_resume"] = True
+
+            patches = [
+                mock.patch.object(cr, "CAMPAIGNS_ROOT", root / "campaigns"),
+                mock.patch.object(cr, "COMPETITION_ROOT", root),
+                mock.patch.object(finalize_mod, "CAMPAIGNS_ROOT", root / "campaigns"),
+            ]
+            call_dates: list[str] = []
+
+            def fake_day(trading_date: str, **kwargs: object) -> dict[str, object]:
+                call_dates.append(trading_date)
+                return {
+                    "ok": True,
+                    "replay_run_id": f"replay_{trading_date}_new",
+                    "accounts": {"A": {"cash_krw": 300000, "positions": [], "total_assets_krw": 300000}},
+                    "leakage_summary": "PASS",
+                }
+
+            with patches[0], patches[1], patches[2]:
+                cr.save_manifest(cid, manifest)
+                cr.save_checkpoint(
+                    cid,
+                    {
+                        "campaign_id": cid,
+                        "planned_trading_dates": planned,
+                        "completed_dates": completed_runs,
+                        "run_ids": list(completed_runs.values()),
+                        "accounts": {"A": {"cash_krw": 400000, "positions": [], "total_assets_krw": 400000}},
+                    },
+                )
+                with mock.patch(
+                    "src.trading.competition.replay.campaign.is_campaign_ended",
+                    return_value=False,
+                ):
+                    with mock.patch(
+                        "src.trading.competition.replay.campaign.run_replay_single_day",
+                        side_effect=fake_day,
+                    ):
+                        with mock.patch(
+                            "src.trading.competition.replay.campaign.build_replay_weekly_reports",
+                            return_value=[],
+                        ):
+                            with mock.patch(
+                                "src.trading.competition.replay.campaign.build_replay_monthly_reports",
+                                return_value=[],
+                            ):
+                                with mock.patch(
+                                    "src.trading.competition.replay.campaign.save_campaign_reports",
+                                    return_value={},
+                                ):
+                                    with mock.patch(
+                                        "src.trading.competition.replay.campaign.sync_replay_campaign",
+                                        return_value={},
+                                    ):
+                                        r = campaign_mod.run_replay_campaign(
+                                            "month",
+                                            "20260102",
+                                            None,
+                                            send_slack_reports=False,
+                                            resume_existing_campaign=True,
+                                            campaign_id=cid,
+                                            chunk_size_trading_days=5,
+                                        )
+            self.assertEqual(r.get("campaign_id"), cid)
+            self.assertEqual(call_dates, ["20260109", "20260112"])
+            self.assertNotIn("20260102", call_dates)
+
 
 if __name__ == "__main__":
     unittest.main()

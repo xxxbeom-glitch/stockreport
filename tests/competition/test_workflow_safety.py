@@ -75,6 +75,10 @@ class WorkflowSafetyTest(unittest.TestCase):
         self.assertIn("send_slack_reports", replay)
         self.assertIn("short_5days", replay)
         self.assertIn("run_competition_replay.py", replay)
+        self.assertIn("Run REPLAY (resume existing campaign)", replay)
+        self.assertIn("inputs.resume_existing_campaign == true", replay)
+        self.assertIn("deploy-pages@v4", replay)
+        self.assertNotIn("${{ inputs.resume_existing_campaign }}\" = \"true\"", replay)
 
 
 if __name__ == "__main__":

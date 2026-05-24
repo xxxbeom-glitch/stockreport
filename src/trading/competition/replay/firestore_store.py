@@ -54,6 +54,23 @@ def sync_replay_campaign(campaign_id: str, manifest: dict[str, Any]) -> dict[str
     return _set_doc(COLLECTION_REPLAY_CAMPAIGNS, campaign_id, manifest)
 
 
+def load_replay_campaign_firestore(campaign_id: str) -> dict[str, Any] | None:
+    client, _ = firestore_client()
+    if not client:
+        return None
+    try:
+        snap = client.collection(COLLECTION_REPLAY_CAMPAIGNS).document(campaign_id).get()
+        if not snap.exists:
+            return None
+        data = snap.to_dict() or {}
+        if data.get("campaign_id") or data.get("planned_trading_dates") or data.get("run_ids"):
+            return data
+        inner = data.get("manifest")
+        return inner if isinstance(inner, dict) else data
+    except Exception:
+        return None
+
+
 def sync_replay_weekly_report(report_id: str, report: dict[str, Any]) -> dict[str, Any]:
     return _set_doc(COLLECTION_REPLAY_WEEKLY_REPORTS, report_id, report)
 

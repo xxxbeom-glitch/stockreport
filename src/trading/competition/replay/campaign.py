@@ -10,6 +10,7 @@ from src.trading.competition.replay.campaign_resume import (
     TERMINAL_STATUSES,
     camp_dir,
     chunk_week_key_for_slack,
+    ensure_campaign_for_resume,
     find_run_for_trading_date,
     init_campaign_manifest,
     is_terminal_status,
@@ -77,12 +78,35 @@ def run_replay_campaign(
     if env_cap > 0:
         chunk_size = min(chunk_size, env_cap)
 
+    requested_campaign_id = (campaign_id or "").strip()
+
     if resume_existing_campaign:
-        if not campaign_id:
+        if not requested_campaign_id:
             return {"ok": False, "error": "campaign_id_required_for_resume"}
-        if not camp_dir(campaign_id).is_dir():
-            return {"ok": False, "error": "campaign_not_found", "campaign_id": campaign_id}
-        manifest = load_manifest(campaign_id)
+        ok_resume, manifest, resume_err = ensure_campaign_for_resume(requested_campaign_id)
+        if not ok_resume:
+            return {
+                "ok": False,
+                "error": resume_err or "campaign_not_found",
+                "campaign_id": requested_campaign_id,
+                "resume_requested": True,
+                "hint": "Firestore/local에 checkpoint가 없으면 새 campaign을 만들지 않고 중단합니다.",
+            }
+        campaign_id = requested_campaign_id
+        if str(manifest.get("campaign_id") or campaign_id) != requested_campaign_id:
+            return {
+                "ok": False,
+                "error": "resume_campaign_id_mismatch",
+                "requested_campaign_id": requested_campaign_id,
+                "loaded_campaign_id": manifest.get("campaign_id"),
+            }
+        if manifest.get("do_not_resume") or manifest.get("campaign_kind") == "duplicate_restart":
+            return {
+                "ok": False,
+                "error": "campaign_marked_duplicate_do_not_resume",
+                "campaign_id": campaign_id,
+                "canonical_campaign_id": manifest.get("canonical_campaign_id"),
+            }
         if is_terminal_status(manifest.get("competition_status")):
             return {
                 "ok": True,
@@ -96,8 +120,9 @@ def run_replay_campaign(
             manifest.get("planned_trading_dates") or manifest.get("trading_dates") or []
         )
         replay_type = str(manifest.get("replay_type") or replay_type)
+        manifest["resume_mode"] = True
     else:
-        if campaign_id:
+        if requested_campaign_id:
             return {
                 "ok": False,
                 "error": "campaign_id_only_with_resume",
@@ -123,6 +148,13 @@ def run_replay_campaign(
         period_start = planned_dates[0]
         period_end = planned_dates[-1]
         campaign_id = new_campaign_id(replay_type, period_start, period_end)
+        if resume_existing_campaign:
+            return {
+                "ok": False,
+                "error": "resume_must_not_create_new_campaign",
+                "requested_campaign_id": requested_campaign_id,
+                "created_campaign_id": campaign_id,
+            }
         camp_dir(campaign_id).mkdir(parents=True, exist_ok=True)
         manifest = init_campaign_manifest(
             campaign_id=campaign_id,
@@ -324,6 +356,13 @@ def run_replay_campaign(
     manifest["end_date"] = planned_dates[-1]
 
     manifest["campaign_id"] = campaign_id
+    if resume_existing_campaign and str(campaign_id) != requested_campaign_id:
+        return {
+            "ok": False,
+            "error": "resume_campaign_id_mismatch_after_run",
+            "requested_campaign_id": requested_campaign_id,
+            "result_campaign_id": campaign_id,
+        }
     sync_manifest_progress(campaign_id, manifest, checkpoint, planned_dates=planned_dates)
 
     from src.trading.competition.replay.observability import CampaignObservability

@@ -88,6 +88,12 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    def _env_bool(name: str) -> bool:
+        return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+    resume_flag = args.resume_existing_campaign or _env_bool("REPLAY_RESUME_CAMPAIGN")
+    campaign_id_value = (args.campaign_id.strip() or os.getenv("REPLAY_CAMPAIGN_ID", "").strip() or None)
+
     end = args.end_date.strip() or None
     os.environ["COMPETITION_EXECUTION_MODE"] = (
         "replay_audit" if args.replay_type == "full_audit" else "replay_smoke"
@@ -109,8 +115,8 @@ def main() -> int:
             send_slack_reports=not args.no_slack,
             slack_dry_run=args.slack_dry_run,
             run_audit_ai=args.run_audit_ai,
-            campaign_id=args.campaign_id.strip() or None,
-            resume_existing_campaign=args.resume_existing_campaign,
+            campaign_id=campaign_id_value,
+            resume_existing_campaign=resume_flag,
             chunk_size_trading_days=max(1, args.chunk_size_trading_days),
         )
 

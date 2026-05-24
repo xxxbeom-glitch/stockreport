@@ -73,6 +73,119 @@ def load_manifest(campaign_id: str) -> dict[str, Any]:
     return _read_json(camp_dir(campaign_id) / "manifest.json")
 
 
+def campaign_exists_locally(campaign_id: str) -> bool:
+    return (camp_dir(campaign_id) / "manifest.json").is_file()
+
+
+def hydrate_run_from_firestore(replay_run_id: str) -> bool:
+    from src.trading.competition.replay.firestore_store import load_replay_run_firestore
+
+    doc = load_replay_run_firestore(replay_run_id)
+    if not doc:
+        return False
+    manifest = doc.get("manifest") if isinstance(doc.get("manifest"), dict) else doc
+    if not manifest:
+        return False
+    run_dir = COMPETITION_ROOT / "replay" / replay_run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    _write_json(run_dir / "manifest.json", manifest)
+    return True
+
+
+def hydrate_campaign_from_firestore(campaign_id: str) -> dict[str, Any]:
+    """Restore campaign manifest/checkpoint (and run manifests) from Firestore to local mirror."""
+    from src.trading.competition.replay.firestore_store import load_replay_campaign_firestore
+
+    manifest = load_replay_campaign_firestore(campaign_id)
+    if not manifest:
+        return {}
+    manifest = dict(manifest)
+    manifest["campaign_id"] = campaign_id
+    manifest.setdefault("storage_source", "firestore_hydrate")
+
+    camp_dir(campaign_id).mkdir(parents=True, exist_ok=True)
+    save_manifest(campaign_id, manifest)
+
+    completed_map = dict(manifest.get("completed_dates") or {})
+    if not completed_map and manifest.get("run_ids"):
+        completed_map = _rebuild_completed_map(list(manifest.get("run_ids") or []))
+
+    for rid in manifest.get("run_ids") or []:
+        local_run = COMPETITION_ROOT / "replay" / rid / "manifest.json"
+        if not local_run.is_file():
+            hydrate_run_from_firestore(str(rid))
+
+    checkpoint = {
+        "campaign_id": campaign_id,
+        "planned_trading_dates": manifest.get("planned_trading_dates")
+        or manifest.get("trading_dates")
+        or [],
+        "completed_dates": completed_map,
+        "run_ids": list(manifest.get("run_ids") or []),
+        "accounts": manifest.get("accounts"),
+        "last_completed_date": manifest.get("last_completed_date"),
+    }
+    save_checkpoint(campaign_id, checkpoint)
+    return manifest
+
+
+def ensure_campaign_for_resume(
+    campaign_id: str,
+    *,
+    allow_hydrate: bool = True,
+) -> tuple[bool, dict[str, Any], str | None]:
+    """
+    Load campaign for resume. Returns (ok, manifest, error_code).
+    Never creates a new campaign_id.
+    """
+    cid = (campaign_id or "").strip()
+    if not cid:
+        return False, {}, "campaign_id_required_for_resume"
+
+    if campaign_exists_locally(cid):
+        return True, load_manifest(cid), None
+
+    if not allow_hydrate:
+        return False, {}, "campaign_not_found_local"
+
+    manifest = hydrate_campaign_from_firestore(cid)
+    if not manifest:
+        return False, {}, "campaign_not_found_firestore"
+
+    if not campaign_exists_locally(cid):
+        return False, {}, "campaign_hydrate_failed"
+
+    return True, load_manifest(cid), None
+
+
+def mark_campaign_duplicate(
+    campaign_id: str,
+    *,
+    canonical_campaign_id: str,
+    reason: str = "duplicate_restart",
+) -> dict[str, Any]:
+    """Tag mistaken duplicate campaign (do not delete)."""
+    manifest = load_manifest(campaign_id) if campaign_exists_locally(campaign_id) else {}
+    if not manifest:
+        manifest = {"campaign_id": campaign_id}
+    manifest.update(
+        {
+            "campaign_kind": "duplicate_restart",
+            "do_not_resume": True,
+            "canonical_campaign_id": canonical_campaign_id,
+            "duplicate_reason": reason,
+            "competition_status": "superseded",
+            "needs_resume": False,
+        }
+    )
+    if campaign_exists_locally(campaign_id):
+        save_manifest(campaign_id, manifest)
+    from src.trading.competition.replay.firestore_store import sync_replay_campaign
+
+    sync_replay_campaign(campaign_id, manifest)
+    return manifest
+
+
 def save_checkpoint(campaign_id: str, checkpoint: dict[str, Any]) -> None:
     _write_json(camp_dir(campaign_id) / CHECKPOINT_FILE, checkpoint)
 
@@ -97,12 +210,21 @@ def find_run_for_trading_date(campaign_id: str, trading_date: str) -> str | None
     if hit:
         return hit
     replay_root = COMPETITION_ROOT / "replay"
-    if not replay_root.is_dir():
-        return None
-    for manifest_path in replay_root.glob("replay_*/manifest.json"):
-        m = _read_json(manifest_path)
-        if m.get("campaign_id") == campaign_id and str(m.get("trading_date")) == trading_date:
-            return m.get("replay_run_id") or manifest_path.parent.name
+    if replay_root.is_dir():
+        for manifest_path in replay_root.glob("replay_*/manifest.json"):
+            m = _read_json(manifest_path)
+            if m.get("campaign_id") == campaign_id and str(m.get("trading_date")) == trading_date:
+                return m.get("replay_run_id") or manifest_path.parent.name
+    for rid in ck.get("run_ids") or []:
+        doc = _read_json(COMPETITION_ROOT / "replay" / rid / "manifest.json")
+        if str(doc.get("trading_date")) == trading_date:
+            return rid
+        from src.trading.competition.replay.firestore_store import load_replay_run_firestore
+
+        fs = load_replay_run_firestore(str(rid))
+        if fs and str((fs.get("manifest") or fs).get("trading_date")) == trading_date:
+            hydrate_run_from_firestore(str(rid))
+            return str(rid)
     return None
 
 
@@ -227,24 +349,49 @@ def chunk_week_key_for_slack(trading_dates: list[str]) -> str | None:
 def list_resumable_campaigns() -> list[dict[str, Any]]:
     """Campaigns that can be continued from Actions (needs_resume)."""
     rows: list[dict[str, Any]] = []
-    if not CAMPAIGNS_ROOT.is_dir():
-        return rows
-    for manifest_path in sorted(CAMPAIGNS_ROOT.glob("*/manifest.json")):
-        m = _read_json(manifest_path)
+    seen: set[str] = set()
+
+    def _append(m: dict[str, Any], *, source: str) -> None:
+        if m.get("do_not_resume") or m.get("campaign_kind") == "duplicate_restart":
+            return
+        cid = str(m.get("campaign_id") or "")
+        if not cid or cid in seen:
+            return
         status = m.get("competition_status") or "active"
-        if is_terminal_status(status):
-            continue
-        if not m.get("needs_resume", True) and m.get("days_completed", 0) >= m.get("days_total", 0):
-            continue
+        if status == "superseded" or is_terminal_status(status):
+            return
+        if not m.get("needs_resume", True) and (m.get("days_completed") or 0) >= (m.get("days_total") or 0):
+            return
+        seen.add(cid)
         rows.append(
             {
-                "campaign_id": m.get("campaign_id") or manifest_path.parent.name,
+                "campaign_id": cid,
                 "replay_type": m.get("replay_type"),
                 "progress_label": m.get("progress_label"),
                 "next_trading_date": m.get("next_trading_date"),
                 "days_completed": m.get("days_completed"),
                 "days_total": m.get("days_total"),
                 "competition_status": status,
+                "source": source,
             }
         )
+
+    if CAMPAIGNS_ROOT.is_dir():
+        for manifest_path in sorted(CAMPAIGNS_ROOT.glob("*/manifest.json")):
+            _append(_read_json(manifest_path), source="local")
+
+    try:
+        from src.trading.competition.constants import COLLECTION_REPLAY_CAMPAIGNS
+        from src.trading.competition.storage.base import firestore_client
+
+        client, _ = firestore_client()
+        if client:
+            for doc in client.collection(COLLECTION_REPLAY_CAMPAIGNS).stream():
+                m = doc.to_dict() or {}
+                if not m.get("campaign_id"):
+                    m["campaign_id"] = doc.id
+                _append(m, source="firestore")
+    except Exception:
+        pass
+
     return sorted(rows, key=lambda x: str(x.get("campaign_id") or ""))
