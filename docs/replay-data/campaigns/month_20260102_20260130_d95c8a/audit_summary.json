@@ -1,0 +1,17 @@
+{
+  "observabilityVersion": 1,
+  "campaignId": "month_20260102_20260130_d95c8a",
+  "replayType": "month",
+  "status": "partial",
+  "competitionStatus": "active",
+  "failureSummary": null,
+  "processedDays": 5,
+  "totalDays": 21,
+  "progressLabel": "1월 리플레이 진행 중 · 5 / 21 거래일 완료",
+  "needsResume": true,
+  "providersSummary": "KIS + pykrx",
+  "leakageSummary": "PASS",
+  "costModel": "not_implemented",
+  "affectsLiveAccount": false,
+  "runCount": 5
+}

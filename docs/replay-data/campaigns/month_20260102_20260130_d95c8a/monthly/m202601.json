@@ -1,0 +1,68 @@
+{
+  "report_id": "rmr_month_20260102_20260130_d95c8a_m202601",
+  "month_key": "m202601",
+  "campaign_id": "month_20260102_20260130_d95c8a",
+  "label": "2026년 1월",
+  "period": "REPLAY 20260102–20260108",
+  "agents": [
+    {
+      "key": "agent1",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "월간 성과",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 5거래일",
+      "selfEval": "팀 A REPLAY 월간 집계",
+      "nextWeek": "LIVE 시작 전 감사 재확인"
+    },
+    {
+      "key": "agent2",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "월간 성과",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 5거래일",
+      "selfEval": "팀 B REPLAY 월간 집계",
+      "nextWeek": "LIVE 시작 전 감사 재확인"
+    },
+    {
+      "key": "agent3",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "월간 성과",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 5거래일",
+      "selfEval": "팀 C REPLAY 월간 집계",
+      "nextWeek": "LIVE 시작 전 감사 재확인"
+    },
+    {
+      "key": "agent4",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "월간 성과",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 5거래일",
+      "selfEval": "팀 D REPLAY 월간 집계",
+      "nextWeek": "LIVE 시작 전 감사 재확인"
+    }
+  ],
+  "overall": [
+    "REPLAY 월간 — 거래일 5일",
+    "미래 데이터 누적: PASS",
+    "LIVE 시작 가능 여부는 감사·평가위원회 및 full replay 결과 참조"
+  ],
+  "audit": {
+    "leakage_summary": "PASS"
+  },
+  "last_replay_run_id": "replay_20260108_eb8d8df9",
+  "url": "https://xxxbeom-glitch.github.io/stockreport/template/dashboard_desktop/?mode=replay&campaign=month_20260102_20260130_d95c8a&report=m202601&reportType=monthly&replay_run_id=replay_20260108_eb8d8df9",
+  "generated_at": "2026-05-24T22:47:55.155456+09:00"
+}
