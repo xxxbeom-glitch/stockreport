@@ -1,0 +1,23 @@
+{
+  "updatedAt": "2026-05-24T21:43:23.925991+09:00",
+  "dashboardBaseUrl": "https://xxxbeom-glitch.github.io/stockreport",
+  "dashboardPath": "/template/dashboard_desktop/",
+  "dataRoot": "/docs/replay-data",
+  "runs": [
+    {
+      "replayRunId": "replay_20241218_16b6f721",
+      "tradingDate": "20241218",
+      "campaignId": null,
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20241218_16b6f721/dashboard.json"
+    },
+    {
+      "replayRunId": "replay_20241218_dca68242",
+      "tradingDate": "20241218",
+      "campaignId": null,
+      "leakageSummary": "PASS",
+      "dashboardPath": "runs/replay_20241218_dca68242/dashboard.json"
+    }
+  ],
+  "campaigns": {}
+}

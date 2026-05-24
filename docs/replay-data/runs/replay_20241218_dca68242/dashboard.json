@@ -1,0 +1,326 @@
+{
+  "dataSource": "replay",
+  "replayRunId": "replay_20241218_dca68242",
+  "campaignId": null,
+  "cashAmount": 1714145,
+  "totalAssets": 2000000,
+  "bestAgentKey": "agent1",
+  "bestAgentReturnPct": 0.0,
+  "bestStockName": "대한전선",
+  "bestStockReturnPct": 0.0,
+  "timeline": {
+    "labels": [
+      "12.18",
+      "12/19"
+    ],
+    "series": [
+      {
+        "key": "agent1",
+        "label": "에이전트 A",
+        "color": "#4f8cff",
+        "data": [
+          500000,
+          500000
+        ]
+      },
+      {
+        "key": "agent2",
+        "label": "에이전트 B",
+        "color": "#34c759",
+        "data": [
+          500000,
+          500000
+        ]
+      },
+      {
+        "key": "agent3",
+        "label": "에이전트 C",
+        "color": "#ff9500",
+        "data": [
+          500000,
+          500000
+        ]
+      },
+      {
+        "key": "agent4",
+        "label": "에이전트 D",
+        "color": "#af52de",
+        "data": [
+          500000,
+          500000
+        ]
+      }
+    ]
+  },
+  "agentMeta": {
+    "agent1": {
+      "name": "에이전트 A",
+      "badge": "빠른실행",
+      "badgeClass": "badge--speed",
+      "strategy": "거래대금·돌파",
+      "cashKrw": 500000,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "no_order"
+    },
+    "agent2": {
+      "name": "에이전트 B",
+      "badge": "빠른실행",
+      "badgeClass": "badge--speed",
+      "strategy": "공시·재료확산",
+      "cashKrw": 442850,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "filled_next_session"
+    },
+    "agent3": {
+      "name": "에이전트 C",
+      "badge": "검증승인",
+      "badgeClass": "badge--verify",
+      "strategy": "수급·지속성확인",
+      "cashKrw": 442850,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "filled_next_session"
+    },
+    "agent4": {
+      "name": "에이전트 D",
+      "badge": "검증승인",
+      "badgeClass": "badge--verify",
+      "strategy": "눌림·반등회복",
+      "cashKrw": 328445,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "filled_next_session"
+    }
+  },
+  "stockCatalog": {
+    "001440": {
+      "name": "대한전선",
+      "agents": [
+        "agent2",
+        "agent3"
+      ],
+      "reason": "liquidity_watch",
+      "all": {
+        "avg": 11430,
+        "current": 11430,
+        "returnPct": 0.0,
+        "pnl": 0
+      },
+      "7d": {
+        "avg": 11430,
+        "current": 11430,
+        "returnPct": 0.0,
+        "pnl": 0
+      },
+      "14d": {
+        "avg": 11430,
+        "current": 11430,
+        "returnPct": 0.0,
+        "pnl": 0
+      }
+    },
+    "328130": {
+      "name": "루닛",
+      "agents": [
+        "agent4"
+      ],
+      "reason": "tv_recovery_33.1x+stabilizing_-12.3_to_-10.3",
+      "all": {
+        "avg": 34311,
+        "current": 34311,
+        "returnPct": 0.0,
+        "pnl": 0
+      },
+      "7d": {
+        "avg": 34311,
+        "current": 34311,
+        "returnPct": 0.0,
+        "pnl": 0
+      },
+      "14d": {
+        "avg": 34311,
+        "current": 34311,
+        "returnPct": 0.0,
+        "pnl": 0
+      }
+    }
+  },
+  "tradeHistory": {
+    "agent1": [],
+    "agent2": [
+      {
+        "dayIndex": 0,
+        "date": "2024-12-19",
+        "name": "대한전선",
+        "code": "001440",
+        "side": "buy",
+        "price": 11430,
+        "qty": 5,
+        "pnl": null,
+        "reason": "liquidity_watch",
+        "fillDate": "20241219",
+        "historical": true
+      }
+    ],
+    "agent3": [
+      {
+        "dayIndex": 1,
+        "date": "2024-12-19",
+        "name": "대한전선",
+        "code": "001440",
+        "side": "buy",
+        "price": 11430,
+        "qty": 5,
+        "pnl": null,
+        "reason": "supply_persistence",
+        "fillDate": "20241219",
+        "historical": true
+      }
+    ],
+    "agent4": [
+      {
+        "dayIndex": 1,
+        "date": "2024-12-19",
+        "name": "루닛",
+        "code": "328130",
+        "side": "buy",
+        "price": 34311,
+        "qty": 5,
+        "pnl": null,
+        "reason": "tv_recovery_33.1x+stabilizing_-12.3_to_-10.3",
+        "fillDate": "20241219",
+        "historical": true
+      }
+    ]
+  },
+  "notifications": [],
+  "weeklyReports": {},
+  "monthlyReports": {},
+  "finalReport": null,
+  "competitionStatus": null,
+  "operatingDays": 1,
+  "teams": {
+    "A": {
+      "name": "에이전트 A",
+      "badge": "빠른실행",
+      "badgeClass": "badge--speed",
+      "strategy": "거래대금·돌파",
+      "cashKrw": 500000,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "no_order"
+    },
+    "B": {
+      "name": "에이전트 B",
+      "badge": "빠른실행",
+      "badgeClass": "badge--speed",
+      "strategy": "공시·재료확산",
+      "cashKrw": 442850,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "filled_next_session"
+    },
+    "C": {
+      "name": "에이전트 C",
+      "badge": "검증승인",
+      "badgeClass": "badge--verify",
+      "strategy": "수급·지속성확인",
+      "cashKrw": 442850,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "filled_next_session"
+    },
+    "D": {
+      "name": "에이전트 D",
+      "badge": "검증승인",
+      "badgeClass": "badge--verify",
+      "strategy": "눌림·반등회복",
+      "cashKrw": 328445,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "filled_next_session"
+    }
+  },
+  "auditSummary": {
+    "leakageStatus": "PASS",
+    "ruleViolationCount": 0,
+    "committeeStatus": "skipped",
+    "committeeVerdict": "run_audit_ai=false",
+    "liveReady": false,
+    "costModel": "costs_not_implemented",
+    "costsWarning": "매매 수수료·세금·제비용 미반영 — REPLAY 총자산·수익률은 비용 제외 기준 (LIVE 시작 전 P0)",
+    "limitations": [
+      "costs_not_implemented: 수수료·세금·제비용 미반영 (LIVE 시작 전 P0)"
+    ],
+    "affectsLiveAccount": false
+  },
+  "teamDecisions": [
+    {
+      "agentKey": "agent1",
+      "teamId": "A",
+      "action": "HOLD",
+      "ticker": null,
+      "tickerName": null,
+      "targetPrice": null,
+      "reasonLabel": "mock_strategy_candidate_review",
+      "reasonDetail": "mock provider — no live LLM",
+      "leakageStatus": "PASS",
+      "fillStatus": "no_order",
+      "quantity": 0,
+      "decisionAt": "2024-12-18T15:30:00+09:00"
+    },
+    {
+      "agentKey": "agent2",
+      "teamId": "B",
+      "action": "BUY",
+      "ticker": "001440",
+      "tickerName": "대한전선",
+      "targetPrice": 54000.0,
+      "reasonLabel": "liquidity_watch",
+      "reasonDetail": "mock provider — no live LLM",
+      "leakageStatus": "PASS",
+      "fillStatus": "filled_next_session",
+      "quantity": 5,
+      "decisionAt": "2024-12-18T15:30:00+09:00"
+    },
+    {
+      "agentKey": "agent3",
+      "teamId": "C",
+      "action": "BUY",
+      "ticker": "001440",
+      "tickerName": "대한전선",
+      "targetPrice": 54000.0,
+      "reasonLabel": "supply_persistence",
+      "reasonDetail": "mock provider — no live LLM",
+      "leakageStatus": "PASS",
+      "fillStatus": "filled_next_session",
+      "quantity": 5,
+      "decisionAt": "2024-12-18T15:30:00+09:00"
+    },
+    {
+      "agentKey": "agent4",
+      "teamId": "D",
+      "action": "BUY",
+      "ticker": "328130",
+      "tickerName": "루닛",
+      "targetPrice": 54000.0,
+      "reasonLabel": "tv_recovery_33.1x+stabilizing_-12.3_to_-10.3",
+      "reasonDetail": "mock provider — no live LLM",
+      "leakageStatus": "PASS",
+      "fillStatus": "filled_next_session",
+      "quantity": 5,
+      "decisionAt": "2024-12-18T15:30:00+09:00"
+    }
+  ],
+  "replayMeta": {
+    "tradingDate": "20241218",
+    "decisionAt": "2024-12-18T15:30:00+09:00",
+    "fillDate": "20241219",
+    "executionMode": "replay_smoke",
+    "sessionId": "replay_20241218_dca68242_session",
+    "snapshotId": "replay_20241218_close_a97009"
+  },
+  "publishedFor": "github_pages"
+}
