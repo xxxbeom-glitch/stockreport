@@ -24,8 +24,9 @@ from data.kis_rate_limit import (
     configured_max_retries,
     is_kis_rate_limit_halted,
     is_rate_limit_msg,
+    kis_http_request,
     kis_rate_limit_observability,
-    kis_rate_limiter_acquire,
+    parse_rate_limit_from_response,
     record_kis_rate_limit_error,
     reset_kis_rate_limit_state,
 )
@@ -231,8 +232,9 @@ class KISClient:
         url = f"{self.base_url}/oauth2/tokenP"
         body = {"grant_type": "client_credentials", "appkey": app_key, "appsecret": app_secret}
         try:
-            kis_rate_limiter_acquire()
-            res = requests.post(url, json=body, timeout=15)
+            res = kis_http_request("POST", url, tr_id="tokenP", json=body, timeout=15)
+            if res is None:
+                return {"ok": False, "error": "kis_rate_limit_exceeded"}
             if res.status_code >= 400:
                 meta = _safe_kis_error_from_response(res)
                 meta.update({"ok": False, "error": "kis_auth_failed", "endpoint": "/oauth2/tokenP"})
@@ -327,13 +329,16 @@ class KISClient:
         if not headers:
             return {"ok": False, "error": "no_token"}
         try:
-            kis_rate_limiter_acquire()
-            res = requests.get(
+            res = kis_http_request(
+                "GET",
                 f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-price",
+                tr_id="FHKST01010100",
                 headers=headers,
                 params={"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": "005930"},
                 timeout=15,
             )
+            if res is None:
+                return {"ok": False, "error": "kis_rate_limit_exceeded"}
             if res.status_code >= 400:
                 meta = _safe_kis_error_from_response(res)
                 meta.update({"ok": False, "error": "kis_probe_failed", "endpoint": "inquire-price"})
@@ -388,36 +393,59 @@ class KISClient:
 
         max_retries = configured_max_retries()
         backoff = configured_backoff_sec()
+        url = f"{self.base_url}{path}"
 
         for attempt in range(max_retries + 1):
             if is_kis_rate_limit_halted():
                 return None
             try:
-                kis_rate_limiter_acquire()
-                if is_kis_rate_limit_halted():
+                res = kis_http_request("GET", url, tr_id=tr_id, headers=headers, params=params, timeout=15)
+                if res is None:
                     return None
-                res = requests.get(f"{self.base_url}{path}", headers=headers, params=params, timeout=15)
+
+                is_rl, rl_msg = parse_rate_limit_from_response(res)
+                if is_rl:
+                    record_kis_rate_limit_error(
+                        tr_id=tr_id,
+                        msg1=rl_msg,
+                        retried=attempt > 0,
+                    )
+                    if is_kis_rate_limit_halted():
+                        return None
+                    if attempt < max_retries:
+                        time.sleep(backoff * (attempt + 1))
+                        continue
+                    return None
+
                 if res.status_code in {401, 403}:
                     meta = _safe_kis_error_from_response(res)
-                    logger.warning("KIS GET auth error tr_id=%s %s", tr_id, meta)
+                    if not is_rate_limit_msg(meta.get("msg_cd")):
+                        logger.warning("KIS GET auth error tr_id=%s %s", tr_id, meta)
                     if self._memory_token and self._token_refresh_attempts < 1 and not self._auth_failed:
                         self._token_refresh_attempts += 1
                         if self.ensure_token(force_refresh=True):
                             headers = self._headers(tr_id)
-                            if headers:
-                                kis_rate_limiter_acquire()
-                                res = requests.get(
-                                    f"{self.base_url}{path}", headers=headers, params=params, timeout=15
-                                )
-                                if res.status_code >= 400:
-                                    return None
-                            else:
+                            if not headers:
+                                return None
+                            res = kis_http_request(
+                                "GET", url, tr_id=tr_id, headers=headers, params=params, timeout=15
+                            )
+                            if res is None:
+                                return None
+                            is_rl, rl_msg = parse_rate_limit_from_response(res)
+                            if is_rl:
+                                record_kis_rate_limit_error(tr_id=tr_id, msg1=rl_msg, retried=True)
+                                return None
+                            if res.status_code >= 400:
                                 return None
                         else:
                             return None
                     else:
                         return None
-                res.raise_for_status()
+
+                if res.status_code >= 400:
+                    return None
+
                 text = (res.text or "").strip()
                 if not text:
                     logger.debug("KIS GET empty body tr_id=%s status=%s", tr_id, res.status_code)
@@ -425,12 +453,13 @@ class KISClient:
                 try:
                     data = res.json()
                 except json.JSONDecodeError:
-                    logger.warning(
-                        "KIS GET non-json tr_id=%s status=%s body_prefix=%r",
-                        tr_id,
-                        res.status_code,
-                        text[:120],
-                    )
+                    if not is_kis_rate_limit_halted():
+                        logger.warning(
+                            "KIS GET non-json tr_id=%s status=%s body_prefix=%r",
+                            tr_id,
+                            res.status_code,
+                            text[:120],
+                        )
                     return None
                 if not isinstance(data, dict):
                     return None
@@ -450,7 +479,7 @@ class KISClient:
                     return None
 
                 if str(data.get("rt_cd", "0")) not in {"0", ""}:
-                    if not is_rate_limit_msg(data.get("msg_cd")):
+                    if not is_rate_limit_msg(data.get("msg_cd")) and not is_kis_rate_limit_halted():
                         logger.warning(
                             "KIS rt_cd error tr_id=%s msg_cd=%s msg1=%s",
                             tr_id,
@@ -459,15 +488,9 @@ class KISClient:
                         )
                     return None
                 return data
-            except HTTPError as exc:
-                res = exc.response
-                if res is not None:
-                    logger.warning("KIS GET HTTP error tr_id=%s %s", tr_id, _safe_kis_error_from_response(res))
-                else:
-                    logger.debug("KIS GET failed %s: %s", tr_id, exc)
-                return None
             except Exception as exc:
-                logger.debug("KIS GET failed %s: %s", tr_id, exc)
+                if not is_kis_rate_limit_halted():
+                    logger.debug("KIS GET failed %s: %s", tr_id, exc)
                 return None
         return None
 

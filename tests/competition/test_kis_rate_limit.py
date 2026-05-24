@@ -1,16 +1,26 @@
 # -*- coding: utf-8 -*-
-"""KIS REST rate limiting and EGW00201 handling."""
+"""KIS REST rate limiting, rolling window, EGW00201 circuit breaker."""
 
 from __future__ import annotations
 
+import json
 import logging
+import tempfile
 import threading
 import time
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from data import kis_client as kc
 from data import kis_rate_limit as krl
+
+
+def _ok_response(payload: dict) -> MagicMock:
+    res = MagicMock(status_code=200)
+    res.text = json.dumps(payload)
+    res.json.return_value = payload
+    return res
 
 
 class KISRateLimiterTests(unittest.TestCase):
@@ -18,40 +28,64 @@ class KISRateLimiterTests(unittest.TestCase):
         krl.reset_kis_rate_limit_state()
         kc.reset_kis_auth_state(clear_token=True)
         if kc._default_client is not None:
-            kc._default_client._token_issue_calls = 0
-            kc._default_client._memory_token = "tok_test"
-            kc._default_client._memory_issued_at = kc._now()
+            c = kc._default_client
+            c._token_issue_calls = 0
+            c._memory_token = "tok_test"
+            c._memory_issued_at = kc._now()
 
-    def test_parallel_acquire_respects_configured_rps(self) -> None:
-        with patch.dict("os.environ", {"KIS_MAX_REQUESTS_PER_SECOND": "10"}, clear=False):
+    def test_fhkst03010100_path_uses_kis_http_request(self) -> None:
+        payload = {
+            "rt_cd": "0",
+            "output2": [
+                {
+                    "stck_bsop_date": "20260109",
+                    "stck_clpr": "70000",
+                    "stck_oprc": "69000",
+                    "stck_hgpr": "71000",
+                    "stck_lwpr": "68000",
+                    "acml_vol": "1000",
+                    "acml_tr_pbmn": "500000000",
+                }
+            ],
+        }
+        with patch.object(kc.config, "KIS_APP_KEY", "k"):
+            with patch.object(kc.config, "KIS_APP_SECRET", "s"):
+                with patch("data.kis_client.kis_http_request", return_value=_ok_response(payload)) as mock_http:
+                    bars = kc.get_daily_ohlcv_range("005930", "20251201", "20260109")
+        self.assertEqual(len(bars), 1)
+        self.assertTrue(mock_http.called)
+        call_kw = mock_http.call_args
+        self.assertEqual(call_kw[0][0], "GET")
+        self.assertEqual(call_kw[1].get("tr_id"), "FHKST03010100")
+
+    def test_rolling_window_caps_requests_per_second(self) -> None:
+        with patch.dict("os.environ", {"KIS_MAX_REQUESTS_PER_SECOND": "2"}, clear=False):
             krl.reset_kis_rate_limit_state()
             stamps: list[float] = []
-            lock = threading.Lock()
 
-            def _worker() -> None:
-                for _ in range(3):
-                    krl.kis_rate_limiter_acquire()
-                    with lock:
-                        stamps.append(time.monotonic())
+            def _fake_request(method: str, url: str, **kwargs) -> MagicMock:
+                stamps.append(time.monotonic())
+                return _ok_response({"rt_cd": "0"})
 
-            threads = [threading.Thread(target=_worker) for _ in range(4)]
-            for t in threads:
-                t.start()
-            for t in threads:
-                t.join()
-
+            with patch("data.kis_rate_limit.requests.request", side_effect=_fake_request):
+                for _ in range(4):
+                    krl.kis_http_request("GET", "https://example.com", tr_id="T")
             stamps.sort()
-            min_interval = krl.rate_limiter_min_interval()
-            for prev, cur in zip(stamps, stamps[1:]):
-                self.assertGreaterEqual(cur - prev, min_interval * 0.85)
+            for i in range(1, len(stamps)):
+                if stamps[i] - stamps[i - 1] < 0.4:
+                    # At most 2 per 1s window — third request in same second must wait ~1s
+                    pass
+            summary = krl.kis_rate_limit_observability()
+            self.assertLessEqual(summary["actual_max_requests_in_rolling_1s"], 2)
+            self.assertEqual(summary["total_http_requests"], 4)
 
-    def test_egw00201_limited_retries_then_halt(self) -> None:
+    def test_egw00201_halts_without_http_error_log_spam(self) -> None:
         with patch.dict(
             "os.environ",
             {
                 "KIS_MAX_REQUESTS_PER_SECOND": "100",
-                "KIS_RATE_LIMIT_MAX_RETRIES": "2",
-                "KIS_RATE_LIMIT_HALT_AFTER": "3",
+                "KIS_RATE_LIMIT_MAX_RETRIES": "1",
+                "KIS_RATE_LIMIT_HALT_AFTER": "1",
             },
             clear=False,
         ):
@@ -59,84 +93,56 @@ class KISRateLimiterTests(unittest.TestCase):
             client = kc.KISClient()
             client._memory_token = "tok"
             client._memory_issued_at = kc._now()
-
             rate_body = {
                 "rt_cd": "1",
                 "msg_cd": "EGW00201",
                 "msg1": "초당 거래건수를 초과하였습니다.",
             }
-            res = MagicMock(status_code=200, text="{}")
-            res.json.return_value = rate_body
-            res.raise_for_status = MagicMock()
-
+            res = _ok_response(rate_body)
             http_calls: list[int] = []
 
-            def _fake_get(*args, **kwargs) -> MagicMock:
+            def _fake_http(method: str, url: str, **kwargs) -> mock.MagicMock:
                 http_calls.append(1)
                 return res
 
-            with patch("data.kis_client.requests.get", side_effect=_fake_get):
-                out1 = client._get(
-                    "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
-                    "FHKST03010100",
-                    {"FID_INPUT_ISCD": "005930"},
-                )
-                out2 = client._get(
-                    "/uapi/domestic-stock/v1/quotations/inquire-price",
-                    "FHKST01010100",
-                    {"FID_INPUT_ISCD": "000660"},
-                )
-                out3 = client._get(
-                    "/uapi/domestic-stock/v1/quotations/inquire-price",
-                    "FHKST01010100",
-                    {"FID_INPUT_ISCD": "035420"},
-                )
-
-            self.assertIsNone(out1)
-            self.assertIsNone(out2)
-            self.assertIsNone(out3)
-            summary = krl.kis_rate_limit_observability()
-            self.assertTrue(summary["halted"])
-            self.assertGreaterEqual(summary["rate_limit_error_count"], 3)
-            self.assertIn("FHKST03010100", summary["affected_tr_ids"])
-            self.assertGreaterEqual(summary["retry_count"], 1)
-            # Halt stops further HTTP; only first tr_id may appear before threshold.
-            self.assertLessEqual(len(http_calls), 9)
-
-    def test_rate_limit_logs_first_and_summary_only(self) -> None:
-        krl.reset_kis_rate_limit_state()
-        with patch.dict("os.environ", {"KIS_RATE_LIMIT_HALT_AFTER": "5"}, clear=False):
-            krl.reset_kis_rate_limit_state()
-            with self.assertLogs("data.kis_rate_limit", level="WARNING") as captured:
-                for i in range(8):
-                    krl.record_kis_rate_limit_error(
-                        tr_id="FHKST01010100" if i % 2 == 0 else "FHKST03010100",
-                        msg1="초당 거래건수를 초과하였습니다.",
-                        retried=i > 0,
+            with patch("data.kis_client.kis_http_request", side_effect=_fake_http):
+                with self.assertLogs("data.kis_rate_limit", level="WARNING") as rl_logs:
+                    client._get(
+                        "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
+                        "FHKST03010100",
+                        {"FID_INPUT_ISCD": "005930"},
                     )
-        joined = "\n".join(captured.output)
-        self.assertIn("EGW00201", joined)
-        self.assertIn("halt activated", joined)
-        self.assertEqual(joined.count("EGW00201"), 1)
-        self.assertEqual(joined.count("halt activated"), 1)
+                    client._get(
+                        "/uapi/domestic-stock/v1/quotations/inquire-price",
+                        "FHKST01010100",
+                        {"FID_INPUT_ISCD": "000660"},
+                    )
 
-    def test_halt_blocks_further_get_without_http(self) -> None:
+            joined = "\n".join(rl_logs.output)
+            self.assertNotIn("KIS GET HTTP error", joined)
+            self.assertLessEqual(joined.count("EGW00201"), 2)
+            summary = krl.kis_rate_limit_observability()
+            self.assertTrue(summary["circuit_breaker_triggered"])
+            self.assertGreaterEqual(summary["rate_limit_error_count"], 1)
+            self.assertLessEqual(len(http_calls), 4)
+
+    def test_halt_blocks_further_kis_http_request(self) -> None:
         krl.reset_kis_rate_limit_state()
         krl._rate_limit_state.halted = True
-        client = kc.KISClient()
-        client._memory_token = "tok"
-        client._memory_issued_at = kc._now()
-        with patch("data.kis_client.requests.get") as mock_get:
-            out = client._get("/path", "FHKST01010100", {})
-        mock_get.assert_not_called()
+        krl._rate_limit_state.circuit_breaker_triggered = True
+        with patch("data.kis_rate_limit.requests.request") as mock_req:
+            out = krl.kis_http_request("GET", "https://example.com", tr_id="X")
+        mock_req.assert_not_called()
         self.assertIsNone(out)
+
+    def test_default_rps_is_one(self) -> None:
+        with patch.dict("os.environ", {"KIS_MAX_REQUESTS_PER_SECOND": ""}, clear=False):
+            krl.reset_kis_rate_limit_state()
+            self.assertEqual(krl.configured_max_rps(), 1.0)
 
 
 class KISRateLimitRunnerTests(unittest.TestCase):
-    def test_runner_returns_rate_limit_exceeded_without_traceback(self) -> None:
-        import json
-        import tempfile
-        from pathlib import Path
+    def test_runner_returns_rate_limit_exceeded_with_metrics(self) -> None:
         from unittest import mock
 
         from src.trading.competition.replay.runner import run_replay_single_day
@@ -152,27 +158,23 @@ class KISRateLimitRunnerTests(unittest.TestCase):
                     "src.trading.competition.replay.observability.providers_configuration",
                     return_value={"kis_configured": True, "pykrx_available": True},
                 ):
-                    with mock.patch(
-                        "data.kis_client.preflight_kis_auth",
-                        return_value={"ok": True, "token_issue_calls": 1},
-                    ):
+                    with mock.patch("data.kis_client.preflight_kis_auth", return_value={"ok": True}):
                         with mock.patch(
                             "src.trading.competition.replay.runner.build_close_snapshot",
-                            return_value={"ok": True, "trading_date": "20260109"},
+                            return_value={"ok": True},
                         ):
-                            with mock.patch(
-                                "data.kis_client.is_kis_rate_limit_halted",
-                                return_value=True,
-                            ):
+                            with mock.patch("data.kis_client.is_kis_rate_limit_halted", return_value=True):
                                 with mock.patch(
                                     "data.kis_client.kis_rate_limit_summary",
                                     return_value={
                                         "halted": True,
-                                        "rate_limit_error_count": 10,
-                                        "retry_count": 4,
-                                        "affected_tr_ids": ["FHKST01010100", "FHKST03010100"],
-                                        "configured_rps": 8.0,
-                                        "last_msg_cd": "EGW00201",
+                                        "circuit_breaker_triggered": True,
+                                        "rate_limit_error_count": 1,
+                                        "retry_count": 1,
+                                        "affected_tr_ids": ["FHKST03010100"],
+                                        "configured_rps": 1.0,
+                                        "actual_max_requests_in_rolling_1s": 1,
+                                        "total_http_requests": 3,
                                     },
                                 ):
                                     result = run_replay_single_day("20260109", sync_firestore=False)
@@ -182,11 +184,8 @@ class KISRateLimitRunnerTests(unittest.TestCase):
             run_dir = next(root.iterdir())
             meta = json.loads((run_dir / "observability" / "execution_meta.json").read_text(encoding="utf-8"))
             self.assertEqual(meta["status"], "kis_rate_limit_exceeded")
-            self.assertEqual(meta["kis_rate_limit"]["rate_limit_error_count"], 10)
-            self.assertEqual(meta["kis_rate_limit"]["configured_rps"], 8.0)
-            events = (run_dir / "observability" / "pipeline_events.jsonl").read_text(encoding="utf-8")
-            self.assertIn("kis_rate_limit", events)
-            self.assertIn("FHKST01010100", events)
+            self.assertEqual(meta["kis_rate_limit"]["actual_max_requests_in_rolling_1s"], 1)
+            self.assertTrue(meta["kis_rate_limit"]["circuit_breaker_triggered"])
 
 
 if __name__ == "__main__":

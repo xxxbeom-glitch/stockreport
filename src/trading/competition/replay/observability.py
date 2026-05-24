@@ -112,10 +112,13 @@ def _kis_rate_limit_observability_fields(summary: dict[str, Any]) -> dict[str, A
         k: summary.get(k)
         for k in (
             "halted",
+            "circuit_breaker_triggered",
             "rate_limit_error_count",
             "retry_count",
             "affected_tr_ids",
             "configured_rps",
+            "actual_max_requests_in_rolling_1s",
+            "total_http_requests",
             "configured_max_retries",
             "configured_backoff_sec",
             "configured_halt_after",

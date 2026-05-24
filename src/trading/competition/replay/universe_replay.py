@@ -196,18 +196,18 @@ def enrich_records_for_trading_date(
         return 0, ["kis_auth_failed"], 0
 
     from data.kis_client import is_kis_rate_limit_halted
+    from data.kis_rate_limit import configured_enrich_max_workers
 
     if is_kis_rate_limit_halted():
         return 0, ["kis_rate_limit_exceeded"], 0
 
     start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=45)).strftime("%Y%m%d")
     candidates = common_stock_records(records)
-    # Deterministic full scan order (not stale avg_tv ranking).
     candidates.sort(key=lambda r: str(r.get("ticker") or "").zfill(6))
 
     enriched = 0
     errors: list[str] = []
-    workers = min(24, max(6, len(candidates) // 40))
+    workers = configured_enrich_max_workers()
 
     def _task(rec: dict[str, Any]) -> tuple[str, bool]:
         row = dict(rec)
@@ -219,6 +219,10 @@ def enrich_records_for_trading_date(
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_task, rec): rec for rec in candidates}
         for fut in as_completed(futures):
+            if is_kis_rate_limit_halted():
+                for pending in futures:
+                    pending.cancel()
+                break
             try:
                 _, ok = fut.result()
                 if ok:
@@ -306,7 +310,12 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
         rec.setdefault("data_sources", list(rec.get("data_sources") or []))
 
     risk_targets = common_stock_records(base) if base else []
-    verified, failed = enrich_risk_from_kis(risk_targets, max_workers=16)
+    from data.kis_rate_limit import configured_enrich_max_workers
+
+    verified, failed = enrich_risk_from_kis(
+        risk_targets,
+        max_workers=configured_enrich_max_workers(),
+    )
     counts.kis_risk_verified = verified
     counts.kis_risk_failed = failed
 

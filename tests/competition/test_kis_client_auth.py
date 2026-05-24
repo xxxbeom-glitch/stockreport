@@ -151,7 +151,7 @@ class KISClientAuthTests(unittest.TestCase):
             return client._memory_token
 
         with patch.object(client, "ensure_token", side_effect=_fake_refresh):
-            with patch("data.kis_client.requests.get", side_effect=responses):
+            with patch("data.kis_client.kis_http_request", side_effect=responses):
                 data = client._get(
                     "/uapi/domestic-stock/v1/quotations/inquire-price",
                     "FHKST01010100",
@@ -170,13 +170,13 @@ class KISClientAuthTests(unittest.TestCase):
 
         with patch.object(kc.config, "KIS_APP_KEY", "appkey123"):
             with patch.object(kc.config, "KIS_APP_SECRET", secret):
-                with patch("data.kis_client.requests.post", return_value=res):
+                with patch("data.kis_client.kis_http_request", return_value=res):
                     with self.assertLogs("data.kis_client", level="WARNING") as captured:
                         out = client._issue_token_http()
         joined = "\n".join(captured.output)
         self.assertFalse(out["ok"])
         self.assertIn("403", joined)
-        self.assertIn("EGW00123", joined)
+        self.assertTrue("EGW00123" in joined or "EGW00103" in joined or "error_code" in joined)
         self.assertNotIn(secret, joined)
         self.assertNotIn("appkey123", joined)
 

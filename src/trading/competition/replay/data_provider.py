@@ -348,7 +348,13 @@ def enrich_universe_rows_kis(
     failures: list[dict[str, str]] = []
     enriched = 0
     errors: list[str] = []
-    workers = min(16, max(4, len(stocks) // 50))
+    from data.kis_client import is_kis_rate_limit_halted
+    from data.kis_rate_limit import configured_enrich_max_workers
+
+    if is_kis_rate_limit_halted():
+        return {"ok": False, "enriched": 0, "failures": [], "errors": ["kis_rate_limit_exceeded"]}
+
+    workers = configured_enrich_max_workers()
 
     def _task(row: dict[str, Any]) -> tuple[dict[str, Any], bool, list[str]]:
         row_copy = dict(row)
@@ -358,6 +364,10 @@ def enrich_universe_rows_kis(
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_task, row): row for row in stocks}
         for fut in as_completed(futures):
+            if is_kis_rate_limit_halted():
+                for pending in futures:
+                    pending.cancel()
+                break
             orig = futures[fut]
             try:
                 row_copy, ok_row, errs = fut.result()

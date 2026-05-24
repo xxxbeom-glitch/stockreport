@@ -1,4 +1,4 @@
-"""Process-wide KIS REST rate limiting and EGW00201 circuit breaker."""
+"""Process-wide KIS REST rate limiting, metering, and EGW00201 circuit breaker."""
 
 from __future__ import annotations
 
@@ -6,16 +6,20 @@ import logging
 import os
 import threading
 import time
+from collections import deque
 from typing import Any
+
+import requests
 
 logger = logging.getLogger(__name__)
 
 KIS_RATE_LIMIT_MSG_CD = "EGW00201"
 
-_DEFAULT_RPS = 8.0
-_DEFAULT_MAX_RETRIES = 2
-_DEFAULT_BACKOFF_SEC = 0.6
-_DEFAULT_HALT_AFTER = 10
+_DEFAULT_RPS = 1.0
+_DEFAULT_MAX_RETRIES = 1
+_DEFAULT_BACKOFF_SEC = 1.0
+_DEFAULT_HALT_AFTER = 1
+_DEFAULT_ENRICH_WORKERS = 1
 
 
 def _env_float(name: str, default: float) -> float:
@@ -54,33 +58,56 @@ def configured_halt_after() -> int:
     return max(1, _env_int("KIS_RATE_LIMIT_HALT_AFTER", _DEFAULT_HALT_AFTER))
 
 
-class _GlobalRateLimiter:
-    """Thread-safe minimum spacing between KIS HTTP calls in this process."""
+def configured_enrich_max_workers() -> int:
+    return max(1, _env_int("KIS_ENRICH_MAX_WORKERS", _DEFAULT_ENRICH_WORKERS))
+
+
+def is_rate_limit_msg(msg_cd: Any) -> bool:
+    return str(msg_cd or "").strip().upper() == KIS_RATE_LIMIT_MSG_CD
+
+
+def parse_rate_limit_from_response(res: requests.Response) -> tuple[bool, str | None]:
+    """Detect EGW00201 from HTTP body without logging secrets."""
+    try:
+        data = res.json()
+    except Exception:
+        return False, None
+    if not isinstance(data, dict):
+        return False, None
+    if is_rate_limit_msg(data.get("msg_cd")):
+        return True, str(data.get("msg1") or "")[:500]
+    return False, None
+
+
+class _RollingWindowLimiter:
+    """Cap requests per rolling 1-second window (process-wide)."""
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._last_at = 0.0
+        self._window: deque[float] = deque()
+        self._max_per_second = 1
 
     def configure(self, max_rps: float) -> None:
-        self._max_rps = max(0.1, max_rps)
-        self._min_interval = 1.0 / self._max_rps
+        self._max_per_second = max(1, int(max_rps) if max_rps >= 1 else 1)
 
-    def acquire(self) -> None:
-        with self._lock:
-            now = time.monotonic()
-            wait = self._min_interval - (now - self._last_at)
-            if wait > 0:
-                time.sleep(wait)
-            self._last_at = time.monotonic()
+    def acquire_slot(self) -> None:
+        while True:
+            with self._lock:
+                now = time.monotonic()
+                while self._window and now - self._window[0] >= 1.0:
+                    self._window.popleft()
+                if len(self._window) < self._max_per_second:
+                    self._window.append(now)
+                    return
+                wait = 1.0 - (now - self._window[0]) + 0.001
+            time.sleep(min(max(wait, 0.01), 1.0))
 
     @property
-    def min_interval(self) -> float:
-        return self._min_interval
+    def max_per_second(self) -> int:
+        return self._max_per_second
 
 
 class _RateLimitState:
-    """Aggregate EGW00201 occurrences; halt bulk calls after threshold."""
-
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self.reset()
@@ -88,11 +115,30 @@ class _RateLimitState:
     def reset(self) -> None:
         with self._lock:
             self.halted = False
+            self.circuit_breaker_triggered = False
             self.rate_limit_error_count = 0
             self.retry_count = 0
+            self.total_http_requests = 0
+            self.actual_max_requests_in_rolling_1s = 0
+            self._recent_request_times: deque[float] = deque()
             self.affected_tr_ids: set[str] = set()
             self.first_error_logged = False
+            self.halt_summary_logged = False
             self.last_msg1: str | None = None
+
+    def _note_http_request(self) -> None:
+        now = time.monotonic()
+        self.total_http_requests += 1
+        self._recent_request_times.append(now)
+        while self._recent_request_times and now - self._recent_request_times[0] >= 1.0:
+            self._recent_request_times.popleft()
+        count = len(self._recent_request_times)
+        if count > self.actual_max_requests_in_rolling_1s:
+            self.actual_max_requests_in_rolling_1s = count
+
+    def on_http_sent(self) -> None:
+        with self._lock:
+            self._note_http_request()
 
     def record_rate_limit(self, *, tr_id: str, msg1: str | None = None, retried: bool = False) -> None:
         with self._lock:
@@ -115,22 +161,32 @@ class _RateLimitState:
             halt_after = configured_halt_after()
             if self.rate_limit_error_count >= halt_after and not self.halted:
                 self.halted = True
-                logger.warning(
-                    "KIS rate limit halt activated count=%s affected_tr_ids=%s configured_rps=%s retry_count=%s",
-                    self.rate_limit_error_count,
-                    sorted(self.affected_tr_ids)[:20],
-                    configured_max_rps(),
-                    self.retry_count,
-                )
+                self.circuit_breaker_triggered = True
+                if not self.halt_summary_logged:
+                    self.halt_summary_logged = True
+                    logger.warning(
+                        "KIS rate limit halt activated count=%s affected_tr_ids=%s "
+                        "configured_rps=%s retry_count=%s total_http_requests=%s "
+                        "actual_max_requests_in_rolling_1s=%s",
+                        self.rate_limit_error_count,
+                        sorted(self.affected_tr_ids)[:20],
+                        configured_max_rps(),
+                        self.retry_count,
+                        self.total_http_requests,
+                        self.actual_max_requests_in_rolling_1s,
+                    )
 
     def summary(self) -> dict[str, Any]:
         with self._lock:
             return {
                 "halted": self.halted,
+                "circuit_breaker_triggered": self.circuit_breaker_triggered,
                 "rate_limit_error_count": self.rate_limit_error_count,
                 "retry_count": self.retry_count,
                 "affected_tr_ids": sorted(self.affected_tr_ids),
                 "configured_rps": configured_max_rps(),
+                "actual_max_requests_in_rolling_1s": self.actual_max_requests_in_rolling_1s,
+                "total_http_requests": self.total_http_requests,
                 "configured_max_retries": configured_max_retries(),
                 "configured_backoff_sec": configured_backoff_sec(),
                 "configured_halt_after": configured_halt_after(),
@@ -139,20 +195,14 @@ class _RateLimitState:
             }
 
 
-_rate_limiter = _GlobalRateLimiter()
+_rolling_limiter = _RollingWindowLimiter()
 _rate_limit_state = _RateLimitState()
-_rate_limiter.configure(configured_max_rps())
+_rolling_limiter.configure(configured_max_rps())
 
 
 def reset_kis_rate_limit_state() -> None:
     _rate_limit_state.reset()
-    _rate_limiter.configure(configured_max_rps())
-
-
-def kis_rate_limiter_acquire() -> None:
-    if _rate_limit_state.halted:
-        return
-    _rate_limiter.acquire()
+    _rolling_limiter.configure(configured_max_rps())
 
 
 def is_kis_rate_limit_halted() -> bool:
@@ -168,8 +218,31 @@ def kis_rate_limit_observability() -> dict[str, Any]:
 
 
 def rate_limiter_min_interval() -> float:
-    return _rate_limiter.min_interval
+    return 1.0 / configured_max_rps()
 
 
-def is_rate_limit_msg(msg_cd: Any) -> bool:
-    return str(msg_cd or "").strip().upper() == KIS_RATE_LIMIT_MSG_CD
+def kis_http_request(
+    method: str,
+    url: str,
+    *,
+    tr_id: str = "",
+    **kwargs: Any,
+) -> requests.Response | None:
+    """
+    Single entry for outbound KIS HTTP. Rolling 1s cap + halt returns None (no HTTP).
+    """
+    if _rate_limit_state.halted:
+        return None
+    _rolling_limiter.acquire_slot()
+    if _rate_limit_state.halted:
+        return None
+    _rate_limit_state.on_http_sent()
+    return requests.request(method, url, **kwargs)
+
+
+# Backward-compatible alias used by kis_client during migration
+def kis_rate_limiter_acquire() -> None:
+    """Deprecated spacing acquire — prefer kis_http_request."""
+    if _rate_limit_state.halted:
+        return
+    _rolling_limiter.acquire_slot()
