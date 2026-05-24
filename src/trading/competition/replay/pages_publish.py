@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from src.trading.competition.dashboard.replay_payload import build_replay_dashboard_payload
+from src.trading.competition.dashboard.replay_payload import (
+    build_campaign_dashboard_payload,
+    build_replay_dashboard_payload,
+)
 from src.trading.competition.replay.firestore_store import GITHUB_PAGES_DASHBOARD_BASE, replay_report_url
 from src.trading.competition.replay.observability import (
     load_campaign_public_audit_summary,
@@ -109,6 +112,106 @@ def publish_campaign_audit_summary(campaign_id: str) -> Path | None:
     return path
 
 
+def ensure_campaign_local(campaign_id: str) -> bool:
+    from src.trading.competition.replay.campaign_resume import (
+        campaign_exists_locally,
+        hydrate_campaign_from_firestore,
+    )
+
+    if campaign_exists_locally(campaign_id):
+        return True
+    return bool(hydrate_campaign_from_firestore(campaign_id))
+
+
+def publish_campaign_meta(campaign_id: str) -> Path | None:
+    from src.trading.competition.replay.campaign_resume import load_manifest
+
+    manifest = load_manifest(campaign_id)
+    if not manifest:
+        return None
+    planned = manifest.get("planned_trading_dates") or manifest.get("trading_dates") or []
+    completed = manifest.get("completed_trading_dates") or list((manifest.get("completed_dates") or {}).keys())
+    n_done = manifest.get("days_completed")
+    if n_done is None:
+        n_done = len(completed)
+    n_total = manifest.get("days_total")
+    if n_total is None:
+        n_total = len(planned)
+    meta = {
+        "campaignId": campaign_id,
+        "replayType": manifest.get("replay_type"),
+        "startDate": manifest.get("start_date") or manifest.get("period_start"),
+        "endDate": manifest.get("end_date") or manifest.get("period_end"),
+        "leakageSummary": manifest.get("leakage_summary"),
+        "competitionStatus": manifest.get("competition_status"),
+        "needsResume": manifest.get("needs_resume"),
+        "nextTradingDate": manifest.get("next_trading_date"),
+        "progressLabel": manifest.get("progress_label"),
+        "daysCompleted": n_done,
+        "daysTotal": n_total,
+        "lastCompletedDate": manifest.get("last_completed_date"),
+        "weeklyReportKeys": manifest.get("weekly_report_keys") or [],
+        "monthlyReportKeys": manifest.get("monthly_report_keys") or [],
+        "doNotResume": bool(manifest.get("do_not_resume")),
+        "campaignKind": manifest.get("campaign_kind"),
+        "canonicalCampaignId": manifest.get("canonical_campaign_id"),
+        "dashboardPath": f"campaigns/{campaign_id}/dashboard.json",
+    }
+    path = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "meta.json"
+    _write_json(path, meta)
+    return path
+
+
+def publish_campaign_dashboard(campaign_id: str) -> Path | None:
+    if not ensure_campaign_local(campaign_id):
+        return None
+    try:
+        payload = build_campaign_dashboard_payload(campaign_id, prefer_local=True)
+    except FileNotFoundError:
+        return None
+    safe = sanitize_dashboard_payload(payload)
+    path = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "dashboard.json"
+    _write_json(path, safe)
+    publish_campaign_meta(campaign_id)
+    publish_campaign_audit_summary(campaign_id)
+    return path
+
+
+def publish_campaign_runs(campaign_id: str) -> list[str]:
+    from src.trading.competition.replay.campaign_resume import load_checkpoint, load_manifest
+
+    if not ensure_campaign_local(campaign_id):
+        return []
+    manifest = load_manifest(campaign_id)
+    checkpoint = load_checkpoint(campaign_id)
+    run_ids = list(checkpoint.get("run_ids") or manifest.get("run_ids") or [])
+    completed = checkpoint.get("completed_dates") or manifest.get("completed_dates") or {}
+    for rid in completed.values():
+        if rid and rid not in run_ids:
+            run_ids.append(str(rid))
+    published: list[str] = []
+    for rid in run_ids:
+        if publish_run_dashboard(str(rid)):
+            published.append(str(rid))
+    return published
+
+
+def publish_campaign_full(campaign_id: str) -> dict[str, Any]:
+    """Reports + per-run dashboards + campaign cumulative dashboard."""
+    if not ensure_campaign_local(campaign_id):
+        return {"ok": False, "error": "campaign_not_found", "campaign_id": campaign_id}
+    runs = publish_campaign_runs(campaign_id)
+    dashboard = publish_campaign_dashboard(campaign_id)
+    reports = publish_campaign_reports(campaign_id)
+    return {
+        "ok": bool(dashboard),
+        "campaign_id": campaign_id,
+        "published_runs": runs,
+        "campaign_dashboard": str(dashboard) if dashboard else None,
+        "reports": reports,
+    }
+
+
 def publish_run_dashboard(replay_run_id: str) -> Path | None:
     try:
         payload = build_replay_dashboard_payload(replay_run_id, prefer_local=True)
@@ -148,6 +251,9 @@ def publish_campaign_reports(campaign_id: str) -> dict[str, list[str]]:
 
 
 def _campaign_meta(campaign_id: str) -> dict[str, Any]:
+    published_meta = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "meta.json"
+    if published_meta.is_file():
+        return _read_json(published_meta)
     manifest_path = LOCAL_REPLAY_ROOT / "campaigns" / campaign_id / "manifest.json"
     m = _read_json(manifest_path)
     planned = m.get("planned_trading_dates") or m.get("trading_dates") or []
@@ -173,6 +279,10 @@ def _campaign_meta(campaign_id: str) -> dict[str, Any]:
         "lastCompletedDate": m.get("last_completed_date"),
         "weeklyReportKeys": m.get("weekly_report_keys") or [],
         "monthlyReportKeys": m.get("monthly_report_keys") or [],
+        "doNotResume": bool(m.get("do_not_resume")),
+        "campaignKind": m.get("campaign_kind"),
+        "canonicalCampaignId": m.get("canonical_campaign_id"),
+        "dashboardPath": f"campaigns/{campaign_id}/dashboard.json",
     }
 
 
@@ -201,12 +311,16 @@ def rebuild_index() -> dict[str, Any]:
             if not camp_dir.is_dir():
                 continue
             cid = camp_dir.name
+            meta = _campaign_meta(cid)
+            if meta.get("doNotResume") or meta.get("campaignKind") == "duplicate_restart":
+                continue
             entry: dict[str, Any] = {
-                **_campaign_meta(cid),
+                **meta,
                 "weekly": sorted(p.stem for p in (camp_dir / "weekly").glob("*.json")),
                 "monthly": sorted(p.stem for p in (camp_dir / "monthly").glob("*.json")),
                 "hasFinal": (camp_dir / "final.json").is_file(),
                 "hasAuditSummary": (camp_dir / "audit_summary.json").is_file(),
+                "hasCampaignDashboard": (camp_dir / "dashboard.json").is_file(),
             }
             campaigns[cid] = entry
 
@@ -243,7 +357,10 @@ def rebuild_pages_mirror(*, clean: bool = False) -> dict[str, Any]:
     if camps_root.is_dir():
         for camp_manifest in sorted(camps_root.glob("*/manifest.json")):
             cid = camp_manifest.parent.name
-            publish_campaign_reports(cid)
+            manifest = _read_json(camp_manifest)
+            if manifest.get("do_not_resume") or manifest.get("campaign_kind") == "duplicate_restart":
+                continue
+            publish_campaign_full(cid)
             published_campaigns += 1
 
     index = rebuild_index()

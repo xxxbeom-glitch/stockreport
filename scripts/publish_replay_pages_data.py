@@ -11,7 +11,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.trading.competition.replay.pages_publish import publish_campaign_reports, publish_run_dashboard, rebuild_index, rebuild_pages_mirror
+from src.trading.competition.replay.pages_publish import (
+    publish_campaign_full,
+    publish_run_dashboard,
+    rebuild_index,
+    rebuild_pages_mirror,
+)
 
 
 def main() -> int:
@@ -34,7 +39,7 @@ def main() -> int:
         for rid in args.run_ids:
             publish_run_dashboard(rid)
         for cid in args.campaigns:
-            publish_campaign_reports(cid)
+            publish_campaign_full(cid)
         result = {"ok": True, "index": rebuild_index()}
     else:
         result = rebuild_pages_mirror(clean=args.clean)

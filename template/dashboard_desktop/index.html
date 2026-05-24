@@ -2396,6 +2396,35 @@
         }
         parseDashboardUrl();
 
+        var REPLAY_EMPTY_TIMELINE = { labels: [], series: [] };
+        var REPLAY_EMPTY_AGENTS = {};
+        var REPLAY_EMPTY_TRADES = { agent1: [], agent2: [], agent3: [], agent4: [] };
+
+        function clearReplayTemplateShell() {
+          competitionLoaded = false;
+          TIMELINE = { labels: REPLAY_EMPTY_TIMELINE.labels.slice(), series: [] };
+          AGENT_META = {};
+          STOCK_CATALOG = {};
+          TRADE_HISTORY = {
+            agent1: REPLAY_EMPTY_TRADES.agent1.slice(),
+            agent2: REPLAY_EMPTY_TRADES.agent2.slice(),
+            agent3: REPLAY_EMPTY_TRADES.agent3.slice(),
+            agent4: REPLAY_EMPTY_TRADES.agent4.slice(),
+          };
+          NOTIFICATIONS = [];
+          WEEKLY_REPORTS = {};
+          MONTHLY_REPORTS = {};
+          FINAL_REPORT = null;
+          auditSummary = null;
+          teamDecisions = [];
+          replayMeta = null;
+          CASH_AMOUNT = 0;
+        }
+
+        if (dataMode === "replay") {
+          clearReplayTemplateShell();
+        }
+
         function getStockRows() {
           return document.querySelectorAll('[data-ui="stock-table-body"] tr[data-stock-id]');
         }
@@ -3571,6 +3600,7 @@
           teamDecisions = data.teamDecisions || [];
           replayMeta = data.replayMeta || null;
           if (data.campaignId) campaignId = data.campaignId;
+          if (data.campaignProgress) campaignProgress = data.campaignProgress;
           rebuildReportSelectors();
           renderFinalReport();
           applyUrlReportFocus();
@@ -3752,13 +3782,48 @@
           if (cid && useReplayPagesJson() && window.CompetitionReplayPages) {
             return CompetitionReplayPages.loadCampaignBundle(cid).then(function (reports) {
               CompetitionReplayPages.mergeReports(data, reports);
-              replayRunId = data.replayRunId || runId;
+              replayRunId = data.replayRunId || runId || data.latestReplayRunId;
               applyCompetitionPayload(data);
             });
           }
-          replayRunId = data.replayRunId || runId;
+          replayRunId = data.replayRunId || runId || data.latestReplayRunId;
           applyCompetitionPayload(data);
           return Promise.resolve();
+        }
+
+        function loadReplayCampaignDashboard(cid, detailRunId) {
+          if (!cid) {
+            return Promise.reject(new Error("campaign required"));
+          }
+          if (useReplayPagesJson()) {
+            return CompetitionReplayPages.loadCampaignDashboard(cid).then(function (data) {
+              if (detailRunId && detailRunId !== data.latestReplayRunId) {
+                return CompetitionReplayPages.loadRunDashboard(detailRunId).then(function (runData) {
+                  data.teamDecisions = runData.teamDecisions || [];
+                  data.auditSummary = runData.auditSummary || data.auditSummary;
+                  data.replayMeta = runData.replayMeta || data.replayMeta;
+                  data.replayRunId = detailRunId;
+                  return applyReplayPayload(data, detailRunId);
+                });
+              }
+              return applyReplayPayload(data, data.latestReplayRunId || detailRunId);
+            });
+          }
+          return fetch("/api/trading-competition/replay/dashboard?campaign=" + encodeURIComponent(cid) +
+            (detailRunId ? "&replay_run_id=" + encodeURIComponent(detailRunId) : ""))
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+              if (!j.ok) throw new Error(j.error || "campaign load failed");
+              applyCompetitionPayload(j.data);
+            });
+        }
+
+        function loadReplayRunDetail(runId) {
+          if (!runId) return Promise.resolve();
+          if (campaignId && useReplayPagesJson()) {
+            return loadReplayCampaignDashboard(campaignId, runId);
+          }
+          return loadReplayDashboard(runId);
         }
 
         function loadLiveDashboard() {
@@ -3797,7 +3862,10 @@
 
         function loadReplayRuns() {
           if (useReplayPagesJson()) {
-            return CompetitionReplayPages.listRunsFromIndex().then(function (runs) {
+            var listP = campaignId && CompetitionReplayPages.listRunsForCampaign
+              ? CompetitionReplayPages.listRunsForCampaign(campaignId)
+              : CompetitionReplayPages.listRunsFromIndex();
+            return listP.then(function (runs) {
               replayRuns = runs || [];
             });
           }
@@ -3828,12 +3896,7 @@
         }
 
         function showReplayEmptyState(message) {
-          auditSummary = null;
-          teamDecisions = [];
-          replayMeta = null;
-          STOCK_CATALOG = {};
-          TRADE_HISTORY = { agent1: [], agent2: [], agent3: [], agent4: [] };
-          NOTIFICATIONS = [];
+          clearReplayTemplateShell();
           var meta = document.querySelector('[data-ui="dashboard-meta"]');
           if (meta) meta.textContent = message;
           var grid = document.querySelector('[data-ui="audit-grid"]');
@@ -3861,7 +3924,7 @@
             .then(function () {
               populateReplayRunPicker();
               if (!replayRunId && replayRuns.length) {
-                replayRunId = replayRuns[0].replayRunId;
+                replayRunId = replayRuns[replayRuns.length - 1].replayRunId;
               }
               var progressP = Promise.resolve();
               if (campaignId && useReplayPagesJson() && CompetitionReplayPages.loadCampaignMeta) {
@@ -3869,25 +3932,9 @@
                   campaignProgress = meta;
                 });
               }
-              if (!replayRunId && campaignId && useReplayPagesJson()) {
+              if (campaignId && useReplayPagesJson()) {
                 return progressP.then(function () {
-                  return CompetitionReplayPages.loadCampaignBundle(campaignId);
-                }).then(function (reports) {
-                  WEEKLY_REPORTS = reports.weeklyReports || {};
-                  MONTHLY_REPORTS = reports.monthlyReports || {};
-                  FINAL_REPORT = reports.finalReport || null;
-                  if (urlReportKey && urlReportType === "weekly" && WEEKLY_REPORTS[urlReportKey]) {
-                    renderWeeklyReport(urlReportKey);
-                  } else if (urlReportType === "final" && FINAL_REPORT) {
-                    renderFinalReport();
-                  } else if (urlReportType === "monthly" && urlReportKey && MONTHLY_REPORTS[urlReportKey]) {
-                    renderMonthlyReport(urlReportKey);
-                  }
-                  var meta = document.querySelector('[data-ui="dashboard-meta"]');
-                  if (meta) {
-                    meta.textContent =
-                      "REPLAY 리포트 (GitHub Pages JSON) · campaign " + campaignId + " — run을 선택하면 상세 데이터 표시";
-                  }
+                  return loadReplayCampaignDashboard(campaignId, replayRunId);
                 });
               }
               if (!replayRunId) {
@@ -3927,7 +3974,7 @@
           picker.addEventListener("change", function () {
             replayRunId = picker.value || null;
             if (!replayRunId) return;
-            loadReplayDashboard(replayRunId)
+            loadReplayRunDetail(replayRunId)
               .then(function () { refreshDashboard(); updateModeChrome(); })
               .catch(function (err) {
                 showReplayEmptyState("REPLAY run 로드 실패: " + (err && err.message ? err.message : "unknown"));

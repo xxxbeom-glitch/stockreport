@@ -39,13 +39,18 @@
     });
   }
 
+  function loadCampaignDashboard(campaignId) {
+    return fetchPublicJson("/campaigns/" + encodeURIComponent(campaignId) + "/dashboard.json");
+  }
+
   function listResumableCampaigns() {
     return loadIndex().then(function (idx) {
       var camps = idx.campaigns || {};
       return Object.keys(camps)
         .filter(function (cid) {
           var c = camps[cid];
-          return c && c.needsResume && c.competitionStatus === "active";
+          if (!c || c.doNotResume || c.campaignKind === "duplicate_restart") return false;
+          return c.needsResume && c.competitionStatus === "active";
         })
         .map(function (cid) {
           var c = camps[cid];
@@ -134,14 +139,25 @@
     return payload;
   }
 
+  function listRunsForCampaign(campaignId) {
+    return listRunsFromIndex().then(function (runs) {
+      if (!campaignId) return runs;
+      return runs.filter(function (r) {
+        return r.campaignId === campaignId;
+      });
+    });
+  }
+
   global.CompetitionReplayPages = {
     preferPagesJson: preferPagesJson,
     replayPublicDataRoot: replayPublicDataRoot,
     loadRunDashboard: loadRunDashboard,
+    loadCampaignDashboard: loadCampaignDashboard,
     loadCampaignBundle: loadCampaignBundle,
     loadCampaignMeta: loadCampaignMeta,
     listResumableCampaigns: listResumableCampaigns,
     listRunsFromIndex: listRunsFromIndex,
+    listRunsForCampaign: listRunsForCampaign,
     mergeReports: mergeReports,
   };
 })(window);

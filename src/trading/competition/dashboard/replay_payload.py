@@ -351,6 +351,200 @@ def _build_from_manifest(
     }
 
 
+def _date_chart_label(trading_date: str) -> str:
+    if len(trading_date) == 8:
+        return trading_date[4:6] + "/" + trading_date[6:8]
+    return trading_date or "?"
+
+
+def _ensure_run_local(replay_run_id: str) -> Path | None:
+    run_dir = replay_run_dir(replay_run_id)
+    if run_dir.is_dir():
+        return run_dir
+    from src.trading.competition.replay.campaign_resume import hydrate_run_from_firestore
+
+    if hydrate_run_from_firestore(replay_run_id):
+        return run_dir
+    if _prefer_firestore():
+        fb = load_replay_run_firestore(replay_run_id)
+        manifest = (fb or {}).get("manifest") if isinstance(fb, dict) else None
+        if manifest:
+            run_dir.mkdir(parents=True, exist_ok=True)
+            run_dir.joinpath("manifest.json").write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            return run_dir
+    return None
+
+
+def _load_run_manifest(replay_run_id: str) -> dict[str, Any]:
+    run_dir = _ensure_run_local(replay_run_id)
+    if not run_dir:
+        return {}
+    return _read_json(run_dir / "manifest.json")
+
+
+def _build_campaign_timeline(
+    completed_dates: dict[str, str],
+) -> dict[str, Any]:
+    labels = ["시작"]
+    series_by_agent: dict[str, dict[str, Any]] = {}
+    for tid in TEAM_IDS:
+        agent_key = TEAM_TO_AGENT[tid]
+        meta = TEAM_META[tid]
+        series_by_agent[agent_key] = {
+            "key": agent_key,
+            "label": meta["display_name"],
+            "color": ["#4f8cff", "#34c759", "#ff9500", "#af52de"][TEAM_IDS.index(tid)],
+            "data": [INITIAL_CASH_KRW],
+        }
+
+    for trading_date in sorted(completed_dates.keys()):
+        rid = completed_dates[trading_date]
+        run_manifest = _load_run_manifest(rid)
+        labels.append(_date_chart_label(trading_date))
+        accounts = run_manifest.get("accounts") or {}
+        for tid in TEAM_IDS:
+            agent_key = TEAM_TO_AGENT[tid]
+            acc = accounts.get(tid) or {}
+            total = int(acc.get("total_assets_krw") or acc.get("cash_krw") or series_by_agent[agent_key]["data"][-1])
+            series_by_agent[agent_key]["data"].append(total)
+
+    if len(labels) == 1:
+        return {"labels": ["시작", "현재"], "series": list(series_by_agent.values())}
+
+    return {"labels": labels, "series": list(series_by_agent.values())}
+
+
+def build_campaign_dashboard_payload(
+    campaign_id: str,
+    *,
+    prefer_local: bool = True,
+    detail_replay_run_id: str | None = None,
+) -> dict[str, Any]:
+    from src.trading.competition.replay.campaign_resume import (
+        campaign_exists_locally,
+        hydrate_campaign_from_firestore,
+        load_checkpoint,
+        load_manifest,
+    )
+
+    if not campaign_exists_locally(campaign_id):
+        hydrate_campaign_from_firestore(campaign_id)
+
+    manifest = load_manifest(campaign_id)
+    checkpoint = load_checkpoint(campaign_id)
+    if not manifest and not checkpoint.get("accounts"):
+        raise FileNotFoundError(f"campaign not found: {campaign_id}")
+
+    completed_dates = dict(checkpoint.get("completed_dates") or manifest.get("completed_dates") or {})
+    run_ids = list(checkpoint.get("run_ids") or manifest.get("run_ids") or [])
+    accounts = checkpoint.get("accounts") or manifest.get("accounts") or {}
+    latest_run_id = detail_replay_run_id or (run_ids[-1] if run_ids else None)
+
+    latest_manifest = _load_run_manifest(latest_run_id) if latest_run_id else {}
+    synthetic_manifest = {
+        **latest_manifest,
+        "campaign_id": campaign_id,
+        "accounts": accounts,
+        "trading_date": checkpoint.get("last_completed_date") or manifest.get("last_completed_date"),
+        "decision_at": latest_manifest.get("decision_at"),
+        "fill_date": latest_manifest.get("fill_date"),
+        "execution_mode": manifest.get("execution_mode") or latest_manifest.get("execution_mode"),
+        "leakage_summary": manifest.get("leakage_summary") or latest_manifest.get("leakage_summary"),
+    }
+
+    base_rid = latest_run_id or f"campaign_{campaign_id}"
+    if latest_run_id:
+        _ensure_run_local(latest_run_id)
+    payload = _build_from_manifest(base_rid, synthetic_manifest, campaign_id=campaign_id)
+
+    names: dict[str, str] = {}
+    all_trades: list[dict[str, Any]] = []
+    for rid in run_ids:
+        run_dir = _ensure_run_local(rid)
+        if not run_dir:
+            continue
+        snap = _read_json(run_dir / "snapshot.json")
+        names.update(_ticker_name_map(snap))
+        all_trades.extend(_read_jsonl(run_dir / "trades.jsonl"))
+
+    payload["timeline"] = _build_campaign_timeline(completed_dates)
+    n_done = manifest.get("days_completed")
+    if n_done is None:
+        n_done = len(completed_dates)
+    payload["operatingDays"] = int(n_done or 0)
+    payload["replayRunId"] = latest_run_id
+    payload["latestReplayRunId"] = latest_run_id
+    payload["campaignId"] = campaign_id
+    payload["competitionStatus"] = manifest.get("competition_status")
+    payload["campaignProgress"] = {
+        "campaignId": campaign_id,
+        "replayType": manifest.get("replay_type"),
+        "startDate": manifest.get("start_date") or manifest.get("period_start"),
+        "endDate": manifest.get("end_date") or manifest.get("period_end"),
+        "competitionStatus": manifest.get("competition_status"),
+        "needsResume": manifest.get("needs_resume"),
+        "nextTradingDate": manifest.get("next_trading_date"),
+        "progressLabel": manifest.get("progress_label"),
+        "daysCompleted": n_done,
+        "daysTotal": manifest.get("days_total"),
+        "lastCompletedDate": manifest.get("last_completed_date"),
+        "doNotResume": manifest.get("do_not_resume"),
+        "campaignKind": manifest.get("campaign_kind"),
+    }
+
+    trade_history: dict[str, list] = {f"agent{i}": [] for i in range(1, 5)}
+    fill_date = synthetic_manifest.get("fill_date") or ""
+    for i, tr in enumerate(all_trades):
+        tid = tr.get("team_id", "A")
+        agent_key = TEAM_TO_AGENT.get(tid, "agent1")
+        code = str(tr.get("ticker") or "")
+        trade_history[agent_key].append(
+            {
+                "dayIndex": i,
+                "date": (tr.get("executed_at") or tr.get("fill_at") or fill_date or "")[:10],
+                "name": tr.get("name") or names.get(code) or code,
+                "code": code,
+                "side": "sell" if "sell" in str(tr.get("side", "")).lower() else "buy",
+                "price": tr.get("fill_price_krw"),
+                "qty": tr.get("quantity"),
+                "pnl": tr.get("realized_pnl_krw"),
+                "reason": tr.get("reason_label") or tr.get("reason"),
+                "fillDate": tr.get("fill_date") or fill_date,
+                "historical": True,
+            }
+        )
+    payload["tradeHistory"] = trade_history
+
+    if detail_replay_run_id and detail_replay_run_id != latest_run_id:
+        detail = build_replay_dashboard_payload(detail_replay_run_id, prefer_local=prefer_local, campaign_id=campaign_id)
+        payload["teamDecisions"] = detail.get("teamDecisions") or []
+        payload["auditSummary"] = detail.get("auditSummary") or payload.get("auditSummary")
+        payload["replayMeta"] = detail.get("replayMeta") or payload.get("replayMeta")
+        payload["replayRunId"] = detail_replay_run_id
+    else:
+        payload["teamDecisions"] = payload.get("teamDecisions") or []
+
+    try:
+        from src.trading.competition.replay.observability import (
+            load_campaign_public_audit_summary,
+            merge_public_audit_into_dashboard,
+        )
+
+        public_obs = load_campaign_public_audit_summary(campaign_id)
+        if public_obs:
+            payload["auditSummary"] = merge_public_audit_into_dashboard(
+                payload.get("auditSummary") or {},
+                public_obs,
+            )
+    except Exception:
+        pass
+
+    return payload
+
+
 def build_replay_dashboard_payload(
     replay_run_id: str,
     *,

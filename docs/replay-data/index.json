@@ -48,32 +48,8 @@
         "m202601"
       ],
       "hasFinal": false,
-      "hasAuditSummary": true
-    },
-    "month_20260102_20260130_d95c8a": {
-      "campaignId": "month_20260102_20260130_d95c8a",
-      "replayType": null,
-      "startDate": null,
-      "endDate": null,
-      "leakageSummary": null,
-      "competitionStatus": null,
-      "needsResume": null,
-      "nextTradingDate": null,
-      "progressLabel": null,
-      "daysCompleted": 0,
-      "daysTotal": 0,
-      "lastCompletedDate": null,
-      "weeklyReportKeys": [],
-      "monthlyReportKeys": [],
-      "weekly": [
-        "w1",
-        "w2"
-      ],
-      "monthly": [
-        "m202601"
-      ],
-      "hasFinal": false,
-      "hasAuditSummary": true
+      "hasAuditSummary": true,
+      "hasCampaignDashboard": false
     }
   }
 }
