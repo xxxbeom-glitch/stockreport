@@ -76,6 +76,16 @@ def main() -> int:
         default=5,
         help="Max trading days per Actions run (default 5)",
     )
+    parser.add_argument(
+        "--result-out",
+        default="",
+        help="Write JSON result to this file (stdout stays human-readable)",
+    )
+    parser.add_argument(
+        "--json-stdout-only",
+        action="store_true",
+        help="Print only JSON to stdout (for piping); logs go to stderr",
+    )
     args = parser.parse_args()
 
     end = args.end_date.strip() or None
@@ -104,7 +114,18 @@ def main() -> int:
             chunk_size_trading_days=max(1, args.chunk_size_trading_days),
         )
 
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    payload = json.dumps(result, ensure_ascii=False, indent=2)
+    out_path = args.result_out.strip()
+    if out_path:
+        Path(out_path).write_text(payload + "\n", encoding="utf-8")
+
+    if args.json_stdout_only:
+        print(payload)
+    else:
+        print(payload, file=sys.stderr if out_path else sys.stdout)
+        if out_path:
+            print(f"Wrote result JSON to {out_path}", file=sys.stderr)
+
     return 0 if result.get("ok") else 1
 
 

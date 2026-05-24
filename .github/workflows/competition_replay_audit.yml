@@ -38,7 +38,7 @@ on:
         type: boolean
         default: false
       send_slack_reports:
-        description: "주간/월간 리포트 링크 Slack 발송"
+        description: "주간/월간 리포트 링크 Slack only"
         type: boolean
         default: true
       persist_replay_results:
@@ -102,17 +102,7 @@ jobs:
 
       - name: List resumable campaigns
         if: inputs.resume_existing_campaign != true
-        run: |
-          python -c "
-          import json
-          from src.trading.competition.replay.campaign_resume import list_resumable_campaigns
-          rows = list_resumable_campaigns()
-          print('## Resumable REPLAY campaigns')
-          if not rows:
-              print('(none — start a new month/full_audit run)')
-          for r in rows:
-              print(f\"- \`{r['campaign_id']}\` — {r.get('progress_label','')}\")
-          " >> "$GITHUB_STEP_SUMMARY"
+        run: python scripts/find_replay_campaign.py >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run REPLAY
         if: inputs.persist_replay_results == true
@@ -120,8 +110,10 @@ jobs:
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
         run: |
+          set -o pipefail
           ARGS="--replay-type ${{ inputs.replay_type }} --date ${{ inputs.start_date }}"
           ARGS="$ARGS --chunk-size-trading-days ${{ inputs.chunk_size_trading_days }}"
+          ARGS="$ARGS --result-out replay_result.json"
           if [ -n "${{ inputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ inputs.end_date }}"; fi
           if [ "${{ inputs.use_mock_llm }}" = "true" ]; then ARGS="$ARGS --mock-llm"; fi
           if [ "${{ inputs.send_slack_reports }}" != "true" ]; then ARGS="$ARGS --no-slack"; fi
@@ -129,44 +121,16 @@ jobs:
           if [ "${{ inputs.resume_existing_campaign }}" = "true" ]; then
             ARGS="$ARGS --resume-existing-campaign --campaign-id ${{ inputs.campaign_id }}"
           fi
-          python scripts/run_competition_replay.py $ARGS | tee replay_result.json
-          echo "ok=$(python -c \"import json;print('true' if json.load(open('replay_result.json')).get('ok') else 'false')\")" >> "$GITHUB_OUTPUT"
-
-      - name: Campaign resume summary
-        if: inputs.persist_replay_results == true && always()
-        run: |
-          python -c "
-          import json
-          from pathlib import Path
-          p = Path('replay_result.json')
-          if not p.is_file():
-              raise SystemExit(0)
-          r = json.loads(p.read_text(encoding='utf-8'))
-          cid = r.get('campaign_id','')
-          lines = [
-              '## REPLAY chunk result',
-              f\"- **campaign_id**: \`{cid}\`\",
-              f\"- **progress**: {r.get('progress_label','')}\",
-              f\"- **chunk dates**: {', '.join(r.get('chunk_processed_dates') or []) or '(none)'}\",
-              f\"- **needs_resume**: {r.get('needs_resume')}\",
-              f\"- **status**: {r.get('competition_status')}\",
-          ]
-          if r.get('needs_resume'):
-              lines.append('')
-              lines.append('다음 주차 이어 실행: `resume_existing_campaign=true`, `campaign_id=' + cid + '`')
-          Path('$GITHUB_STEP_SUMMARY').write_text(
-              Path('$GITHUB_STEP_SUMMARY').read_text(encoding='utf-8') + '\n' + '\n'.join(lines) + '\n',
-              encoding='utf-8',
-          )
-          "
+          python scripts/run_competition_replay.py $ARGS
+          EXIT_CODE=$?
+          python scripts/replay_workflow_outputs.py replay_result.json
+          exit $EXIT_CODE
 
       - name: Publish public REPLAY JSON for GitHub Pages
         if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
         run: |
-          CID="${{ inputs.campaign_id }}"
-          if [ -z "$CID" ] && [ -f replay_result.json ]; then
-            CID=$(python -c "import json;print(json.load(open('replay_result.json')).get('campaign_id',''))")
-          fi
+          CID="${{ steps.replay.outputs.campaign_id }}"
+          if [ -z "$CID" ]; then CID="${{ inputs.campaign_id }}"; fi
           if [ -n "$CID" ]; then
             python scripts/publish_replay_pages_data.py --campaign "$CID"
           else
