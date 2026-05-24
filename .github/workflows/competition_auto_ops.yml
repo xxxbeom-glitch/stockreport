@@ -3,8 +3,8 @@
 # Manual Run workflow: prints "LIVE stopped" notice + readiness report only.
 # No session, account init, Slack, Firebase writes, or seed reset on dispatch.
 #
-# REPLAY / validation: use workflow "AI 투자 경쟁 리플레이 검증"
-#   (.github/workflows/competition_replay_audit.yml)
+# REPLAY: use workflows "REPLAY - 새로 시작" / "REPLAY - 이어서 실행"
+#   (.github/workflows/replay_new_campaign.yml, replay_resume_campaign.yml)
 #
 # ── Restore LIVE after REPLAY audit approval ─────────────────────────────
 # 1. Uncomment `schedule:` below (cron blocks).
@@ -16,7 +16,7 @@
 # 5. Set repository secret / env COMPETITION_ALLOW_LIVE_SESSION=1 for session script.
 # 6. Re-enable tests in tests/competition/test_workflow_safety.py for live inputs.
 
-name: LIVE · 실시간 투자 운용 (중지됨)
+name: "LIVE - 실시간 투자 운용 (현재 중지)"
 
 on:
   workflow_dispatch:
@@ -73,7 +73,7 @@ jobs:
           echo ""
           echo "실행하지 않음: LIVE session, 계좌 초기화, Slack 발송, Firebase 쓰기, seed reset"
           echo ""
-          echo "REPLAY / 검증 실행: Actions → 'AI 투자 경쟁 리플레이 검증' workflow 사용"
+          echo "REPLAY 실행: Actions → 'REPLAY - 새로 시작' 또는 'REPLAY - 이어서 실행'"
           echo "문서: docs/ai_trading_competition/REPLAY_AUDIT_SYSTEM_FINAL_REPORT.md"
 
       - name: Verify live ops readiness (read-only)
@@ -90,7 +90,7 @@ jobs:
               'warnings': report['warnings'],
               'firebase': report['firebase'],
               'slack': report['slack'],
-              'next_step': 'Use AI 투자 경쟁 리플레이 검증 workflow for REPLAY/AUDIT runs',
+              'next_step': 'Use REPLAY - 새로 시작 / REPLAY - 이어서 실행 workflows',
           }
           print(json.dumps(summary, ensure_ascii=False, indent=2))
           sys.exit(0)

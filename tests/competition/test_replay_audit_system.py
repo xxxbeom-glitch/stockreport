@@ -75,12 +75,14 @@ class ReplayAuditSystemTest(unittest.TestCase):
         self.assertIn("PAUSED until REPLAY", wf)
         self.assertIsNone(re.search(r"^  schedule:\s*$", wf, re.MULTILINE))
 
-    def test_replay_workflow_exists(self) -> None:
-        p = ROOT / ".github" / "workflows" / "competition_replay_audit.yml"
-        self.assertTrue(p.is_file())
-        text = p.read_text(encoding="utf-8")
-        self.assertIn("COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TRADING }}", text)
-        self.assertIn("replay_smoke", text)
+    def test_replay_workflows_exist(self) -> None:
+        for name in ("replay_new_campaign.yml", "replay_resume_campaign.yml"):
+            p = ROOT / ".github" / "workflows" / name
+            self.assertTrue(p.is_file(), msg=name)
+            text = p.read_text(encoding="utf-8")
+            self.assertIn("COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TRADING }}", text)
+            self.assertIn("replay_smoke", text)
+            self.assertIn("deploy-pages@v4", text)
 
 
 import re

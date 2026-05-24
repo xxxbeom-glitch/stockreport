@@ -1,4 +1,4 @@
-name: "REPLAY - 새 리플레이 시작"
+name: "REPLAY - 새로 시작"
 
 on:
   workflow_dispatch:

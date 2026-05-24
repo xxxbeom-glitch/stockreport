@@ -1,4 +1,4 @@
-name: "REPLAY - 진행 중 리플레이 이어서 실행"
+name: "REPLAY - 이어서 실행"
 
 on:
   workflow_dispatch:
