@@ -297,6 +297,16 @@ def _build_from_manifest(
         )
 
     audit_summary = _build_audit_summary(manifest, code_audit)
+    try:
+        from src.trading.competition.replay.observability import (
+            load_run_public_audit_summary,
+            merge_public_audit_into_dashboard,
+        )
+
+        public_obs = load_run_public_audit_summary(replay_run_id)
+        audit_summary = merge_public_audit_into_dashboard(audit_summary, public_obs)
+    except Exception:
+        pass
     reports = load_campaign_reports(cid) if cid else {"weeklyReports": {}, "monthlyReports": {}}
     final_report = reports.get("finalReport")
     campaign_manifest: dict[str, Any] = {}

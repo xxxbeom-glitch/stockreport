@@ -138,16 +138,68 @@ def run_replay_single_day(
     session_id = f"{replay_run_id}_session"
     store = ReplayStore(replay_run_id)
 
+    replay_type: str | None = None
+    campaign_progress: dict[str, Any] | None = None
+    if campaign_id:
+        from src.trading.competition.replay.finalize import load_campaign_manifest
+
+        camp_m = load_campaign_manifest(campaign_id)
+        replay_type = str(camp_m.get("replay_type") or "") or None
+        if camp_m.get("days_total") is not None:
+            campaign_progress = {
+                "days_completed": camp_m.get("days_completed"),
+                "days_total": camp_m.get("days_total"),
+                "progress_label": camp_m.get("progress_label"),
+            }
+
+    from src.trading.competition.replay.observability import (
+        RunObservability,
+        compute_strategy_differentiation,
+        providers_configuration,
+    )
+
+    obs = RunObservability(
+        replay_run_id,
+        campaign_id=campaign_id,
+        replay_type=replay_type,
+        trading_date=trading_date,
+    )
+    prov = providers_configuration()
+    obs.log_api_connection(
+        "market_data",
+        ok=prov.get("kis_configured") or prov.get("pykrx_available"),
+        primary="KIS" if prov.get("kis_configured") else None,
+        fallback="pykrx" if prov.get("pykrx_available") else None,
+    )
+    obs.log_pipeline("run_start", "ok", force_mock=force_mock)
+
     snapshot = build_close_snapshot(trading_date)
     if not snapshot.get("ok"):
+        err = str(snapshot.get("error") or "snapshot_failed")
+        obs.log_pipeline("snapshot_build", "error", detail=err)
+        obs.finalize(
+            {"ok": False, "replay_run_id": replay_run_id},
+            status="failed",
+            failure_summary=err,
+            force_mock=force_mock,
+            campaign_progress=campaign_progress,
+        )
         return {"ok": False, "replay_run_id": replay_run_id, "error": snapshot.get("error")}
+    obs.log_pipeline(
+        "snapshot_build",
+        "ok",
+        snapshot_id=snapshot.get("snapshot_id"),
+        candidate_count=len(snapshot.get("eligible_universe") or []),
+    )
 
     store.save_snapshot(snapshot)
     evidence_objs = [EvidenceRecord(**e) for e in snapshot["evidence_records"]]
     universe_by = snapshot["universe_by_ticker"]
 
     triggers = _build_triggers_from_snapshot(snapshot, session_id)
+    obs.log_pipeline("decision_triggers", "ok", trigger_count=len(triggers))
     decisions_out = run_decisions_for_triggers(triggers, force_mock=force_mock)
+    obs.log_pipeline("decision_ai", "ok", decision_count=len(decisions_out))
 
     if accounts is None:
         accounts = initial_replay_accounts()
@@ -294,6 +346,21 @@ def run_replay_single_day(
 
         team_results[team_id] = result
         store.append_jsonl("decisions.jsonl", decision)
+        obs.log_strategy_trace(
+            team_id=team_id,
+            decision=decision,
+            review=review,
+            audit=audit,
+            fill_status=result.get("status"),
+        )
+
+    strategy_diff = compute_strategy_differentiation(decisions_out, team_results=team_results)
+    obs.log_pipeline(
+        "strategy_differentiation",
+        "ok",
+        divergence_score=strategy_diff.get("divergence_score"),
+        unique_profiles=strategy_diff.get("unique_action_profiles"),
+    )
 
     leakage_summary = "PASS" if all(s == "PASS" for s in leakage_statuses if s) else "LIMITED"
     if "FAIL" in leakage_statuses:
@@ -361,6 +428,21 @@ def run_replay_single_day(
             firestore_sync = {"ok": False, "error": str(exc)}
 
     manifest["firestore_sync"] = firestore_sync
+    store.save_manifest(manifest)
+
+    run_status = "failed" if leakage_summary == "FAIL" else "completed"
+    failure = None
+    if not manifest.get("ok"):
+        failure = "leakage_or_audit_fail"
+    obs.finalize(
+        manifest,
+        status=run_status,
+        failure_summary=failure,
+        strategy_diff=strategy_diff,
+        force_mock=force_mock,
+        campaign_progress=campaign_progress,
+    )
+    manifest["observability_status"] = run_status
     store.save_manifest(manifest)
     return manifest
 

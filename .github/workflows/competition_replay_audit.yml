@@ -193,3 +193,12 @@ jobs:
         with:
           name: competition-replay-${{ inputs.start_date }}
           path: data/competition/replay/
+
+      - name: Upload observability logs (internal)
+        if: inputs.persist_replay_results == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: competition-replay-observability-${{ inputs.start_date }}
+          path: |
+            data/competition/replay/**/observability/
+          if-no-files-found: ignore

@@ -11,6 +11,10 @@ from zoneinfo import ZoneInfo
 
 from src.trading.competition.dashboard.replay_payload import build_replay_dashboard_payload
 from src.trading.competition.replay.firestore_store import GITHUB_PAGES_DASHBOARD_BASE, replay_report_url
+from src.trading.competition.replay.observability import (
+    load_campaign_public_audit_summary,
+    load_run_public_audit_summary,
+)
 from src.trading.competition.replay.reports import load_campaign_reports
 from src.trading.competition.runtime import COMPETITION_ROOT
 
@@ -25,6 +29,12 @@ _STRIP_KEYS = frozenset(
         "evidence_ids",
         "reset_required_before_live",
         "affects_live_account",
+        "profiles",
+        "error_summaries",
+        "models",
+        "workflow",
+        "role_env_keys",
+        "teams",
     }
 )
 
@@ -79,6 +89,26 @@ def sanitize_report(report: dict[str, Any], *, campaign_id: str, report_type: st
     return rep
 
 
+def publish_run_audit_summary(replay_run_id: str) -> Path | None:
+    public = load_run_public_audit_summary(replay_run_id)
+    if not public:
+        return None
+    safe = _strip_obj(public)
+    path = REPLAY_DATA_ROOT / "runs" / replay_run_id / "audit_summary.json"
+    _write_json(path, safe)
+    return path
+
+
+def publish_campaign_audit_summary(campaign_id: str) -> Path | None:
+    public = load_campaign_public_audit_summary(campaign_id)
+    if not public:
+        return None
+    safe = _strip_obj(public)
+    path = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "audit_summary.json"
+    _write_json(path, safe)
+    return path
+
+
 def publish_run_dashboard(replay_run_id: str) -> Path | None:
     try:
         payload = build_replay_dashboard_payload(replay_run_id, prefer_local=True)
@@ -87,6 +117,7 @@ def publish_run_dashboard(replay_run_id: str) -> Path | None:
     safe = sanitize_dashboard_payload(payload)
     path = REPLAY_DATA_ROOT / "runs" / replay_run_id / "dashboard.json"
     _write_json(path, safe)
+    publish_run_audit_summary(replay_run_id)
     return path
 
 
@@ -112,6 +143,7 @@ def publish_campaign_reports(campaign_id: str) -> dict[str, list[str]]:
         _write_json(REPLAY_DATA_ROOT / f"campaigns/{campaign_id}/final.json", safe)
         written["final"].append("final")
 
+    publish_campaign_audit_summary(campaign_id)
     return written
 
 
@@ -174,6 +206,7 @@ def rebuild_index() -> dict[str, Any]:
                 "weekly": sorted(p.stem for p in (camp_dir / "weekly").glob("*.json")),
                 "monthly": sorted(p.stem for p in (camp_dir / "monthly").glob("*.json")),
                 "hasFinal": (camp_dir / "final.json").is_file(),
+                "hasAuditSummary": (camp_dir / "audit_summary.json").is_file(),
             }
             campaigns[cid] = entry
 

@@ -2764,7 +2764,19 @@
           } else if (auditSummary.committeeStatus === "not_implemented") {
             committeeText = "미구현";
           }
+          var strat = auditSummary.strategyDifferentiation || {};
+          var stratLine = strat.divergenceScore != null
+            ? "점수 " + strat.divergenceScore + " · 프로필 " + (strat.uniqueActionProfiles != null ? strat.uniqueActionProfiles : "-")
+            : "-";
           grid.innerHTML =
+            '<div class="audit-panel__item"><p class="audit-panel__label">파이프라인 / 데이터</p>' +
+            '<p class="audit-panel__value">' + (auditSummary.pipelineHealth || "-") + "</p>" +
+            (auditSummary.providersSummary
+              ? '<p class="audit-panel__sub">' + auditSummary.providersSummary + "</p>"
+              : "") +
+            "</div>" +
+            '<div class="audit-panel__item"><p class="audit-panel__label">전략 차별성</p>' +
+            '<p class="audit-panel__value">' + stratLine + "</p></div>" +
             '<div class="audit-panel__item"><p class="audit-panel__label">미래 데이터 침범</p>' +
             '<p class="audit-panel__value ' + auditStatusClass(leakage) + '">' + leakage + "</p></div>" +
             '<div class="audit-panel__item"><p class="audit-panel__label">규칙 위반 건수</p>' +

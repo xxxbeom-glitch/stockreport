@@ -325,5 +325,25 @@ def run_replay_campaign(
 
     manifest["campaign_id"] = campaign_id
     sync_manifest_progress(campaign_id, manifest, checkpoint, planned_dates=planned_dates)
+
+    from src.trading.competition.replay.observability import CampaignObservability
+
+    camp_obs = CampaignObservability(campaign_id, replay_type=replay_type)
+    camp_status = "failed" if not manifest.get("ok") else (
+        "completed" if not manifest.get("needs_resume") else "partial"
+    )
+    camp_obs.log_chunk(
+        status=camp_status,
+        chunk_dates=list(manifest.get("chunk_processed_dates") or []),
+        failure_summary=manifest.get("error") if not manifest.get("ok") else None,
+        manifest=manifest,
+    )
+    camp_obs.finalize_campaign_meta(
+        manifest,
+        status=camp_status,
+        failure_summary=manifest.get("error") if not manifest.get("ok") else None,
+        force_mock=force_mock,
+    )
+
     sync_replay_campaign(campaign_id, manifest)
     return manifest
