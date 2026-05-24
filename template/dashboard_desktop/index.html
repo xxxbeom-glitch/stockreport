@@ -2013,6 +2013,10 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="competition-firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="replay-firestore-client.js"></script>
     <script>
       (function () {
         var CASH_AMOUNT = 148200;
@@ -3721,7 +3725,32 @@
           });
         }
 
+        function useFirestoreReplayBackend() {
+          return (
+            window.CompetitionReplayFirestore &&
+            CompetitionReplayFirestore.preferFirestoreBackend() &&
+            CompetitionReplayFirestore.hasFirestoreConfig()
+          );
+        }
+
+        function applyReplayPayload(data, runId) {
+          var cid = campaignId || data.campaignId;
+          if (cid && window.CompetitionReplayFirestore) {
+            return CompetitionReplayFirestore.loadCampaignReports(cid).then(function (reports) {
+              CompetitionReplayFirestore.mergeReportsIntoPayload(data, reports);
+              replayRunId = data.replayRunId || runId;
+              applyCompetitionPayload(data);
+            });
+          }
+          replayRunId = data.replayRunId || runId;
+          applyCompetitionPayload(data);
+          return Promise.resolve();
+        }
+
         function loadLiveDashboard() {
+          if (useFirestoreReplayBackend()) {
+            return Promise.reject(new Error("LIVE는 API 서버가 필요합니다 (로컬 serve_mock_trading)"));
+          }
           return fetch("/api/trading-competition/dashboard")
             .then(function (r) { return r.json(); })
             .then(function (j) {
@@ -3736,6 +3765,11 @@
           if (!runId) {
             return Promise.reject(new Error("replay_run_id required"));
           }
+          if (useFirestoreReplayBackend()) {
+            return CompetitionReplayFirestore.loadReplayRun(runId).then(function (data) {
+              return applyReplayPayload(data, runId);
+            });
+          }
           return fetch("/api/trading-competition/replay/dashboard?replay_run_id=" + encodeURIComponent(runId) +
             (campaignId ? "&campaign=" + encodeURIComponent(campaignId) : ""))
             .then(function (r) { return r.json(); })
@@ -3748,6 +3782,11 @@
         }
 
         function loadReplayRuns() {
+          if (useFirestoreReplayBackend()) {
+            return CompetitionReplayFirestore.listReplayRuns(50).then(function (runs) {
+              replayRuns = runs || [];
+            });
+          }
           return fetch("/api/trading-competition/replay/runs")
             .then(function (r) { return r.json(); })
             .then(function (j) {
@@ -3810,8 +3849,31 @@
               if (!replayRunId && replayRuns.length) {
                 replayRunId = replayRuns[0].replayRunId;
               }
+              if (!replayRunId && campaignId && useFirestoreReplayBackend()) {
+                return CompetitionReplayFirestore.loadCampaignReports(campaignId).then(function (reports) {
+                  WEEKLY_REPORTS = reports.weeklyReports || {};
+                  MONTHLY_REPORTS = reports.monthlyReports || {};
+                  FINAL_REPORT = reports.finalReport || null;
+                  if (urlReportKey && urlReportType === "weekly" && WEEKLY_REPORTS[urlReportKey]) {
+                    renderWeeklyReport(urlReportKey);
+                  } else if (urlReportType === "final" && FINAL_REPORT) {
+                    renderFinalReport();
+                  } else if (urlReportType === "monthly" && urlReportKey && MONTHLY_REPORTS[urlReportKey]) {
+                    renderMonthlyReport(urlReportKey);
+                  }
+                  var meta = document.querySelector('[data-ui="dashboard-meta"]');
+                  if (meta) {
+                    meta.textContent =
+                      "REPLAY 리포트 (Firestore) · campaign " + campaignId + " — run을 선택하면 상세 데이터 표시";
+                  }
+                });
+              }
               if (!replayRunId) {
-                showReplayEmptyState("저장된 REPLAY run이 없습니다. competition_replay_audit workflow를 실행하세요.");
+                showReplayEmptyState(
+                  useFirestoreReplayBackend()
+                    ? "Firestore에 REPLAY run이 없거나 FIREBASE_WEB_API_KEY 미설정입니다."
+                    : "저장된 REPLAY run이 없습니다. competition_replay_audit workflow를 실행하세요."
+                );
                 return;
               }
               return loadReplayDashboard(replayRunId);

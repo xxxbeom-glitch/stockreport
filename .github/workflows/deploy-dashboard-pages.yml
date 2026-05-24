@@ -1,0 +1,57 @@
+# Public dashboard (GitHub Pages) — static HTML + Firestore client for REPLAY.
+# URL: https://xxxbeom-glitch.github.io/stockreport/template/dashboard_desktop/
+name: Deploy competition dashboard (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "template/dashboard_desktop/**"
+      - ".github/workflows/deploy-dashboard-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write Firebase web config for REPLAY (Pages)
+        env:
+          FIREBASE_WEB_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY }}
+        run: |
+          CONFIG_PATH="template/dashboard_desktop/competition-firebase-config.js"
+          if [ -z "$FIREBASE_WEB_API_KEY" ]; then
+            echo "::warning::FIREBASE_WEB_API_KEY secret missing — copy competition-firebase-config.example.js locally"
+            cp template/dashboard_desktop/competition-firebase-config.example.js "$CONFIG_PATH"
+          else
+            cat > "$CONFIG_PATH" <<EOF
+window.COMPETITION_FIREBASE_CONFIG = {
+  apiKey: "${FIREBASE_WEB_API_KEY}",
+  authDomain: "cole-c3f96.firebaseapp.com",
+  projectId: "cole-c3f96",
+  storageBucket: "cole-c3f96.firebasestorage.app"
+};
+EOF
+          fi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

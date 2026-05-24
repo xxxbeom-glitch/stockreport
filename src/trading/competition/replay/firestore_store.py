@@ -158,11 +158,14 @@ def list_replay_monthly_reports_firestore(campaign_id: str | None = None) -> lis
         return []
 
 
+GITHUB_PAGES_DASHBOARD_BASE = "https://xxxbeom-glitch.github.io/stockreport"
+
+
 def replay_dashboard_base_url() -> str:
     return (
         os.getenv("COMPETITION_DASHBOARD_BASE_URL", "").strip()
         or os.getenv("DASHBOARD_BASE_URL", "").strip()
-        or "http://127.0.0.1:8080"
+        or GITHUB_PAGES_DASHBOARD_BASE
     ).rstrip("/")
 
 

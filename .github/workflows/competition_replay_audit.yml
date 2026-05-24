@@ -89,7 +89,7 @@ jobs:
         if: inputs.persist_replay_results == true
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
-          COMPETITION_DASHBOARD_BASE_URL: ${{ vars.COMPETITION_DASHBOARD_BASE_URL || 'http://127.0.0.1:8080' }}
+          COMPETITION_DASHBOARD_BASE_URL: ${{ vars.COMPETITION_DASHBOARD_BASE_URL || 'https://xxxbeom-glitch.github.io/stockreport' }}
         run: |
           ARGS="--replay-type ${{ inputs.replay_type }} --date ${{ inputs.start_date }}"
           if [ -n "${{ inputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ inputs.end_date }}"; fi
