@@ -67,8 +67,10 @@ def _kis_ready() -> bool:
 
 
 def _kis_daily_bars(ticker: str, start: str, end: str) -> list[dict[str, Any]]:
-    from data.kis_client import get_daily_ohlcv_range
+    from data.kis_client import get_daily_ohlcv_range, is_kis_auth_failed
 
+    if is_kis_auth_failed():
+        return []
     return get_daily_ohlcv_range(ticker.zfill(6), start, end)
 
 
@@ -119,6 +121,10 @@ def _pykrx_session_dates(start: str, end: str) -> tuple[list[str], list[str]]:
 def _kis_session_dates(start: str, end: str) -> tuple[list[str], list[str]]:
     if not _kis_ready():
         return [], ["kis_credentials_missing"]
+    from data.kis_client import is_kis_auth_failed
+
+    if is_kis_auth_failed():
+        return [], ["kis_auth_failed"]
     pad_start = (datetime.strptime(start, "%Y%m%d") - timedelta(days=14)).strftime("%Y%m%d")
     pad_end = (datetime.strptime(end, "%Y%m%d") + timedelta(days=14)).strftime("%Y%m%d")
     try:
@@ -185,6 +191,11 @@ def _load_ticker_ohlcv_map(ticker: str, start: str, end: str) -> tuple[dict[str,
 
     errors: list[str] = []
     if _kis_ready():
+        from data.kis_client import is_kis_auth_failed
+
+        if is_kis_auth_failed():
+            errors.append("kis_auth_failed")
+            return {}, None, errors
         try:
             bars = _kis_daily_bars(ticker, start, end)
             if bars:

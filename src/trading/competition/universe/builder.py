@@ -45,6 +45,19 @@ def enrich_risk_from_kis(
     kis_fetcher: Callable[[str], dict[str, Any] | None] | None = None,
 ) -> tuple[int, int]:
     """Fetch KIS risk for records in-place. Returns (verified_count, failed_count)."""
+    try:
+        from data.kis_client import is_kis_auth_failed
+
+        if is_kis_auth_failed():
+            for rec in records:
+                rec["risk_check_status"] = "unverified"
+                rec["risk_status"] = "unknown"
+                rec["risk_exclude_new_entry"] = False
+                rec["risk_notes"] = ["kis_auth_failed"]
+            return 0, len(records)
+    except Exception:
+        pass
+
     fetcher = kis_fetcher or _kis_quote_fetcher
     verified = 0
     failed = 0

@@ -12,6 +12,19 @@ from src.trading.competition.replay.snapshot_builder import build_close_snapshot
 
 
 class ReplayUniverseBuildTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._preflight_patch = patch(
+            "data.kis_client.preflight_kis_auth",
+            return_value={"ok": True, "token_issue_calls": 1},
+        )
+        self._preflight_patch.start()
+
+    def tearDown(self) -> None:
+        self._preflight_patch.stop()
+        from data import kis_client as kc
+
+        kc.reset_kis_auth_state(clear_token=True)
+
     def test_no_pykrx_when_krx_missing(self) -> None:
         with patch("src.trading.competition.replay.pykrx_safe.krx_credentials_configured", return_value=False):
             with patch.object(ur, "load_static_ticker_master", return_value=[]):
