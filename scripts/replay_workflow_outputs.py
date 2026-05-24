@@ -65,6 +65,9 @@ def main() -> int:
         f"- **needs_resume**: {result.get('needs_resume')}",
         f"- **next_trading_date**: {result.get('next_trading_date', '')}",
         f"- **status**: {result.get('competition_status', '')}",
+        f"- **batch_status**: {result.get('batch_status', '')}",
+        f"- **resume_reason**: {result.get('resume_reason', '')}",
+        f"- **kis_requests_used**: {result.get('kis_requests_used', '')}",
         f"- **ok**: {result.get('ok')}",
         f"- **data_status**: {result.get('data_status', '')}",
     ]

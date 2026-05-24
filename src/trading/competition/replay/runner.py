@@ -211,11 +211,6 @@ def run_replay_single_day(
                 "kis_auth": kis_auth,
             }
 
-        if kis_auth.get("ok"):
-            from data.kis_client import reset_kis_rate_limit
-
-            reset_kis_rate_limit()
-
     obs.log_pipeline("run_start", "ok", force_mock=force_mock)
 
     snapshot = build_close_snapshot(trading_date)
@@ -259,10 +254,30 @@ def run_replay_single_day(
             "ok": False,
             "replay_run_id": replay_run_id,
             "error": "kis_rate_limit_exceeded",
+            "batch_status": "kis_rate_limit_paused",
             "kis_rate_limit": rate_limit,
         }
     if not snapshot.get("ok"):
         from src.trading.competition.replay.data_validity import format_data_invalid_reason
+        from src.trading.competition.replay.batch_checkpoint import is_budget_checkpoint_result
+
+        if is_budget_checkpoint_result(snapshot) or snapshot.get("error") == "kis_request_budget_reached":
+            obs.log_pipeline("snapshot_build", "checkpoint", error="kis_request_budget_reached")
+            obs.finalize(
+                {"ok": False, "replay_run_id": replay_run_id},
+                status="checkpoint_waiting_resume",
+                failure_summary="kis_request_budget_reached",
+                force_mock=force_mock,
+                campaign_progress=campaign_progress,
+                kis_rate_limit=rate_limit,
+            )
+            return {
+                "ok": False,
+                "replay_run_id": replay_run_id,
+                "error": "kis_request_budget_reached",
+                "batch_status": "checkpoint_waiting_resume",
+                "kis_rate_limit": rate_limit,
+            }
 
         enrich = snapshot.get("enrich") or {}
         universe_build = snapshot.get("universe_build") or {}

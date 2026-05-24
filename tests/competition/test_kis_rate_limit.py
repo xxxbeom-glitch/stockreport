@@ -140,6 +140,10 @@ class KISRateLimiterTests(unittest.TestCase):
             krl.reset_kis_rate_limit_state()
             self.assertEqual(krl.configured_max_rps(), 1.0)
 
+    def test_default_max_requests_per_run_is_80(self) -> None:
+        with patch.dict("os.environ", {"KIS_MAX_REQUESTS_PER_RUN": ""}, clear=False):
+            self.assertEqual(krl.configured_max_requests_per_run(), 80)
+
 
 class KISRateLimitRunnerTests(unittest.TestCase):
     def test_runner_returns_rate_limit_exceeded_with_metrics(self) -> None:

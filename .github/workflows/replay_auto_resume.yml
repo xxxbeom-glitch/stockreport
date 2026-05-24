@@ -1,12 +1,9 @@
-name: "REPLAY - 이어서 실행"
+name: "REPLAY - 자동 재개 (cron)"
 
 on:
+  schedule:
+  - cron: "*/10 * * * *"
   workflow_dispatch:
-    inputs:
-      chunk_days:
-        description: "한 번의 실행에서 처리할 최대 거래일 수"
-        type: number
-        default: 1
 
 concurrency:
   group: replay-campaign-auto-resume
@@ -37,7 +34,7 @@ env:
   FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
 jobs:
-  replay-resume:
+  replay-auto-resume:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -77,20 +74,23 @@ jobs:
         id: select
         run: |
           python scripts/select_resumable_replay_campaign.py \
-            --chunk-days ${{ inputs.chunk_days }} \
+            --chunk-days 1 \
             --github-output \
             --json-out replay_select.json
 
-      - name: Run REPLAY (resume selected campaign)
-        id: replay_resume
+      - name: Skip when no resumable campaign
+        if: steps.select.outputs.campaign_id == ''
+        run: echo "No resumable campaign — skip" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run REPLAY batch (auto resume)
+        if: steps.select.outputs.campaign_id != ''
         env:
-          COMPETITION_EXECUTION_MODE: replay_smoke
           REPLAY_RESUME_CAMPAIGN: "true"
           REPLAY_CAMPAIGN_ID: ${{ steps.select.outputs.campaign_id }}
         run: |
           set -o pipefail
           ARGS="--replay-type ${{ steps.select.outputs.replay_type }} --date ${{ steps.select.outputs.start_date }}"
-          ARGS="$ARGS --chunk-size-trading-days ${{ inputs.chunk_days }}"
+          ARGS="$ARGS --chunk-size-trading-days 1"
           ARGS="$ARGS --result-out replay_result.json"
           ARGS="$ARGS --resume-existing-campaign --campaign-id ${REPLAY_CAMPAIGN_ID}"
           if [ -n "${{ steps.select.outputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ steps.select.outputs.end_date }}"; fi
@@ -100,7 +100,7 @@ jobs:
           exit $EXIT_CODE
 
       - name: Resolve replay outputs
-        if: always()
+        if: always() && steps.select.outputs.campaign_id != ''
         id: replay
         run: |
           if [ -f replay_result.json ]; then
@@ -123,7 +123,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No public replay JSON changes — skip commit"
           else
-            git commit -m "chore: publish replay report data"
+            git commit -m "chore: publish replay report data (auto resume)"
             git pull --rebase origin main
             git push origin HEAD:main
           fi
@@ -140,17 +140,12 @@ jobs:
         uses: actions/deploy-pages@v4
         if: steps.replay.outputs.ok == 'true'
 
-      - name: Pages URL summary
-        if: steps.replay.outputs.ok == 'true' && steps.pages_deploy.outputs.page_url != ''
+      - name: Batch summary
+        if: always() && steps.select.outputs.campaign_id != ''
         run: |
-          echo "## GitHub Pages" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Dashboard: ${{ steps.pages_deploy.outputs.page_url }}template/dashboard_desktop/?mode=replay" >> "$GITHUB_STEP_SUMMARY"
-          echo "- campaign_id: \`${{ steps.replay.outputs.campaign_id }}\`" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload replay artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: competition-replay-resume-${{ steps.select.outputs.campaign_id }}
-          path: data/competition/replay/
-          if-no-files-found: ignore
+          echo "## REPLAY auto-resume" >> "$GITHUB_STEP_SUMMARY"
+          echo "- checkout_sha: \`${{ env.checkout_sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- campaign_id: \`${{ steps.select.outputs.campaign_id }}\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f replay_result.json ]; then
+            python -c "import json; r=json.load(open('replay_result.json')); print('- batch_status:', r.get('batch_status') or r.get('competition_status')); print('- needs_resume:', r.get('needs_resume')); print('- kis_requests_used:', r.get('kis_requests_used'))"
+          fi

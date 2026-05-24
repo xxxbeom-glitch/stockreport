@@ -39,12 +39,35 @@ from src.trading.competition.replay.reports import (
     save_campaign_reports,
 )
 from src.trading.competition.replay.runner import run_replay_single_day
+from src.trading.competition.replay.batch_checkpoint import (
+    FATAL_NO_AUTO_RETRY_ERRORS,
+    apply_fatal_stop,
+    apply_rate_limit_pause,
+    apply_request_budget_checkpoint,
+    attach_batch_progress,
+    is_budget_checkpoint_result,
+    is_rate_limit_pause_result,
+)
 from src.trading.competition.replay.slack_reports import (
     send_fatal_replay_error,
     send_final_report_link,
     send_monthly_report_link,
+    send_rate_limit_pause_notification,
     send_weekly_report_link,
 )
+
+
+def _sync_campaign_batch(
+    campaign_id: str,
+    manifest: dict[str, Any],
+    checkpoint: dict[str, Any],
+    *,
+    planned_dates: list[str],
+) -> dict[str, Any]:
+    manifest = sync_manifest_progress(campaign_id, manifest, checkpoint, planned_dates=planned_dates)
+    manifest = attach_batch_progress(manifest)
+    sync_replay_campaign(campaign_id, manifest)
+    return manifest
 
 
 def run_replay_campaign(
@@ -196,7 +219,33 @@ def run_replay_campaign(
     chunk_new_dates: list[str] = []
     last_day_result: dict[str, Any] | None = None
 
+    from data.kis_client import reset_kis_rate_limit
+
+    reset_kis_rate_limit()
+
+    manifest = load_manifest(campaign_id)
+    if manifest.get("competition_status") in (
+        "checkpoint_waiting_resume",
+        "kis_rate_limit_paused",
+    ):
+        manifest["competition_status"] = "active"
+        save_manifest(campaign_id, manifest)
+
     for trading_date in chunk_dates:
+        from data.kis_rate_limit import is_kis_request_budget_reached
+
+        if is_kis_request_budget_reached():
+            manifest = load_manifest(campaign_id)
+            manifest = apply_request_budget_checkpoint(
+                manifest,
+                campaign_id=campaign_id,
+                chunk_processed_dates=chunk_new_dates,
+            )
+            manifest = _sync_campaign_batch(
+                campaign_id, manifest, checkpoint, planned_dates=planned_dates
+            )
+            return manifest
+
         if is_campaign_ended(campaign_id):
             return {
                 "ok": False,
@@ -230,23 +279,79 @@ def run_replay_campaign(
             sync_firestore=True,
         )
         if not day_result.get("ok"):
+            err = str(day_result.get("error") or "replay_day_failed")
             manifest = load_manifest(campaign_id)
+
+            if is_budget_checkpoint_result(day_result):
+                manifest = apply_request_budget_checkpoint(
+                    manifest,
+                    campaign_id=campaign_id,
+                    chunk_processed_dates=chunk_new_dates,
+                )
+                manifest = _sync_campaign_batch(
+                    campaign_id, manifest, checkpoint, planned_dates=planned_dates
+                )
+                return manifest
+
+            if is_rate_limit_pause_result(day_result):
+                manifest = apply_rate_limit_pause(
+                    manifest,
+                    campaign_id=campaign_id,
+                    failed_trading_date=trading_date,
+                    chunk_processed_dates=chunk_new_dates,
+                    day_result=day_result,
+                )
+                manifest = _sync_campaign_batch(
+                    campaign_id, manifest, checkpoint, planned_dates=planned_dates
+                )
+                if send_slack_reports and not manifest.get("slack_sent_rate_limit_pause"):
+                    manifest["slack"] = send_rate_limit_pause_notification(
+                        campaign_id,
+                        next_trading_date=trading_date,
+                        dry_run=slack_dry_run,
+                    )
+                    manifest["slack_sent_rate_limit_pause"] = bool(
+                        (manifest.get("slack") or {}).get("ok")
+                    )
+                else:
+                    manifest["slack"] = {"skipped": True}
+                sync_replay_campaign(campaign_id, manifest)
+                return manifest
+
+            if err in FATAL_NO_AUTO_RETRY_ERRORS or err.startswith("kis_auth"):
+                manifest = apply_fatal_stop(
+                    manifest,
+                    campaign_id=campaign_id,
+                    error=err,
+                    failed_trading_date=trading_date,
+                    chunk_processed_dates=chunk_new_dates,
+                )
+                manifest = _sync_campaign_batch(
+                    campaign_id, manifest, checkpoint, planned_dates=planned_dates
+                )
+                if send_slack_reports:
+                    manifest["slack"] = send_fatal_replay_error(
+                        f"REPLAY 중단 ({trading_date}): {err} — 자동 재개 안 함",
+                        dry_run=slack_dry_run,
+                    )
+                return manifest
+
             manifest.update(
                 {
                     "ok": False,
-                    "error": day_result.get("error") or "replay_day_failed",
+                    "error": err,
                     "data_status": (day_result.get("data_validity") or {}).get("data_status")
                     or day_result.get("error"),
                     "failed_trading_date": trading_date,
                     "chunk_processed_dates": chunk_new_dates,
                 }
             )
-            sync_manifest_progress(
+            manifest = _sync_campaign_batch(
                 campaign_id, manifest, checkpoint, planned_dates=planned_dates
             )
             if send_slack_reports:
                 manifest["slack"] = send_fatal_replay_error(
-                    f"REPLAY chunk 중단 ({trading_date}): {day_result.get('error')}",
+                    f"REPLAY chunk 중단 ({trading_date}): {err}",
                     dry_run=slack_dry_run,
                 )
             return manifest
@@ -269,6 +374,7 @@ def run_replay_campaign(
     manifest = sync_manifest_progress(
         campaign_id, manifest, checkpoint, planned_dates=planned_dates
     )
+    manifest = attach_batch_progress(manifest)
 
     all_leakage = list(manifest.get("leakage_statuses") or [])
     all_leakage.extend(leakage_statuses)

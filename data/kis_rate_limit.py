@@ -19,6 +19,7 @@ _DEFAULT_RPS = 1.0
 _DEFAULT_MAX_RETRIES = 1
 _DEFAULT_BACKOFF_SEC = 1.0
 _DEFAULT_HALT_AFTER = 1
+_DEFAULT_MAX_REQUESTS_PER_RUN = 80
 _DEFAULT_ENRICH_WORKERS = 1
 
 
@@ -60,6 +61,23 @@ def configured_halt_after() -> int:
 
 def configured_enrich_max_workers() -> int:
     return max(1, _env_int("KIS_ENRICH_MAX_WORKERS", _DEFAULT_ENRICH_WORKERS))
+
+
+def configured_max_requests_per_run() -> int:
+    return max(1, _env_int("KIS_MAX_REQUESTS_PER_RUN", _DEFAULT_MAX_REQUESTS_PER_RUN))
+
+
+def kis_requests_used() -> int:
+    return _rate_limit_state.total_http_requests
+
+
+def is_kis_request_budget_reached() -> bool:
+    return _rate_limit_state.request_budget_reached
+
+
+def mark_request_budget_reached() -> None:
+    with _rate_limit_state._lock:
+        _rate_limit_state.request_budget_reached = True
 
 
 def is_rate_limit_msg(msg_cd: Any) -> bool:
@@ -125,6 +143,7 @@ class _RateLimitState:
             self.first_error_logged = False
             self.halt_summary_logged = False
             self.last_msg1: str | None = None
+            self.request_budget_reached = False
 
     def _note_http_request(self) -> None:
         now = time.monotonic()
@@ -190,6 +209,9 @@ class _RateLimitState:
                 "configured_max_retries": configured_max_retries(),
                 "configured_backoff_sec": configured_backoff_sec(),
                 "configured_halt_after": configured_halt_after(),
+                "configured_max_requests_per_run": configured_max_requests_per_run(),
+                "kis_requests_used": self.total_http_requests,
+                "request_budget_reached": self.request_budget_reached,
                 "last_msg_cd": KIS_RATE_LIMIT_MSG_CD if self.rate_limit_error_count else None,
                 "last_msg1": self.last_msg1,
             }
@@ -229,14 +251,25 @@ def kis_http_request(
     **kwargs: Any,
 ) -> requests.Response | None:
     """
-    Single entry for outbound KIS HTTP. Rolling 1s cap + halt returns None (no HTTP).
+    Single entry for outbound KIS HTTP. Rolling 1s cap + per-run budget + halt.
     """
-    if _rate_limit_state.halted:
+    if _rate_limit_state.halted or _rate_limit_state.request_budget_reached:
         return None
+    budget = configured_max_requests_per_run()
+    with _rate_limit_state._lock:
+        if _rate_limit_state.total_http_requests >= budget:
+            _rate_limit_state.request_budget_reached = True
+            return None
     _rolling_limiter.acquire_slot()
-    if _rate_limit_state.halted:
+    if _rate_limit_state.halted or _rate_limit_state.request_budget_reached:
         return None
-    _rate_limit_state.on_http_sent()
+    with _rate_limit_state._lock:
+        if _rate_limit_state.total_http_requests >= budget:
+            _rate_limit_state.request_budget_reached = True
+            return None
+        _rate_limit_state._note_http_request()
+        if _rate_limit_state.total_http_requests >= budget:
+            _rate_limit_state.request_budget_reached = True
     return requests.request(method, url, **kwargs)
 
 

@@ -123,6 +123,24 @@ def send_monthly_report_link(
     return _post_slack(payload, dry_run=dry_run)
 
 
+def send_rate_limit_pause_notification(
+    campaign_id: str,
+    *,
+    next_trading_date: str | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """One-time notice: KIS quota pause, cron will auto-resume."""
+    nd = next_trading_date or "?"
+    text = (
+        f"[AI 투자 경쟁앱 / REPLAY]\n"
+        f"KIS API 제한(EGW00201)으로 일시 중단 — 자동 재개 대기 중\n"
+        f"campaign: `{campaign_id}`\n"
+        f"다음 거래일: `{nd}`\n"
+        f"(오류 아님 — cron이 이어서 실행합니다)"
+    )
+    return _post_slack({"text": text}, dry_run=dry_run)
+
+
 def send_final_report_link(
     report: dict[str, Any],
     *,

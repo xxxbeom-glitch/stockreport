@@ -6,6 +6,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.trading.competition.replay.batch_checkpoint import (
+    FATAL_NO_AUTO_RETRY_ERRORS,
+    should_auto_resume,
+)
 from src.trading.competition.replay.campaign_resume import (
     CAMPAIGNS_ROOT,
     campaign_exists_locally,
@@ -35,6 +39,8 @@ RECOVERABLE_ERRORS = frozenset(
         "data_collection_failed",
         "snapshot_failed",
         "market_data_unavailable",
+        "kis_rate_limit_exceeded",
+        "kis_request_budget_reached",
     }
 )
 
@@ -209,6 +215,9 @@ def resumability_exclusion_reason(manifest: dict[str, Any]) -> str | None:
 
     if not has_resume_metadata(manifest):
         return "missing_resume_meta"
+
+    if not should_auto_resume(manifest):
+        return "not_auto_resumable"
 
     err = manifest.get("error")
     if is_fatal_campaign_error(str(err) if err else None, manifest):

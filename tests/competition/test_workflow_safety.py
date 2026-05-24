@@ -13,6 +13,7 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 LIVE_WORKFLOW = WORKFLOWS / "competition_auto_ops.yml"
 REPLAY_NEW = WORKFLOWS / "replay_new_campaign.yml"
 REPLAY_RESUME = WORKFLOWS / "replay_resume_campaign.yml"
+REPLAY_AUTO = WORKFLOWS / "replay_auto_resume.yml"
 
 
 class WorkflowSafetyTest(unittest.TestCase):
@@ -27,7 +28,12 @@ class WorkflowSafetyTest(unittest.TestCase):
         yml_files = sorted(p.name for p in WORKFLOWS.glob("*.yml"))
         self.assertEqual(
             yml_files,
-            ["competition_auto_ops.yml", "replay_new_campaign.yml", "replay_resume_campaign.yml"],
+            [
+                "competition_auto_ops.yml",
+                "replay_auto_resume.yml",
+                "replay_new_campaign.yml",
+                "replay_resume_campaign.yml",
+            ],
         )
 
     def test_removed_workflows_deleted(self) -> None:
@@ -96,6 +102,22 @@ class WorkflowSafetyTest(unittest.TestCase):
         self.assertIn("publish_replay_pages_data.py", text)
         self.assertIn("deploy-pages@v4", text)
         self.assertNotIn("inputs:\n      replay_type:", text)
+
+    def test_replay_auto_resume_workflow(self) -> None:
+        self.assertTrue(REPLAY_AUTO.is_file())
+        text = REPLAY_AUTO.read_text(encoding="utf-8")
+        self.assertIn('name: "REPLAY - 자동 재개 (cron)"', text)
+        self.assertIn('cron: "*/10 * * * *"', text)
+        self.assertIn("group: replay-campaign-auto-resume", text)
+        self.assertIn("cancel-in-progress: false", text)
+        self.assertIn("KIS_MAX_REQUESTS_PER_RUN", text)
+        self.assertIn("select_resumable_replay_campaign.py", text)
+
+    def test_replay_workflows_share_concurrency_group(self) -> None:
+        resume = REPLAY_RESUME.read_text(encoding="utf-8")
+        auto = REPLAY_AUTO.read_text(encoding="utf-8")
+        self.assertIn("group: replay-campaign-auto-resume", resume)
+        self.assertIn("group: replay-campaign-auto-resume", auto)
 
 
 if __name__ == "__main__":

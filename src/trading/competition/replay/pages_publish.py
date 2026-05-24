@@ -157,6 +157,13 @@ def publish_campaign_meta(campaign_id: str) -> Path | None:
         "campaignKind": manifest.get("campaign_kind"),
         "canonicalCampaignId": manifest.get("canonical_campaign_id"),
         "dashboardPath": f"campaigns/{campaign_id}/dashboard.json",
+        "batchStatus": manifest.get("batch_status"),
+        "publicStatus": manifest.get("public_status"),
+        "resumeReason": manifest.get("resume_reason"),
+        "lastBatchAt": manifest.get("last_batch_at"),
+        "kisRequestsUsed": manifest.get("kis_requests_used"),
+        "kisRequestsBudget": manifest.get("kis_requests_budget"),
+        "lastBatchKisRequests": manifest.get("last_batch_kis_requests"),
     }
     meta = merge_validation_into_meta(meta, campaign_id)
     path = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "meta.json"

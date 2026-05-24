@@ -36,8 +36,26 @@ def build_close_snapshot(
     """
     universe_build: dict[str, Any] | None = None
     if universe is None:
+        from data.kis_rate_limit import is_kis_request_budget_reached, kis_rate_limit_observability
+
+        if is_kis_request_budget_reached():
+            return {
+                "ok": False,
+                "error": "kis_request_budget_reached",
+                "budget_checkpoint": True,
+                "universe_build": {},
+                "kis_rate_limit": kis_rate_limit_observability(),
+            }
         stocks, universe_build = build_eligible_universe_for_replay(trading_date)
         log_universe_counts(universe_build)
+        if is_kis_request_budget_reached():
+            return {
+                "ok": False,
+                "error": "kis_request_budget_reached",
+                "budget_checkpoint": True,
+                "universe_build": universe_build.to_dict() if universe_build else {},
+                "kis_rate_limit": kis_rate_limit_observability(),
+            }
         if not stocks:
             return {
                 "ok": False,

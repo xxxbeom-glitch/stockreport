@@ -67,7 +67,10 @@ def main() -> int:
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
     if not result.get("ok"):
-        print(result.get("error"), file=sys.stderr)
+        err = str(result.get("error") or "")
+        print(err, file=sys.stderr)
+        if err == "No resumable campaign found":
+            return 0
         return 1
 
     cid = result.get("campaign_id")
