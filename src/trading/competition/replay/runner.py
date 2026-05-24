@@ -192,6 +192,9 @@ def run_replay_single_day(
             **{k: universe_build.get(k) for k in (
                 "base_universe_count",
                 "base_universe_source",
+                "common_stock_candidate_count",
+                "security_prefilter_excluded_count",
+                "kis_enrich_target_count",
                 "historical_price_enriched_count",
                 "price_filter_pass_count",
                 "liquidity_filter_pass_count",

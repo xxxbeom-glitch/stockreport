@@ -51,7 +51,7 @@ class ReplayUniverseBuildTests(unittest.TestCase):
         with patch("src.trading.competition.replay.pykrx_safe.krx_credentials_configured", return_value=False):
             with patch.object(ur, "load_static_ticker_master", return_value=master):
                 with patch("src.trading.competition.universe.collector.collect_all_stocks") as mock_pykrx:
-                    with patch.object(ur, "enrich_records_for_trading_date", return_value=(2, [])):
+                    with patch.object(ur, "enrich_records_for_trading_date", return_value=(2, [], 2)):
                         with patch.object(ur, "enrich_risk_from_kis", return_value=(2, 0)):
                             eligible, counts = ur.build_eligible_universe_for_replay("20260109")
         mock_pykrx.assert_not_called()
@@ -67,6 +67,37 @@ class ReplayUniverseBuildTests(unittest.TestCase):
         self.assertFalse(snap["ok"])
         self.assertEqual(snap["error"], "eligible_universe_empty")
         self.assertEqual(snap["universe_build"]["base_universe_count"], 0)
+
+    def test_enrich_targets_all_common_without_cap(self) -> None:
+        records = [
+            {"ticker": f"{i:06d}", "name": f"테스트{i}", "market": "KOSPI", "data_sources": []}
+            for i in range(60)
+        ]
+        calls: list[str] = []
+
+        def _fake_enrich(rec: dict[str, Any], trading_date: str, start: str) -> tuple[dict[str, Any], bool]:
+            calls.append(str(rec["ticker"]))
+            rec["current_price_krw"] = 50_000
+            rec["avg_trading_value_20d_krw"] = 5_000_000_000
+            return rec, True
+
+        with patch("src.trading.competition.replay.data_provider._kis_ready", return_value=True):
+            with patch.object(ur, "_enrich_one_record", side_effect=_fake_enrich):
+                enriched, _, target_n = ur.enrich_records_for_trading_date(records, "20260109")
+        self.assertEqual(target_n, 60)
+        self.assertEqual(enriched, 60)
+        self.assertEqual(len(calls), 60)
+
+    def test_etf_excluded_before_kis_enrich(self) -> None:
+        records = [
+            {"ticker": "005930", "name": "삼성전자", "market": "KOSPI"},
+            {"ticker": "069500", "name": "KODEX 200 ETF", "market": "KOSPI"},
+        ]
+        with patch("src.trading.competition.replay.data_provider._kis_ready", return_value=True):
+            with patch.object(ur, "_enrich_one_record", return_value=({}, False)) as mock_one:
+                _, _, target_n = ur.enrich_records_for_trading_date(records, "20260109")
+        self.assertEqual(target_n, 1)
+        self.assertEqual(mock_one.call_count, 1)
 
     def test_krx_env_false_skips_pykrx_in_collector(self) -> None:
         from src.trading.competition.universe import collector

@@ -2,15 +2,50 @@
 
 from __future__ import annotations
 
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import redirect_stderr
 from datetime import datetime, timedelta
 import io
+from pathlib import Path
 from typing import Any
+
+from src.trading.competition.runtime import COMPETITION_ROOT
 
 SESSION_PROBE_TICKER = "005930"
 
 _OHLCV_CACHE: dict[tuple[str, str, str], dict[str, dict[str, int]]] = {}
+KIS_OHLCV_DISK_CACHE_DIR = COMPETITION_ROOT / "replay" / "kis_ohlcv_cache"
+
+
+def _disk_cache_path(ticker: str, start: str, end: str) -> Path:
+    code = ticker.zfill(6)
+    return KIS_OHLCV_DISK_CACHE_DIR / f"{code}_{start}_{end}.json"
+
+
+def _read_disk_ohlcv_cache(ticker: str, start: str, end: str) -> dict[str, dict[str, int]] | None:
+    path = _disk_cache_path(ticker, start, end)
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        mapped = payload.get("ohlcv") or payload
+        if isinstance(mapped, dict) and mapped:
+            return {str(k): dict(v) for k, v in mapped.items()}
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return None
+    return None
+
+
+def _write_disk_ohlcv_cache(ticker: str, start: str, end: str, mapped: dict[str, dict[str, int]]) -> None:
+    if not mapped:
+        return
+    path = _disk_cache_path(ticker, start, end)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps({"ticker": ticker.zfill(6), "start": start, "end": end, "ohlcv": mapped}, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
 
 def _pykrx():
@@ -143,6 +178,11 @@ def _load_ticker_ohlcv_map(ticker: str, start: str, end: str) -> tuple[dict[str,
     if key in _OHLCV_CACHE:
         return _OHLCV_CACHE[key], "cache", []
 
+    disk = _read_disk_ohlcv_cache(ticker, start, end)
+    if disk:
+        _OHLCV_CACHE[key] = disk
+        return disk, "kis_disk_cache", []
+
     errors: list[str] = []
     if _kis_ready():
         try:
@@ -150,6 +190,7 @@ def _load_ticker_ohlcv_map(ticker: str, start: str, end: str) -> tuple[dict[str,
             if bars:
                 mapped = _bars_to_date_map(bars)
                 _OHLCV_CACHE[key] = mapped
+                _write_disk_ohlcv_cache(ticker, start, end, mapped)
                 return mapped, "kis_daily_chart", errors
             errors.append("kis:empty")
         except Exception as exc:

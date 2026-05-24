@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 STATIC_MASTER_PATH = ALL_STOCKS_PATH.parent / "static_ticker_master.json"
 KIS_VOLUME_RANK_PER_MARKET = 180
-KIS_ENRICH_MAX_TICKERS = 1200
 
 
 @dataclass
@@ -31,6 +30,9 @@ class UniverseStageCounts:
     trading_date: str
     base_universe_source: str = ""
     base_universe_count: int = 0
+    security_prefilter_excluded_count: int = 0
+    common_stock_candidate_count: int = 0
+    kis_enrich_target_count: int = 0
     historical_price_enriched_count: int = 0
     price_filter_pass_count: int = 0
     liquidity_filter_pass_count: int = 0
@@ -156,23 +158,32 @@ def _enrich_one_record(rec: dict[str, Any], trading_date: str, start: str) -> tu
     return rec, True
 
 
+def common_stock_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """KOSPI/KOSDAQ 일반 보통주만 (ETF/우선주/SPAC/리츠 등 제외) — KIS 호출 전 분류."""
+    return [
+        r
+        for r in records
+        if classify_security_type(str(r.get("name") or ""), str(r.get("ticker") or "")) == "common"
+    ]
+
+
 def enrich_records_for_trading_date(
     records: list[dict[str, Any]],
     trading_date: str,
-    *,
-    max_tickers: int = KIS_ENRICH_MAX_TICKERS,
-) -> tuple[int, list[str]]:
-    """KIS (or pykrx fallback inside data_provider) OHLCV enrich for as-of trading_date."""
+) -> tuple[int, list[str], int]:
+    """
+    KIS OHLCV enrich for every common stock in records (no arbitrary cap).
+    Returns (enriched_count, errors, kis_enrich_target_count).
+    """
     from src.trading.competition.replay.data_provider import _kis_ready
 
     if not _kis_ready():
-        return 0, ["kis_credentials_missing"]
+        return 0, ["kis_credentials_missing"], 0
 
     start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=45)).strftime("%Y%m%d")
-    candidates = [r for r in records if classify_security_type(r.get("name", ""), r["ticker"]) == "common"]
-    candidates.sort(key=lambda r: int(r.get("avg_trading_value_20d_krw") or 0), reverse=True)
-    if max_tickers > 0:
-        candidates = candidates[:max_tickers]
+    candidates = common_stock_records(records)
+    # Deterministic full scan order (not stale avg_tv ranking).
+    candidates.sort(key=lambda r: str(r.get("ticker") or "").zfill(6))
 
     enriched = 0
     errors: list[str] = []
@@ -195,7 +206,7 @@ def enrich_records_for_trading_date(
             except Exception as exc:
                 errors.append(f"enrich_worker:{type(exc).__name__}")
 
-    return enriched, errors
+    return enriched, errors, len(candidates)
 
 
 def _count_filter_stages(records: list[dict[str, Any]]) -> tuple[int, int, int]:
@@ -238,7 +249,11 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
         if master:
             base = master
             counts.base_universe_source = "static_master"
-            enriched, enrich_errs = enrich_records_for_trading_date(base, trading_date)
+            common_rows = common_stock_records(base)
+            counts.common_stock_candidate_count = len(common_rows)
+            counts.security_prefilter_excluded_count = len(base) - len(common_rows)
+            enriched, enrich_errs, target_n = enrich_records_for_trading_date(common_rows, trading_date)
+            counts.kis_enrich_target_count = target_n
             counts.historical_price_enriched_count = enriched
             counts.collection_errors.extend(enrich_errs[:20])
         else:
@@ -259,7 +274,8 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
         rec.setdefault("risk_check_status", "pending")
         rec.setdefault("data_sources", list(rec.get("data_sources") or []))
 
-    verified, failed = enrich_risk_from_kis(base, max_workers=12)
+    risk_targets = common_stock_records(base) if base else []
+    verified, failed = enrich_risk_from_kis(risk_targets, max_workers=16)
     counts.kis_risk_verified = verified
     counts.kis_risk_failed = failed
 
