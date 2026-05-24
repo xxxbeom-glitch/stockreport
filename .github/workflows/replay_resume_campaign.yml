@@ -1,0 +1,146 @@
+name: "REPLAY - 진행 중 리플레이 이어서 실행"
+
+on:
+  workflow_dispatch:
+    inputs:
+      chunk_days:
+        description: "한 번의 실행에서 처리할 최대 거래일 수"
+        type: number
+        default: 5
+
+env:
+  COMPETITION_EXECUTION_MODE: replay_smoke
+  COMPETITION_LIVE_SCHEDULE_DISABLED: "1"
+  COMPETITION_DASHBOARD_BASE_URL: https://xxxbeom-glitch.github.io/stockreport
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+  COMPETITION_A_MAIN_MODEL: deepseek-v4-flash
+  COMPETITION_A_PARTNER_MODEL: gemini-2.5-flash-lite
+  COMPETITION_B_MAIN_MODEL: gemini-2.5-flash-lite
+  COMPETITION_B_PARTNER_MODEL: deepseek-v4-flash
+  COMPETITION_C_MAIN_MODEL: deepseek-v4-flash
+  COMPETITION_C_VALIDATOR_MODEL: gemini-2.5-flash-lite
+  COMPETITION_D_MAIN_MODEL: gemini-2.5-flash-lite
+  COMPETITION_D_VALIDATOR_MODEL: deepseek-v4-pro
+  COMPETITION_SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TRADING }}
+  KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+  KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+  KIS_ACCOUNT_NO: ${{ secrets.KIS_ACCOUNT_NO }}
+  FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+  FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+jobs:
+  replay-resume:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages_deploy.outputs.page_url }}
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt || pip install pykrx pandas requests google-generativeai openai firebase-admin
+
+      - name: Guard — no live session
+        run: |
+          python -c "
+          import os
+          os.environ['COMPETITION_EXECUTION_MODE']='replay_smoke'
+          from src.trading.competition.runtime import assert_live_session_allowed
+          try:
+              assert_live_session_allowed()
+              raise SystemExit('live session should be blocked')
+          except RuntimeError:
+              print('live session correctly blocked in replay mode')
+          "
+
+      - name: Select resumable campaign (auto)
+        id: select
+        run: |
+          python scripts/select_resumable_replay_campaign.py \
+            --chunk-days ${{ inputs.chunk_days }} \
+            --github-output \
+            --json-out replay_select.json
+
+      - name: Run REPLAY (resume selected campaign)
+        id: replay_resume
+        env:
+          COMPETITION_EXECUTION_MODE: replay_smoke
+          REPLAY_RESUME_CAMPAIGN: "true"
+          REPLAY_CAMPAIGN_ID: ${{ steps.select.outputs.campaign_id }}
+        run: |
+          set -o pipefail
+          ARGS="--replay-type ${{ steps.select.outputs.replay_type }} --date ${{ steps.select.outputs.start_date }}"
+          ARGS="$ARGS --chunk-size-trading-days ${{ inputs.chunk_days }}"
+          ARGS="$ARGS --result-out replay_result.json"
+          ARGS="$ARGS --resume-existing-campaign --campaign-id ${REPLAY_CAMPAIGN_ID}"
+          if [ -n "${{ steps.select.outputs.end_date }}" ]; then ARGS="$ARGS --end-date ${{ steps.select.outputs.end_date }}"; fi
+          python scripts/run_competition_replay.py $ARGS
+          EXIT_CODE=$?
+          python scripts/replay_workflow_outputs.py replay_result.json
+          exit $EXIT_CODE
+
+      - name: Resolve replay outputs
+        if: always()
+        id: replay
+        run: |
+          if [ -f replay_result.json ]; then
+            python scripts/replay_workflow_outputs.py replay_result.json
+          fi
+
+      - name: Publish public REPLAY JSON for GitHub Pages
+        if: steps.replay.outputs.ok == 'true'
+        run: |
+          CID="${{ steps.replay.outputs.campaign_id }}"
+          if [ -z "$CID" ]; then CID="${{ steps.select.outputs.campaign_id }}"; fi
+          python scripts/publish_replay_pages_data.py --campaign "$CID"
+
+      - name: Commit replay public data
+        if: steps.replay.outputs.ok == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/replay-data/
+          if git diff --staged --quiet; then
+            echo "No public replay JSON changes — skip commit"
+          else
+            git commit -m "chore: publish replay report data"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: steps.replay.outputs.ok == 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.replay.outputs.ok == 'true'
+        with:
+          path: .
+
+      - id: pages_deploy
+        uses: actions/deploy-pages@v4
+        if: steps.replay.outputs.ok == 'true'
+
+      - name: Pages URL summary
+        if: steps.replay.outputs.ok == 'true' && steps.pages_deploy.outputs.page_url != ''
+        run: |
+          echo "## GitHub Pages" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Dashboard: ${{ steps.pages_deploy.outputs.page_url }}template/dashboard_desktop/?mode=replay" >> "$GITHUB_STEP_SUMMARY"
+          echo "- campaign_id: \`${{ steps.replay.outputs.campaign_id }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload replay artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: competition-replay-resume-${{ steps.select.outputs.campaign_id }}
+          path: data/competition/replay/
+          if-no-files-found: ignore
