@@ -1,0 +1,68 @@
+{
+  "report_id": "rwr_month_20260102_20260130_a6b1b1_w1",
+  "week_key": "w1",
+  "campaign_id": "month_20260102_20260130_a6b1b1",
+  "label": "1월 1주차",
+  "period": "REPLAY 20260102–20260102",
+  "agents": [
+    {
+      "key": "agent1",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "주간 체결",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 1거래일",
+      "selfEval": "팀 A REPLAY 주간 — 체결 0건",
+      "nextWeek": "REPLAY 검증 계속"
+    },
+    {
+      "key": "agent2",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "주간 체결",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 1거래일",
+      "selfEval": "팀 B REPLAY 주간 — 체결 0건",
+      "nextWeek": "REPLAY 검증 계속"
+    },
+    {
+      "key": "agent3",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "주간 체결",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 1거래일",
+      "selfEval": "팀 C REPLAY 주간 — 체결 0건",
+      "nextWeek": "REPLAY 검증 계속"
+    },
+    {
+      "key": "agent4",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "주간 체결",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "REPLAY 1거래일",
+      "selfEval": "팀 D REPLAY 주간 — 체결 0건",
+      "nextWeek": "REPLAY 검증 계속"
+    }
+  ],
+  "overall": [
+    "REPLAY 주간 — 거래일 1일",
+    "미래 데이터 침범: PASS",
+    "LIVE 성과에 반영되지 않음"
+  ],
+  "audit": {
+    "leakage_summary": "PASS"
+  },
+  "last_replay_run_id": "replay_20260102_9245dc51",
+  "url": "https://xxxbeom-glitch.github.io/stockreport/template/dashboard_desktop/?mode=replay&campaign=month_20260102_20260130_a6b1b1&report=w1&reportType=weekly&replay_run_id=replay_20260102_9245dc51",
+  "generated_at": "2026-05-24T23:13:45.513629+09:00"
+}

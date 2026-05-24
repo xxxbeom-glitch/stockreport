@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-24T22:47:56.593913+09:00",
+  "updatedAt": "2026-05-24T23:13:47.024394+09:00",
   "dashboardBaseUrl": "https://xxxbeom-glitch.github.io/stockreport",
   "dashboardPath": "/template/dashboard_desktop/",
   "dataRoot": "/docs/replay-data",
@@ -20,8 +20,8 @@
     }
   ],
   "campaigns": {
-    "month_20260102_20260130_d95c8a": {
-      "campaignId": "month_20260102_20260130_d95c8a",
+    "month_20260102_20260130_a6b1b1": {
+      "campaignId": "month_20260102_20260130_a6b1b1",
       "replayType": "month",
       "startDate": "20260102",
       "endDate": "20260130",
@@ -40,6 +40,31 @@
       "monthlyReportKeys": [
         "m202601"
       ],
+      "weekly": [
+        "w1",
+        "w2"
+      ],
+      "monthly": [
+        "m202601"
+      ],
+      "hasFinal": false,
+      "hasAuditSummary": true
+    },
+    "month_20260102_20260130_d95c8a": {
+      "campaignId": "month_20260102_20260130_d95c8a",
+      "replayType": null,
+      "startDate": null,
+      "endDate": null,
+      "leakageSummary": null,
+      "competitionStatus": null,
+      "needsResume": null,
+      "nextTradingDate": null,
+      "progressLabel": null,
+      "daysCompleted": 0,
+      "daysTotal": 0,
+      "lastCompletedDate": null,
+      "weeklyReportKeys": [],
+      "monthlyReportKeys": [],
       "weekly": [
         "w1",
         "w2"
