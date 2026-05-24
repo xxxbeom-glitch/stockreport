@@ -8,7 +8,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from src.trading.competition.replay.calendar import resolve_replay_dates
+from src.trading.competition.replay.calendar import resolve_replay_dates_with_meta
 from src.trading.competition.replay.firestore_store import sync_replay_campaign
 from src.trading.competition.replay.reports import (
     build_replay_monthly_reports,
@@ -53,11 +53,21 @@ def run_replay_campaign(
         start_date = FULL_AUDIT_START
         end_date = FULL_AUDIT_END
 
-    dates = resolve_replay_dates(replay_type, start_date, end_date)
+    dates, date_meta = resolve_replay_dates_with_meta(replay_type, start_date, end_date)
     if not dates:
-        err = {"ok": False, "error": "no_trading_dates", "replay_type": replay_type}
+        detail = date_meta.get("error") or "; ".join(date_meta.get("errors") or []) or "unknown"
+        err = {
+            "ok": False,
+            "error": "data_collection_failed",
+            "sub_error": "no_trading_dates",
+            "replay_type": replay_type,
+            "date_resolution": date_meta,
+        }
         if send_slack_reports:
-            err["slack"] = send_fatal_replay_error("거래일을 찾을 수 없습니다", dry_run=slack_dry_run)
+            err["slack"] = send_fatal_replay_error(
+                f"REPLAY 거래일 조회 실패 (KIS·pykrx 모두 실패): {detail}",
+                dry_run=slack_dry_run,
+            )
         return err
 
     max_days = int(os.getenv("REPLAY_MAX_DAYS", "0") or "0")

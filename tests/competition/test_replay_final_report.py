@@ -40,8 +40,13 @@ class ReplayFinalizeTests(unittest.TestCase):
         self.assertEqual(out["A"]["total_assets_krw"], 100_000 + 2 * 55_000)
 
     def test_full_audit_calendar_fixed(self) -> None:
-        with patch("src.trading.competition.replay.calendar.list_trading_dates") as mock_list:
-            mock_list.return_value = ["20260102", "20260429", "20260430"]
+        with patch("src.trading.competition.replay.calendar.list_trading_dates_result") as mock_list:
+            mock_list.return_value = {
+                "ok": True,
+                "dates": ["20260102", "20260429", "20260430"],
+                "primary_source": "kis_daily_chart",
+                "errors": [],
+            }
             dates = resolve_replay_dates("full_audit", "20241218", "20241220")
         mock_list.assert_called_once_with(FULL_AUDIT_START, FULL_AUDIT_END)
         self.assertEqual(len(dates), 3)

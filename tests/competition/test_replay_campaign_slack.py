@@ -54,8 +54,13 @@ class ReplayCalendarTests(unittest.TestCase):
         self.assertEqual(resolve_replay_dates("smoke_1day", "20241218"), ["20241218"])
 
     def test_full_audit_uses_fixed_period(self) -> None:
-        with patch("src.trading.competition.replay.calendar.list_trading_dates") as mock_list:
-            mock_list.return_value = ["20260102", "20260103"]
+        with patch("src.trading.competition.replay.calendar.list_trading_dates_result") as mock_list:
+            mock_list.return_value = {
+                "ok": True,
+                "dates": ["20260102", "20260103"],
+                "primary_source": "kis_daily_chart",
+                "errors": [],
+            }
             from src.trading.competition.replay.period import FULL_AUDIT_END, FULL_AUDIT_START
 
             dates = resolve_replay_dates("full_audit", "20241218", "20241220")

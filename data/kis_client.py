@@ -432,6 +432,59 @@ class KISClient:
         strength = round(buy_vol / sell_vol * 100, 1)
         return {"strength": strength, "buy_vol": buy_vol, "sell_vol": sell_vol}
 
+    def get_daily_ohlcv_range(
+        self,
+        ticker: str,
+        start_yyyymmdd: str,
+        end_yyyymmdd: str,
+    ) -> list[dict[str, Any]]:
+        """Daily OHLCV bars for ticker between start and end (inclusive), oldest first."""
+        data = self._get(
+            "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
+            "FHKST03010100",
+            {
+                "FID_COND_MRKT_DIV_CODE": "J",
+                "FID_INPUT_ISCD": ticker.zfill(6),
+                "FID_INPUT_DATE_1": start_yyyymmdd,
+                "FID_INPUT_DATE_2": end_yyyymmdd,
+                "FID_PERIOD_DIV_CODE": "D",
+                "FID_ORG_ADJ_PRC": "0",
+            },
+        )
+        if not data:
+            return []
+        rows = data.get("output2") or []
+        if isinstance(rows, dict):
+            rows = [rows]
+        out: list[dict[str, Any]] = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            date = str(row.get("stck_bsop_date") or "").strip()
+            if len(date) != 8:
+                continue
+            close = _num(row.get("stck_clpr"))
+            if close is None or close <= 0:
+                continue
+            op = int(_num(row.get("stck_oprc")) or 0)
+            hi = int(_num(row.get("stck_hgpr")) or 0)
+            lo = int(_num(row.get("stck_lwpr")) or 0)
+            cl = int(close)
+            vol = int(_num(row.get("acml_vol")) or 0)
+            tv = int(_num(row.get("acml_tr_pbmn")) or 0)
+            out.append(
+                {
+                    "date": date,
+                    "open": op,
+                    "high": hi,
+                    "low": lo,
+                    "close": cl,
+                    "volume": vol,
+                    "trading_value": tv,
+                }
+            )
+        return sorted(out, key=lambda r: r["date"])
+
 
 _default_client: KISClient | None = None
 
@@ -465,6 +518,14 @@ def get_52w_high_low(ticker: str) -> dict[str, float] | None:
 
 def get_foreign_net(ticker: str) -> float | None:
     return _client().get_foreign_net(ticker)
+
+
+def get_daily_ohlcv_range(ticker: str, start_yyyymmdd: str, end_yyyymmdd: str) -> list[dict[str, Any]]:
+    return _client().get_daily_ohlcv_range(ticker, start_yyyymmdd, end_yyyymmdd)
+
+
+def credentials_ready() -> bool:
+    return _credentials_ready()
 
 
 def get_top_volume(market: str = "KOSPI", n: int = 5) -> list[dict[str, Any]] | None:

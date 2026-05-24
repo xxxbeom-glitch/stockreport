@@ -127,6 +127,18 @@ def enrich_universe_historical(
 
     pykrx = _pykrx_stock()
     if pykrx is None:
+        if stocks:
+            from datetime import datetime, timedelta
+
+            from src.trading.competition.replay.data_provider import (
+                enrich_universe_rows_kis,
+                list_trading_dates_result,
+            )
+
+            start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=20)).strftime("%Y%m%d")
+            cal_dates = list_trading_dates_result(start, trading_date).get("dates") or []
+            prev_date = cal_dates[-2] if len(cal_dates) >= 2 else None
+            return enrich_universe_rows_kis(stocks, trading_date, prev_date)
         return {"ok": False, "error": "pykrx_unavailable", "failures": []}
 
     dates = recent_trading_dates(trading_date, 2, pykrx=pykrx)
@@ -156,6 +168,14 @@ def enrich_universe_historical(
                 except (TypeError, ValueError):
                     continue
                 ohlcv[date][code] = {"close": close, "tv": tv}
+
+    bulk_missing = not ohlcv.get(trading_date)
+    if bulk_missing and stocks:
+        from src.trading.competition.replay.data_provider import enrich_universe_rows_kis
+
+        kis_out = enrich_universe_rows_kis(stocks, trading_date, prev_date)
+        kis_out["errors"] = errors + (kis_out.get("errors") or [])
+        return kis_out
 
     failures: list[dict[str, str]] = []
     enriched = 0
