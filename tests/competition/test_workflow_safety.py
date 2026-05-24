@@ -79,6 +79,16 @@ class WorkflowSafetyTest(unittest.TestCase):
         self.assertIn("inputs.resume_existing_campaign == true", replay)
         self.assertIn("deploy-pages@v4", replay)
         self.assertNotIn("${{ inputs.resume_existing_campaign }}\" = \"true\"", replay)
+        self.assertRegex(
+            replay,
+            r'^name:\s+"REPLAY · 과거 투자 검증"',
+            re.MULTILINE,
+        )
+        self.assertNotRegex(
+            replay,
+            r"uses:\s+actions/deploy-pages@v4\n\s+if:.*\n\s+environment:",
+            re.MULTILINE,
+        )
 
 
 if __name__ == "__main__":

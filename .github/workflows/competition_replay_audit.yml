@@ -74,6 +74,9 @@ env:
 jobs:
   replay-smoke:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages_deploy.outputs.page_url }}
     permissions:
       contents: write
       pages: write
@@ -195,9 +198,6 @@ jobs:
       - id: pages_deploy
         uses: actions/deploy-pages@v4
         if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true'
-        environment:
-          name: github-pages
-          url: ${{ steps.pages_deploy.outputs.page_url }}
 
       - name: Pages URL summary
         if: inputs.persist_replay_results == true && steps.replay.outputs.ok == 'true' && steps.pages_deploy.outputs.page_url != ''
