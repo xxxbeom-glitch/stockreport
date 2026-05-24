@@ -65,26 +65,76 @@ def _camel_to_snake_manifest(meta: dict[str, Any], campaign_id: str) -> dict[str
     }
 
 
+# Published docs must not override live campaign state from Firestore.
+EXCLUSION_KEYS = frozenset(
+    {
+        "do_not_resume",
+        "doNotResume",
+        "campaign_kind",
+        "campaignKind",
+        "canonical_campaign_id",
+        "canonicalCampaignId",
+    }
+)
+
+
+def _is_empty(value: Any) -> bool:
+    return value in (None, "", [], {})
+
+
 def _merge_record(existing: dict[str, Any], incoming: dict[str, Any], *, source: str) -> dict[str, Any]:
-    out = dict(existing)
-    for key, value in incoming.items():
-        if value is None:
-            continue
-        if key == "sources":
-            continue
-        if key not in out or out[key] in ("", None, [], {}):
-            out[key] = value
-        elif key in ("do_not_resume", "campaign_kind", "canonical_campaign_id", "competition_status"):
-            out[key] = value
+    """
+    Merge precedence:
+    1. Firestore — source of truth for operational campaign state
+    2. local manifest — gap-fill / mirror when Firestore absent
+    3. docs meta — duplicate exclusion flags + gap-fill only (never overrides Firestore)
+    """
+    out = dict(existing) if existing else {}
     sources = list(out.get("sources") or [])
     if source not in sources:
         sources.append(source)
+    has_firestore = "firestore" in sources and source != "firestore"
+
+    for key, value in incoming.items():
+        if key == "sources" or value is None:
+            continue
+        prev = out.get(key)
+        if source == "firestore":
+            out[key] = value
+            continue
+        if source == "docs_meta":
+            if key in EXCLUSION_KEYS or _is_empty(prev):
+                out[key] = value
+            continue
+        if source == "local_manifest":
+            if key in EXCLUSION_KEYS or not has_firestore or _is_empty(prev):
+                out[key] = value
+
     out["sources"] = sources
     return out
 
 
+def _load_firestore_campaigns() -> dict[str, dict[str, Any]]:
+    rows: dict[str, dict[str, Any]] = {}
+    try:
+        from src.trading.competition.constants import COLLECTION_REPLAY_CAMPAIGNS
+        from src.trading.competition.storage.base import firestore_client
+
+        client, _ = firestore_client()
+        if not client:
+            return rows
+        for doc in client.collection(COLLECTION_REPLAY_CAMPAIGNS).stream():
+            m = doc.to_dict() or {}
+            cid = str(m.get("campaign_id") or doc.id).strip()
+            if cid:
+                rows[cid] = m
+    except Exception:
+        pass
+    return rows
+
+
 def gather_campaign_records() -> dict[str, dict[str, Any]]:
-    """Merge local manifest, Firestore, and published docs meta by campaign_id."""
+    """Merge Firestore (primary), local manifest, then published docs meta."""
     by_id: dict[str, dict[str, Any]] = {}
 
     def put(cid: str, payload: dict[str, Any], source: str) -> None:
@@ -93,6 +143,9 @@ def gather_campaign_records() -> dict[str, dict[str, Any]]:
             return
         payload = {**payload, "campaign_id": cid}
         by_id[cid] = _merge_record(by_id.get(cid, {}), payload, source=source)
+
+    for cid, manifest in _load_firestore_campaigns().items():
+        put(cid, manifest, "firestore")
 
     if CAMPAIGNS_ROOT.is_dir():
         for manifest_path in sorted(CAMPAIGNS_ROOT.glob("*/manifest.json")):
@@ -103,19 +156,6 @@ def gather_campaign_records() -> dict[str, dict[str, Any]]:
         for meta_path in sorted(DOCS_CAMPAIGNS_ROOT.glob("*/meta.json")):
             cid = meta_path.parent.name
             put(cid, _camel_to_snake_manifest(_read_json(meta_path), cid), "docs_meta")
-
-    try:
-        from src.trading.competition.constants import COLLECTION_REPLAY_CAMPAIGNS
-        from src.trading.competition.storage.base import firestore_client
-
-        client, _ = firestore_client()
-        if client:
-            for doc in client.collection(COLLECTION_REPLAY_CAMPAIGNS).stream():
-                m = doc.to_dict() or {}
-                cid = str(m.get("campaign_id") or doc.id)
-                put(cid, m, "firestore")
-    except Exception:
-        pass
 
     return by_id
 

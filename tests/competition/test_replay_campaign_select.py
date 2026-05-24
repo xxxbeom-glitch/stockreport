@@ -130,6 +130,41 @@ class ReplayCampaignSelectTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["error"], "No resumable campaign found")
 
+    def test_firestore_wins_over_docs_operational_fields(self) -> None:
+        cid = "month_20260102_20260130_1b51cb"
+        firestore_manifest = {
+            "campaign_id": cid,
+            "replay_type": "month",
+            "planned_trading_dates": ["20260102", "20260105", "20260109"],
+            "needs_resume": True,
+            "next_trading_date": "20260109",
+            "days_completed": 2,
+            "days_total": 3,
+            "competition_status": "active",
+            "ok": False,
+            "error": "data_invalid",
+        }
+        docs_meta = {
+            "campaignId": cid,
+            "needsResume": False,
+            "nextTradingDate": None,
+            "daysCompleted": 0,
+            "daysTotal": 0,
+        }
+        docs = self._tmp / "docs"
+        with self._patches(docs):
+            d = docs / cid
+            d.mkdir(parents=True)
+            (d / "meta.json").write_text(json.dumps(docs_meta), encoding="utf-8")
+            with patch.object(cs, "_load_firestore_campaigns", return_value={cid: firestore_manifest}):
+                merged = cs.gather_campaign_records()[cid]
+                rows = cs.list_auto_resumable_campaigns()
+        self.assertTrue(merged.get("needs_resume"))
+        self.assertEqual(merged.get("next_trading_date"), "20260109")
+        self.assertIn("firestore", merged.get("sources") or [])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["campaign_id"], cid)
+
 
 if __name__ == "__main__":
     unittest.main()
