@@ -16,7 +16,7 @@
 # 5. Set repository secret / env COMPETITION_ALLOW_LIVE_SESSION=1 for session script.
 # 6. Re-enable tests in tests/competition/test_workflow_safety.py for live inputs.
 
-name: LIVE 자동 운용 (현재 중지됨)
+name: LIVE · 실시간 투자 운용 (중지됨)
 
 on:
   workflow_dispatch:

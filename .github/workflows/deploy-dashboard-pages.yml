@@ -1,6 +1,6 @@
 # Public dashboard (GitHub Pages) — static HTML + docs/replay-data JSON for REPLAY.
 # URL: https://xxxbeom-glitch.github.io/stockreport/template/dashboard_desktop/
-name: Deploy competition dashboard (GitHub Pages)
+name: DASHBOARD · 결과 화면 배포
 
 on:
   push:
