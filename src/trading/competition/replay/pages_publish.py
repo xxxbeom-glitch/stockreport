@@ -213,10 +213,18 @@ def publish_campaign_full(campaign_id: str) -> dict[str, Any]:
 
 
 def publish_run_dashboard(replay_run_id: str) -> Path | None:
+    payload: dict[str, Any] | None = None
     try:
         payload = build_replay_dashboard_payload(replay_run_id, prefer_local=True)
     except FileNotFoundError:
-        return None
+        payload = None
+    if payload is None:
+        from src.trading.competition.dashboard.replay_payload import _build_from_manifest, _load_run_manifest
+
+        manifest = _load_run_manifest(replay_run_id)
+        if not manifest:
+            return None
+        payload = _build_from_manifest(replay_run_id, manifest, campaign_id=manifest.get("campaign_id"))
     safe = sanitize_dashboard_payload(payload)
     path = REPLAY_DATA_ROOT / "runs" / replay_run_id / "dashboard.json"
     _write_json(path, safe)

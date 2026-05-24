@@ -229,12 +229,14 @@ def run_replay_campaign(
             run_audit_ai=run_audit_ai and trading_date == planned_dates[-1],
             sync_firestore=True,
         )
-        if not day_result.get("ok") and day_result.get("error"):
+        if not day_result.get("ok"):
             manifest = load_manifest(campaign_id)
             manifest.update(
                 {
                     "ok": False,
-                    "error": day_result.get("error"),
+                    "error": day_result.get("error") or "replay_day_failed",
+                    "data_status": (day_result.get("data_validity") or {}).get("data_status")
+                    or day_result.get("error"),
                     "failed_trading_date": trading_date,
                     "chunk_processed_dates": chunk_new_dates,
                 }
@@ -346,7 +348,7 @@ def run_replay_campaign(
     manifest["slack_sent_weekly_keys"] = sent_weekly
     manifest["slack_sent_monthly_keys"] = sent_monthly
     manifest["slack"] = slack_out if send_slack_reports else {"skipped": True}
-    manifest["ok"] = leakage_summary != "FAIL"
+    manifest["ok"] = leakage_summary != "FAIL" and manifest.get("error") is None
     manifest["chunk_processed_dates"] = chunk_new_dates
     manifest["chunk_size_trading_days"] = chunk_size
     manifest["needs_resume"] = not campaign_complete and not full_audit_ended

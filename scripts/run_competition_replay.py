@@ -94,6 +94,32 @@ def main() -> int:
     resume_flag = args.resume_existing_campaign or _env_bool("REPLAY_RESUME_CAMPAIGN")
     campaign_id_value = (args.campaign_id.strip() or os.getenv("REPLAY_CAMPAIGN_ID", "").strip() or None)
 
+    if campaign_id_value and not resume_flag:
+        payload = {
+            "ok": False,
+            "error": "campaign_id_requires_resume_flag",
+            "campaign_id": campaign_id_value,
+            "hint": "Actions에서 resume_existing_campaign=true 를 체크하세요. "
+            "체크 없이 campaign_id만 넣으면 새 campaign이 생성됩니다.",
+        }
+        text = json.dumps(payload, ensure_ascii=False, indent=2)
+        if args.result_out.strip():
+            Path(args.result_out.strip()).write_text(text + "\n", encoding="utf-8")
+        print(text, file=sys.stderr)
+        return 1
+
+    if resume_flag and not campaign_id_value:
+        payload = {
+            "ok": False,
+            "error": "campaign_id_required_for_resume",
+            "resume_requested": True,
+        }
+        text = json.dumps(payload, ensure_ascii=False, indent=2)
+        if args.result_out.strip():
+            Path(args.result_out.strip()).write_text(text + "\n", encoding="utf-8")
+        print(text, file=sys.stderr)
+        return 1
+
     end = args.end_date.strip() or None
     os.environ["COMPETITION_EXECUTION_MODE"] = (
         "replay_audit" if args.replay_type == "full_audit" else "replay_smoke"

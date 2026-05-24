@@ -76,7 +76,8 @@ class WorkflowSafetyTest(unittest.TestCase):
         self.assertIn("short_5days", replay)
         self.assertIn("run_competition_replay.py", replay)
         self.assertIn("Run REPLAY (resume existing campaign)", replay)
-        self.assertIn("inputs.resume_existing_campaign == true", replay)
+        self.assertIn("inputs.resume_existing_campaign", replay)
+        self.assertIn("validate_replay_workflow_inputs.py", replay)
         self.assertIn("deploy-pages@v4", replay)
         self.assertNotIn("${{ inputs.resume_existing_campaign }}\" = \"true\"", replay)
         self.assertRegex(

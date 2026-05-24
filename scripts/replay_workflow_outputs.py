@@ -66,7 +66,10 @@ def main() -> int:
         f"- **next_trading_date**: {result.get('next_trading_date', '')}",
         f"- **status**: {result.get('competition_status', '')}",
         f"- **ok**: {result.get('ok')}",
+        f"- **data_status**: {result.get('data_status', '')}",
     ]
+    if result.get("error"):
+        lines.append(f"- **error**: `{result.get('error')}`")
     if result.get("needs_resume") and cid:
         lines.extend(
             [

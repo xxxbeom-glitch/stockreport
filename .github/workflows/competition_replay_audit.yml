@@ -106,11 +106,17 @@ jobs:
           "
 
       - name: List resumable campaigns
-        if: inputs.resume_existing_campaign != true
+        if: ${{ !inputs.resume_existing_campaign }}
         run: python scripts/find_replay_campaign.py >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Validate REPLAY workflow inputs
+        run: |
+          python scripts/validate_replay_workflow_inputs.py \
+            --resume "${{ inputs.resume_existing_campaign }}" \
+            --campaign-id "${{ inputs.campaign_id }}"
+
       - name: Run REPLAY (resume existing campaign)
-        if: inputs.persist_replay_results == true && inputs.resume_existing_campaign == true
+        if: ${{ inputs.persist_replay_results && inputs.resume_existing_campaign }}
         id: replay_resume
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
@@ -136,7 +142,7 @@ jobs:
           exit $EXIT_CODE
 
       - name: Run REPLAY (new campaign)
-        if: inputs.persist_replay_results == true && inputs.resume_existing_campaign != true
+        if: ${{ inputs.persist_replay_results && !inputs.resume_existing_campaign }}
         id: replay_new
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke

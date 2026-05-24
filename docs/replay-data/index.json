@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-24T23:13:47.024394+09:00",
+  "updatedAt": "2026-05-24T23:26:16.824817+09:00",
   "dashboardBaseUrl": "https://xxxbeom-glitch.github.io/stockreport",
   "dashboardPath": "/template/dashboard_desktop/",
   "dataRoot": "/docs/replay-data",
@@ -19,37 +19,5 @@
       "dashboardPath": "runs/replay_20241218_dca68242/dashboard.json"
     }
   ],
-  "campaigns": {
-    "month_20260102_20260130_a6b1b1": {
-      "campaignId": "month_20260102_20260130_a6b1b1",
-      "replayType": "month",
-      "startDate": "20260102",
-      "endDate": "20260130",
-      "leakageSummary": "PASS",
-      "competitionStatus": "active",
-      "needsResume": true,
-      "nextTradingDate": "20260109",
-      "progressLabel": "1월 리플레이 진행 중 · 5 / 21 거래일 완료",
-      "daysCompleted": 5,
-      "daysTotal": 21,
-      "lastCompletedDate": "20260108",
-      "weeklyReportKeys": [
-        "w1",
-        "w2"
-      ],
-      "monthlyReportKeys": [
-        "m202601"
-      ],
-      "weekly": [
-        "w1",
-        "w2"
-      ],
-      "monthly": [
-        "m202601"
-      ],
-      "hasFinal": false,
-      "hasAuditSummary": true,
-      "hasCampaignDashboard": false
-    }
-  }
+  "campaigns": {}
 }

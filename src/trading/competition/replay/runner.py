@@ -185,11 +185,34 @@ def run_replay_single_day(
             campaign_progress=campaign_progress,
         )
         return {"ok": False, "replay_run_id": replay_run_id, "error": snapshot.get("error")}
+
+    from src.trading.competition.replay.data_validity import validate_snapshot_for_replay
+
+    snap_check = validate_snapshot_for_replay(snapshot)
+    if not snap_check.get("valid"):
+        err = str(snap_check.get("reason") or "data_invalid")
+        obs.log_pipeline("data_validity", "error", **snap_check)
+        obs.finalize(
+            {"ok": False, "replay_run_id": replay_run_id, "data_validity": snap_check},
+            status="data_invalid",
+            failure_summary=err,
+            force_mock=force_mock,
+            campaign_progress=campaign_progress,
+        )
+        return {
+            "ok": False,
+            "replay_run_id": replay_run_id,
+            "error": "data_invalid",
+            "data_validity": snap_check,
+        }
+
     obs.log_pipeline(
         "snapshot_build",
         "ok",
         snapshot_id=snapshot.get("snapshot_id"),
         candidate_count=len(snapshot.get("eligible_universe") or []),
+        scout_candidate_count=snap_check.get("scout_candidate_count"),
+        priced_universe_count=snap_check.get("priced_universe_count"),
     )
 
     store.save_snapshot(snapshot)
@@ -383,8 +406,19 @@ def run_replay_single_day(
         )
         store.save_committee_report(committee)
 
+    from src.trading.competition.replay.data_validity import (
+        merge_validity_into_manifest,
+        validate_replay_run_outcome,
+    )
+
+    outcome_check = validate_replay_run_outcome(
+        snapshot,
+        accounts=accounts,
+        team_results=team_results,
+    )
+
     manifest = {
-        "ok": leakage_summary != "FAIL",
+        "ok": leakage_summary != "FAIL" and outcome_check.get("valid", True),
         "replay_run_id": replay_run_id,
         "session_id": session_id,
         "campaign_id": campaign_id,
@@ -403,6 +437,7 @@ def run_replay_single_day(
         "committee": committee,
         **replay_meta(replay_run_id=replay_run_id, as_of_from=trading_date, as_of_to=fill_date or trading_date),
     }
+    manifest = merge_validity_into_manifest(manifest, outcome_check)
     store.save_manifest(manifest)
     store.save_audit_report(
         {
@@ -430,10 +465,14 @@ def run_replay_single_day(
     manifest["firestore_sync"] = firestore_sync
     store.save_manifest(manifest)
 
-    run_status = "failed" if leakage_summary == "FAIL" else "completed"
+    run_status = "completed"
+    if not outcome_check.get("valid"):
+        run_status = "data_invalid"
+    elif leakage_summary == "FAIL":
+        run_status = "failed"
     failure = None
     if not manifest.get("ok"):
-        failure = "leakage_or_audit_fail"
+        failure = manifest.get("error") or "leakage_or_audit_fail"
     obs.finalize(
         manifest,
         status=run_status,
