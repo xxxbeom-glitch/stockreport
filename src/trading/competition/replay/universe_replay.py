@@ -97,6 +97,11 @@ def collect_base_universe_kis_volume(
     if is_kis_auth_failed():
         return [], ["kis_auth_failed"]
 
+    from data.kis_client import is_kis_rate_limit_halted
+
+    if is_kis_rate_limit_halted():
+        return [], ["kis_rate_limit_exceeded"]
+
     start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=45)).strftime("%Y%m%d")
     records: dict[str, dict[str, Any]] = {}
 
@@ -189,6 +194,11 @@ def enrich_records_for_trading_date(
 
     if is_kis_auth_failed():
         return 0, ["kis_auth_failed"], 0
+
+    from data.kis_client import is_kis_rate_limit_halted
+
+    if is_kis_rate_limit_halted():
+        return 0, ["kis_rate_limit_exceeded"], 0
 
     start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=45)).strftime("%Y%m%d")
     candidates = common_stock_records(records)

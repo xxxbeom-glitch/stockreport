@@ -14,6 +14,7 @@ from data import kis_client as kc
 class KISClientAuthTests(unittest.TestCase):
     def setUp(self) -> None:
         kc.reset_kis_auth_state(clear_token=True)
+        kc.reset_kis_rate_limit()
         if kc._default_client is not None:
             kc._default_client._token_issue_calls = 0
 

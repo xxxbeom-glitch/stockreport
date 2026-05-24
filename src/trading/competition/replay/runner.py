@@ -211,9 +211,53 @@ def run_replay_single_day(
                 "kis_auth": kis_auth,
             }
 
+        if kis_auth.get("ok"):
+            from data.kis_client import reset_kis_rate_limit
+
+            reset_kis_rate_limit()
+
     obs.log_pipeline("run_start", "ok", force_mock=force_mock)
 
     snapshot = build_close_snapshot(trading_date)
+    from data.kis_client import is_kis_rate_limit_halted, kis_rate_limit_summary
+
+    rate_limit = kis_rate_limit_summary()
+    if rate_limit.get("rate_limit_error_count"):
+        obs.log_pipeline(
+            "kis_rate_limit",
+            "error" if rate_limit.get("halted") else "warn",
+            **{
+                k: rate_limit.get(k)
+                for k in (
+                    "rate_limit_error_count",
+                    "retry_count",
+                    "affected_tr_ids",
+                    "configured_rps",
+                    "configured_max_retries",
+                    "configured_backoff_sec",
+                    "configured_halt_after",
+                    "last_msg_cd",
+                    "last_msg1",
+                    "halted",
+                )
+                if rate_limit.get(k) is not None
+            },
+        )
+    if is_kis_rate_limit_halted():
+        obs.finalize(
+            {"ok": False, "replay_run_id": replay_run_id},
+            status="kis_rate_limit_exceeded",
+            failure_summary="kis_rate_limit_exceeded",
+            force_mock=force_mock,
+            campaign_progress=campaign_progress,
+            kis_rate_limit=rate_limit,
+        )
+        return {
+            "ok": False,
+            "replay_run_id": replay_run_id,
+            "error": "kis_rate_limit_exceeded",
+            "kis_rate_limit": rate_limit,
+        }
     if not snapshot.get("ok"):
         from src.trading.competition.replay.data_validity import format_data_invalid_reason
 

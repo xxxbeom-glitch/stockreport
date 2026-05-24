@@ -107,6 +107,25 @@ def _kis_auth_observability_fields(kis_auth: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _kis_rate_limit_observability_fields(summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        k: summary.get(k)
+        for k in (
+            "halted",
+            "rate_limit_error_count",
+            "retry_count",
+            "affected_tr_ids",
+            "configured_rps",
+            "configured_max_retries",
+            "configured_backoff_sec",
+            "configured_halt_after",
+            "last_msg_cd",
+            "last_msg1",
+        )
+        if summary.get(k) is not None
+    }
+
+
 def providers_configuration() -> dict[str, Any]:
     return {
         "market_data_primary": "KIS",
@@ -310,6 +329,7 @@ class RunObservability:
         force_mock: bool = False,
         campaign_progress: dict[str, Any] | None = None,
         kis_auth: dict[str, Any] | None = None,
+        kis_rate_limit: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         ended_at = now_kst_iso()
         providers = providers_configuration()
@@ -344,6 +364,8 @@ class RunObservability:
             _write_json(self.root / "strategy_differentiation.json", strategy_diff)
         if kis_auth:
             meta["kis_auth"] = _kis_auth_observability_fields(kis_auth)
+        if kis_rate_limit:
+            meta["kis_rate_limit"] = _kis_rate_limit_observability_fields(kis_rate_limit)
 
         _write_json(self.root / "execution_meta.json", meta)
         public = build_public_audit_summary(meta, manifest)

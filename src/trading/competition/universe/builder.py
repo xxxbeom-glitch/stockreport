@@ -55,6 +55,15 @@ def enrich_risk_from_kis(
                 rec["risk_exclude_new_entry"] = False
                 rec["risk_notes"] = ["kis_auth_failed"]
             return 0, len(records)
+        from data.kis_client import is_kis_rate_limit_halted
+
+        if is_kis_rate_limit_halted():
+            for rec in records:
+                rec["risk_check_status"] = "unverified"
+                rec["risk_status"] = "unknown"
+                rec["risk_exclude_new_entry"] = False
+                rec["risk_notes"] = ["kis_rate_limit_exceeded"]
+            return 0, len(records)
     except Exception:
         pass
 

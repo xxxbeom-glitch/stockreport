@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import threading
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,16 @@ from dotenv import load_dotenv
 from requests import HTTPError
 
 import config
+from data.kis_rate_limit import (
+    configured_backoff_sec,
+    configured_max_retries,
+    is_kis_rate_limit_halted,
+    is_rate_limit_msg,
+    kis_rate_limit_observability,
+    kis_rate_limiter_acquire,
+    record_kis_rate_limit_error,
+    reset_kis_rate_limit_state,
+)
 
 load_dotenv()
 
@@ -220,6 +231,7 @@ class KISClient:
         url = f"{self.base_url}/oauth2/tokenP"
         body = {"grant_type": "client_credentials", "appkey": app_key, "appsecret": app_secret}
         try:
+            kis_rate_limiter_acquire()
             res = requests.post(url, json=body, timeout=15)
             if res.status_code >= 400:
                 meta = _safe_kis_error_from_response(res)
@@ -315,6 +327,7 @@ class KISClient:
         if not headers:
             return {"ok": False, "error": "no_token"}
         try:
+            kis_rate_limiter_acquire()
             res = requests.get(
                 f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-price",
                 headers=headers,
@@ -367,68 +380,96 @@ class KISClient:
         }
 
     def _get(self, path: str, tr_id: str, params: dict[str, str]) -> dict[str, Any] | None:
-        if self._auth_failed:
+        if self._auth_failed or is_kis_rate_limit_halted():
             return None
         headers = self._headers(tr_id)
         if not headers:
             return None
-        try:
-            res = requests.get(f"{self.base_url}{path}", headers=headers, params=params, timeout=15)
-            if res.status_code in {401, 403}:
-                meta = _safe_kis_error_from_response(res)
-                logger.warning("KIS GET auth error tr_id=%s %s", tr_id, meta)
-                if self._memory_token and self._token_refresh_attempts < 1 and not self._auth_failed:
-                    self._token_refresh_attempts += 1
-                    if self.ensure_token(force_refresh=True):
-                        headers = self._headers(tr_id)
-                        if headers:
-                            res = requests.get(
-                                f"{self.base_url}{path}", headers=headers, params=params, timeout=15
-                            )
-                            if res.status_code < 400:
-                                pass
+
+        max_retries = configured_max_retries()
+        backoff = configured_backoff_sec()
+
+        for attempt in range(max_retries + 1):
+            if is_kis_rate_limit_halted():
+                return None
+            try:
+                kis_rate_limiter_acquire()
+                if is_kis_rate_limit_halted():
+                    return None
+                res = requests.get(f"{self.base_url}{path}", headers=headers, params=params, timeout=15)
+                if res.status_code in {401, 403}:
+                    meta = _safe_kis_error_from_response(res)
+                    logger.warning("KIS GET auth error tr_id=%s %s", tr_id, meta)
+                    if self._memory_token and self._token_refresh_attempts < 1 and not self._auth_failed:
+                        self._token_refresh_attempts += 1
+                        if self.ensure_token(force_refresh=True):
+                            headers = self._headers(tr_id)
+                            if headers:
+                                kis_rate_limiter_acquire()
+                                res = requests.get(
+                                    f"{self.base_url}{path}", headers=headers, params=params, timeout=15
+                                )
+                                if res.status_code >= 400:
+                                    return None
                             else:
                                 return None
                         else:
                             return None
                     else:
                         return None
-                else:
+                res.raise_for_status()
+                text = (res.text or "").strip()
+                if not text:
+                    logger.debug("KIS GET empty body tr_id=%s status=%s", tr_id, res.status_code)
                     return None
-            res.raise_for_status()
-            text = (res.text or "").strip()
-            if not text:
-                logger.debug("KIS GET empty body tr_id=%s status=%s", tr_id, res.status_code)
+                try:
+                    data = res.json()
+                except json.JSONDecodeError:
+                    logger.warning(
+                        "KIS GET non-json tr_id=%s status=%s body_prefix=%r",
+                        tr_id,
+                        res.status_code,
+                        text[:120],
+                    )
+                    return None
+                if not isinstance(data, dict):
+                    return None
+
+                msg_cd = data.get("msg_cd")
+                if is_rate_limit_msg(msg_cd):
+                    record_kis_rate_limit_error(
+                        tr_id=tr_id,
+                        msg1=str(data.get("msg1") or ""),
+                        retried=attempt > 0,
+                    )
+                    if is_kis_rate_limit_halted():
+                        return None
+                    if attempt < max_retries:
+                        time.sleep(backoff * (attempt + 1))
+                        continue
+                    return None
+
+                if str(data.get("rt_cd", "0")) not in {"0", ""}:
+                    if not is_rate_limit_msg(data.get("msg_cd")):
+                        logger.warning(
+                            "KIS rt_cd error tr_id=%s msg_cd=%s msg1=%s",
+                            tr_id,
+                            data.get("msg_cd"),
+                            data.get("msg1"),
+                        )
+                    return None
+                return data
+            except HTTPError as exc:
+                res = exc.response
+                if res is not None:
+                    logger.warning("KIS GET HTTP error tr_id=%s %s", tr_id, _safe_kis_error_from_response(res))
+                else:
+                    logger.debug("KIS GET failed %s: %s", tr_id, exc)
                 return None
-            try:
-                data = res.json()
-            except json.JSONDecodeError:
-                logger.warning(
-                    "KIS GET non-json tr_id=%s status=%s body_prefix=%r",
-                    tr_id,
-                    res.status_code,
-                    text[:120],
-                )
-                return None
-            if str(data.get("rt_cd", "0")) not in {"0", ""}:
-                logger.warning(
-                    "KIS rt_cd error tr_id=%s msg_cd=%s msg1=%s",
-                    tr_id,
-                    data.get("msg_cd"),
-                    data.get("msg1"),
-                )
-                return None
-            return data
-        except HTTPError as exc:
-            res = exc.response
-            if res is not None:
-                logger.warning("KIS GET HTTP error tr_id=%s %s", tr_id, _safe_kis_error_from_response(res))
-            else:
+            except Exception as exc:
                 logger.debug("KIS GET failed %s: %s", tr_id, exc)
-            return None
-        except Exception as exc:
-            logger.debug("KIS GET failed %s: %s", tr_id, exc)
-            return None
+                return None
+        return None
 
     def _index_from_kis(self, name: str, index_code: str) -> dict[str, Any] | None:
         data = self._get(
@@ -754,6 +795,14 @@ def is_kis_auth_failed() -> bool:
 
 def reset_kis_auth_state(*, clear_token: bool = False) -> None:
     _client().reset_auth_state(clear_token=clear_token)
+
+
+def reset_kis_rate_limit() -> None:
+    reset_kis_rate_limit_state()
+
+
+def kis_rate_limit_summary() -> dict[str, Any]:
+    return kis_rate_limit_observability()
 
 
 def preflight_kis_auth(*, force_refresh: bool = False) -> dict[str, Any]:

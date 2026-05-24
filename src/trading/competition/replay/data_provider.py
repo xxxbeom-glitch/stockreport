@@ -125,6 +125,10 @@ def _kis_session_dates(start: str, end: str) -> tuple[list[str], list[str]]:
 
     if is_kis_auth_failed():
         return [], ["kis_auth_failed"]
+    from data.kis_client import is_kis_rate_limit_halted
+
+    if is_kis_rate_limit_halted():
+        return [], ["kis_rate_limit_exceeded"]
     pad_start = (datetime.strptime(start, "%Y%m%d") - timedelta(days=14)).strftime("%Y%m%d")
     pad_end = (datetime.strptime(end, "%Y%m%d") + timedelta(days=14)).strftime("%Y%m%d")
     try:
@@ -195,6 +199,11 @@ def _load_ticker_ohlcv_map(ticker: str, start: str, end: str) -> tuple[dict[str,
 
         if is_kis_auth_failed():
             errors.append("kis_auth_failed")
+            return {}, None, errors
+        from data.kis_client import is_kis_rate_limit_halted
+
+        if is_kis_rate_limit_halted():
+            errors.append("kis_rate_limit_exceeded")
             return {}, None, errors
         try:
             bars = _kis_daily_bars(ticker, start, end)
