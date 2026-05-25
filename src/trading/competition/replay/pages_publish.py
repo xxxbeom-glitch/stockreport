@@ -39,6 +39,9 @@ _STRIP_KEYS = frozenset(
         "workflow",
         "role_env_keys",
         "teams",
+        "auditSummary",
+        "teamDecisions",
+        "campaignValidation",
     }
 )
 

@@ -8,7 +8,10 @@ from pathlib import Path
 
 from src.trading.competition.dashboard.payload import build_dashboard_payload
 from src.trading.competition.dashboard.replay_payload import (
+    _agent_display_name,
     _build_audit_summary,
+    _display_reason,
+    _is_executed_trade,
     build_replay_dashboard_payload,
     list_replay_runs,
 )
@@ -48,6 +51,33 @@ class ReplayDashboardPayloadTests(unittest.TestCase):
         self.assertEqual(summary["costModel"], "costs_not_implemented")
         self.assertTrue(summary["costsWarning"])
         self.assertFalse(summary["liveReady"])
+
+    def test_executed_trade_filter(self) -> None:
+        self.assertFalse(_is_executed_trade({"quantity": 0, "fill_price_krw": 100}))
+        self.assertFalse(_is_executed_trade({"quantity": 5, "fill_price_krw": 0}))
+        self.assertTrue(
+            _is_executed_trade(
+                {"quantity": 5, "fill_price_krw": 11430, "trade_id": "tr_x", "executed_at": "2024-12-19"}
+            )
+        )
+
+    def test_display_reason_strips_mock_detail(self) -> None:
+        self.assertEqual(_display_reason("liquidity_watch", "mock provider — no live LLM"), "liquidity_watch")
+        self.assertEqual(_agent_display_name("B"), "에이전트 2호")
+
+    def test_replay_payload_agent_names_and_target_price(self) -> None:
+        run_dir = REPLAY_ROOT / "replay_20241218_16b6f721"
+        if not run_dir.is_dir():
+            self.skipTest("smoke run missing")
+        payload = build_replay_dashboard_payload("replay_20241218_16b6f721")
+        self.assertEqual(payload["agentMeta"]["agent2"]["name"], "에이전트 2호")
+        self.assertIn("001440", payload["stockCatalog"])
+        stock = payload["stockCatalog"]["001440"]
+        self.assertEqual(stock.get("targetPrice"), 54000)
+        self.assertIn("agent2", stock["agents"])
+        trades = payload["tradeHistory"]["agent2"]
+        self.assertEqual(len(trades), 1)
+        self.assertEqual(trades[0]["reason"], "liquidity_watch")
 
     def test_replay_manifest_roundtrip(self) -> None:
         for manifest_path in REPLAY_ROOT.glob("*/manifest.json"):

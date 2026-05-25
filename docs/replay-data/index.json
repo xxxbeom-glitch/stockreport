@@ -8,14 +8,14 @@
       "replayRunId": "replay_20241218_16b6f721",
       "tradingDate": "20241218",
       "campaignId": null,
-      "leakageSummary": "PASS",
+      "leakageSummary": null,
       "dashboardPath": "runs/replay_20241218_16b6f721/dashboard.json"
     },
     {
       "replayRunId": "replay_20241218_dca68242",
       "tradingDate": "20241218",
       "campaignId": null,
-      "leakageSummary": "PASS",
+      "leakageSummary": null,
       "dashboardPath": "runs/replay_20241218_dca68242/dashboard.json"
     },
     {

@@ -16,11 +16,17 @@ class PagesPublishTests(unittest.TestCase):
         raw = {
             "dataSource": "replay",
             "firestore_sync": {"ok": True},
+            "auditSummary": {"leakageStatus": "PASS"},
+            "teamDecisions": [{"action": "BUY"}],
+            "campaignValidation": {"dashboardLabel": "x"},
             "replayMeta": {"firestoreSync": {"x": 1}, "tradingDate": "20241218"},
         }
         safe = pp.sanitize_dashboard_payload(raw)
         self.assertNotIn("firestore_sync", safe)
         self.assertNotIn("firestoreSync", safe.get("replayMeta", {}))
+        self.assertNotIn("auditSummary", safe)
+        self.assertNotIn("teamDecisions", safe)
+        self.assertNotIn("campaignValidation", safe)
 
     def test_rebuild_index_lists_runs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

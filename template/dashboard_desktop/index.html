@@ -223,6 +223,14 @@
         line-height: 1.4;
       }
 
+      [data-ui="audit-panel"],
+      [data-ui="replay-decisions-card"],
+      [data-ui="monthly-report-section"],
+      [data-ui="final-report-section"],
+      [data-ui="mode-banner"] {
+        display: none !important;
+      }
+
       .replay-decisions-card {
         display: none;
         margin-bottom: 18px;
@@ -1369,29 +1377,33 @@
         border-bottom: none;
       }
 
-      /* Stock return table — column grid (colgroup 28/14/12/17/15/14 = 100%) */
+      /* Stock return table — column grid */
       .stock-return-table col.col-stock {
-        width: 28%;
+        width: 24%;
       }
 
       .stock-return-table col.col-avg-price {
-        width: 14%;
-      }
-
-      .stock-return-table col.col-current-price {
         width: 12%;
       }
 
+      .stock-return-table col.col-current-price {
+        width: 10%;
+      }
+
       .stock-return-table col.col-return {
-        width: 17%;
+        width: 14%;
       }
 
       .stock-return-table col.col-pnl {
-        width: 15%;
+        width: 12%;
+      }
+
+      .stock-return-table col.col-target {
+        width: 10%;
       }
 
       .stock-return-table col.col-reason {
-        width: 14%;
+        width: 18%;
       }
 
       /* Trade history — 좌(날짜+종목) | gap | 우(거래정보) 그룹 grid */
@@ -1796,6 +1808,7 @@
                   <col class="col-price col-current-price" />
                   <col class="col-return" />
                   <col class="col-pnl" />
+                  <col class="col-target" />
                   <col class="col-reason" />
                 </colgroup>
                 <thead>
@@ -1805,6 +1818,7 @@
                     <th class="col-price col-current-price">현재가</th>
                     <th class="col-return">매수 이후 수익률</th>
                     <th class="col-pnl">평가손익</th>
+                    <th class="col-target">목표가</th>
                     <th class="col-reason">매수 근거</th>
                   </tr>
                 </thead>
@@ -1818,6 +1832,7 @@
                   <col class="col-price col-current-price" />
                   <col class="col-return" />
                   <col class="col-pnl" />
+                  <col class="col-target" />
                   <col class="col-reason" />
                 </colgroup>
                 <tbody data-ui="stock-table-body">
@@ -2381,6 +2396,9 @@
         var teamDecisions = [];
         var replayMeta = null;
         var competitionLoaded = false;
+        var payloadSummary = null;
+        var INITIAL_SEED_PER_TEAM = 500000;
+        var INITIAL_TOTAL_SEED = INITIAL_SEED_PER_TEAM * 4;
         var MONTHLY_REPORTS = {};
         var FINAL_REPORT = null;
         var urlReportKey = null;
@@ -2482,6 +2500,21 @@
         }
 
         function getAgentPeriodStats() {
+          if (dataMode === "replay" && competitionLoaded) {
+            return Object.keys(AGENT_META).map(function (key) {
+              var m = AGENT_META[key];
+              return {
+                key: key,
+                label: m.name,
+                asset: m.totalAssetsKrw != null ? m.totalAssetsKrw : 0,
+                returnPct: m.returnPct != null ? m.returnPct : 0,
+                cashKrw: m.cashKrw,
+                strategy: m.strategy,
+                badge: m.badge,
+                badgeClass: m.badgeClass,
+              };
+            });
+          }
           var range = getPeriodRange();
           var stats = [];
           TIMELINE.series.forEach(function (s) {
@@ -2496,6 +2529,44 @@
             });
           });
           return stats;
+        }
+
+        function pickDefaultStockAgent() {
+          var order = ["agent1", "agent2", "agent3", "agent4"];
+          for (var i = 0; i < order.length; i++) {
+            var key = order[i];
+            var has = Object.keys(STOCK_CATALOG || {}).some(function (id) {
+              return (STOCK_CATALOG[id].agents || []).indexOf(key) >= 0;
+            });
+            if (has) return key;
+          }
+          return "agent1";
+        }
+
+        function formatReplayTradingDate(raw) {
+          if (!raw) return "-";
+          var s = String(raw);
+          if (s.length === 8) {
+            return s.slice(0, 4) + "." + s.slice(4, 6) + "." + s.slice(6, 8);
+          }
+          return s.slice(0, 10);
+        }
+
+        function formatDashboardMetaLine() {
+          if (dataMode === "replay" && replayMeta) {
+            var basis = formatReplayTradingDate(replayMeta.tradingDate);
+            var status = payloadSummary && payloadSummary.competitionStatus
+              ? payloadSummary.competitionStatus
+              : "REPLAY";
+            return "기준일 " + basis + " · 초기 시드 500,000원 · 운용 " + status;
+          }
+          if (dataMode === "replay" && campaignProgress && campaignProgress.progressLabel) {
+            return campaignProgress.progressLabel;
+          }
+          if (competitionLoaded && dataMode === "live") {
+            return "LIVE competition 데이터 · 초기 시드 500,000원";
+          }
+          return "기준일 - · 초기 시드 500,000원 · 운용 -";
         }
 
         function getBestAgent(stats) {
@@ -2525,16 +2596,6 @@
         }
 
         function updateKpis(agentStats) {
-          var totalEnd = agentStats.reduce(function (sum, a) { return sum + a.asset; }, 0);
-          var range = getPeriodRange();
-          var totalStart = TIMELINE.series
-            .filter(function (s) { return !s.dashed; })
-            .reduce(function (sum, s) { return sum + s.data[range.start]; }, 0);
-          var totalReturn = calcReturnPct(totalStart, totalEnd);
-          var bestAgent = getBestAgent(agentStats);
-          var bestStock = getBestStock();
-          var meta = AGENT_META[bestAgent.key];
-
           var totalAssetEl = document.querySelector('[data-ui="kpi-total-asset"]');
           var totalReturnWrap = document.querySelector('[data-ui="kpi-total-return-wrap"]');
           var cashEl = document.querySelector('[data-ui="kpi-cash"]');
@@ -2542,6 +2603,48 @@
           var bestAgentSub = document.querySelector('[data-ui="kpi-best-agent-sub"]');
           var bestStockRate = document.querySelector('[data-ui="kpi-best-stock-rate"]');
           var bestStockSub = document.querySelector('[data-ui="kpi-best-stock-sub"]');
+
+          if (!agentStats.length) {
+            if (totalAssetEl) totalAssetEl.textContent = "-";
+            if (totalReturnWrap) totalReturnWrap.innerHTML = '<span class="kpi__sub-meta">-</span>';
+            if (cashEl) cashEl.textContent = "-";
+            if (bestAgentRate) bestAgentRate.textContent = "-";
+            if (bestAgentSub) bestAgentSub.textContent = "-";
+            if (bestStockRate) bestStockRate.textContent = "-";
+            if (bestStockSub) bestStockSub.textContent = "-";
+            return;
+          }
+
+          var totalEnd = payloadSummary && payloadSummary.totalAssets != null
+            ? payloadSummary.totalAssets
+            : agentStats.reduce(function (sum, a) { return sum + a.asset; }, 0);
+          var totalReturn;
+          if (dataMode === "replay" && competitionLoaded) {
+            totalReturn = calcReturnPct(INITIAL_TOTAL_SEED, totalEnd);
+          } else {
+            var range = getPeriodRange();
+            var totalStart = TIMELINE.series
+              .filter(function (s) { return !s.dashed; })
+              .reduce(function (sum, s) { return sum + s.data[range.start]; }, 0);
+            totalReturn = calcReturnPct(totalStart, totalEnd);
+          }
+
+          var bestAgent = getBestAgent(agentStats);
+          if (payloadSummary && payloadSummary.bestAgentKey && AGENT_META[payloadSummary.bestAgentKey]) {
+            bestAgent = {
+              key: payloadSummary.bestAgentKey,
+              returnPct: payloadSummary.bestAgentReturnPct != null ? payloadSummary.bestAgentReturnPct : bestAgent.returnPct,
+            };
+          }
+          var bestStock = getBestStock();
+          if (payloadSummary && payloadSummary.bestStockName && payloadSummary.bestStockName !== "-") {
+            bestStock = bestStock || { name: payloadSummary.bestStockName, agents: [], returnPct: 0 };
+            if (payloadSummary.bestStockReturnPct != null) {
+              bestStock.returnPct = payloadSummary.bestStockReturnPct;
+            }
+            if (!bestStock.name) bestStock.name = payloadSummary.bestStockName;
+          }
+          var meta = AGENT_META[bestAgent.key] || { name: "-", badge: "-" };
 
           if (totalAssetEl) totalAssetEl.textContent = formatMoney(totalEnd);
           if (totalReturnWrap) totalReturnWrap.innerHTML = signValueHtml(totalReturn);
@@ -2554,17 +2657,52 @@
               '"/></svg>' + formatPctValue(bestAgent.returnPct);
           }
           if (bestAgentSub) bestAgentSub.textContent = meta.name + " · " + meta.badge;
-          if (bestStockRate) {
-            bestStockRate.className = "kpi__value sign-value kpi__value--rate " + (bestStock.returnPct >= 0 ? "num-up" : "num-down");
-            bestStockRate.innerHTML =
-              '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
-              (bestStock.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
-              '"/></svg>' + formatPctValue(bestStock.returnPct);
+          if (bestStock && bestStock.name) {
+            if (bestStockRate) {
+              bestStockRate.className = "kpi__value sign-value kpi__value--rate " + (bestStock.returnPct >= 0 ? "num-up" : "num-down");
+              bestStockRate.innerHTML =
+                '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
+                (bestStock.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
+                '"/></svg>' + formatPctValue(bestStock.returnPct);
+            }
+            if (bestStockSub) bestStockSub.textContent = bestStock.name + " · " + agentAgentLabel(bestStock.agents || []);
+          } else {
+            if (bestStockRate) bestStockRate.textContent = "-";
+            if (bestStockSub) bestStockSub.textContent = "-";
           }
-          if (bestStockSub) bestStockSub.textContent = bestStock.name + " · " + agentAgentLabel(bestStock.agents);
+        }
+
+        function syncAgentTilesFromMeta() {
+          Object.keys(AGENT_META).forEach(function (key) {
+            var m = AGENT_META[key];
+            var tile = document.querySelector('.agent-tile[data-agent-series="' + key + '"]');
+            if (!tile) return;
+            var nameEl = tile.querySelector(".agent-tile__name");
+            var badgeEl = tile.querySelector(".badge");
+            var descEl = tile.querySelector(".agent-tile__desc");
+            var assetEl = tile.querySelector(".agent-tile__asset");
+            var returnEl = tile.querySelector(".agent-tile__return-value");
+            if (nameEl) nameEl.textContent = m.name || "-";
+            if (badgeEl) {
+              badgeEl.className = "badge " + (m.badgeClass || "badge--speed");
+              badgeEl.textContent = m.badge || "-";
+            }
+            if (descEl) {
+              var cashPart = m.cashKrw != null ? " · 현금 " + formatMoney(m.cashKrw) : "";
+              descEl.textContent = (m.strategy || "-") + cashPart;
+            }
+            if (assetEl) assetEl.textContent = formatMoney(m.totalAssetsKrw);
+            if (returnEl && m.returnPct != null) {
+              returnEl.outerHTML = signValueHtml(m.returnPct, { extraClass: "agent-tile__return-value" });
+            }
+          });
         }
 
         function updateAgentTiles(agentStats) {
+          if (dataMode === "replay" && competitionLoaded) {
+            syncAgentTilesFromMeta();
+            return;
+          }
           agentStats.forEach(function (stat) {
             var tile = document.querySelector('.agent-tile[data-agent-series="' + stat.key + '"]');
             if (!tile) return;
@@ -2591,8 +2729,19 @@
         }
 
         function getAllTrades() {
-          var range = getPeriodRange();
           var all = [];
+          if (dataMode === "replay" && competitionLoaded) {
+            Object.keys(TRADE_HISTORY).forEach(function (agentKey) {
+              (TRADE_HISTORY[agentKey] || []).forEach(function (t) {
+                if (!t.price || !t.qty) return;
+                all.push({ agentKey: agentKey, trade: t });
+              });
+            });
+            return all.sort(function (a, b) {
+              return String(b.trade.date || "").localeCompare(String(a.trade.date || ""));
+            });
+          }
+          var range = getPeriodRange();
           Object.keys(TRADE_HISTORY).forEach(function (agentKey) {
             (TRADE_HISTORY[agentKey] || []).forEach(function (t) {
               if (t.dayIndex >= range.start && t.dayIndex < range.end) {
@@ -2651,9 +2800,7 @@
           var filtered = filterTradesBySide(getAllTrades(), state.tradeSide);
 
           if (!filtered.length) {
-            var emptyMsg = dataMode === "replay"
-              ? "이 REPLAY run에 과거가격 기준 체결 기록이 없습니다 (미체결·fill_failed)"
-              : "해당 거래 기록이 없습니다";
+            var emptyMsg = "체결된 거래 기록이 없습니다.";
             tbody.innerHTML =
               '<tr><td class="table-empty-cell" colspan="9">' + emptyMsg + "</td></tr>";
             return;
@@ -2675,9 +2822,15 @@
           });
         }
 
+        function formatTargetPrice(value) {
+          if (value == null || value === "" || Number(value) <= 0) return "-";
+          return formatMoney(value);
+        }
+
         function renderStockTableRow(id, stock) {
           var data = stock.all;
           var agents = (stock.agents || []).join(" ");
+          var target = data.targetPrice != null ? data.targetPrice : stock.targetPrice;
           return (
             '<tr data-stock-id="' + id + '" data-agents="' + agents + '">' +
             '<td class="col-stock"><span class="stock-name">' + stock.name + '</span><span class="stock-code">' + id + "</span></td>" +
@@ -2685,6 +2838,7 @@
             '<td class="col-price">' + formatMoney(data.current) + "</td>" +
             '<td class="col-return">' + signValueHtml(data.returnPct) + "</td>" +
             '<td class="col-pnl">' + signValueHtml(data.pnl, { isMoney: true }) + "</td>" +
+            '<td class="col-target">' + formatTargetPrice(target) + "</td>" +
             '<td class="col-reason reason">' + (stock.reason || "-") + "</td>" +
             "</tr>"
           );
@@ -2695,10 +2849,7 @@
           if (!tbody) return;
           var ids = Object.keys(STOCK_CATALOG || {});
           if (!ids.length) {
-            var emptyMsg = dataMode === "replay"
-              ? "이 REPLAY run에 보유 종목이 없습니다. (미체결·fill_failed 포함)"
-              : "보유 종목이 없습니다";
-            tbody.innerHTML = '<tr><td class="empty-state-inline" colspan="6">' + emptyMsg + "</td></tr>";
+            tbody.innerHTML = '<tr><td class="empty-state-inline" colspan="7">보유 종목이 없습니다.</td></tr>';
             return;
           }
           tbody.innerHTML = ids.map(function (id) {
@@ -2715,10 +2866,13 @@
             var priceCells = row.querySelectorAll(".col-price");
             var returnCell = row.querySelector(".col-return");
             var pnlCell = row.querySelector(".col-pnl");
+            var targetCell = row.querySelector(".col-target");
+            var target = data.targetPrice != null ? data.targetPrice : stock.targetPrice;
             if (priceCells[0]) priceCells[0].textContent = formatMoney(data.avg);
             if (priceCells[1]) priceCells[1].textContent = formatMoney(data.current);
             if (returnCell) returnCell.innerHTML = signValueHtml(data.returnPct);
             if (pnlCell) pnlCell.innerHTML = signValueHtml(data.pnl, { isMoney: true });
+            if (targetCell) targetCell.textContent = formatTargetPrice(target);
           });
         }
 
@@ -2729,13 +2883,20 @@
         function calcChartBounds(seriesList) {
           var values = [];
           seriesList.forEach(function (s) {
-            values = values.concat(s.data);
+            values = values.concat(s.data || []);
           });
+          if (!values.length) {
+            return { min: 0, max: INITIAL_TOTAL_SEED };
+          }
           var minVal = Math.min.apply(null, values);
           var maxVal = Math.max.apply(null, values);
-          var min = Math.floor(minVal / 20000) * 20000 - 20000;
-          var max = Math.ceil(maxVal / 20000) * 20000 + 20000;
-          return { min: Math.max(min, 480000), max: Math.min(max, 580000) };
+          if (minVal === maxVal) {
+            var padFlat = Math.max(10000, Math.round(minVal * 0.05));
+            return { min: Math.floor(minVal - padFlat), max: Math.ceil(maxVal + padFlat) };
+          }
+          var span = maxVal - minVal;
+          var pad = Math.max(span * 0.08, 10000);
+          return { min: Math.floor(minVal - pad), max: Math.ceil(maxVal + pad) };
         }
 
         function updateChart() {
@@ -2767,10 +2928,7 @@
           applyStockAgentFilter(state.stockAgent);
           renderTradeHistory();
           updateChart();
-          if (dataMode === "replay") {
-            renderReplayAudit();
-            renderReplayDecisions();
-          }
+          renderWeeklyReportState();
         }
 
         function auditStatusClass(status) {
@@ -2857,77 +3015,26 @@
         }
 
         function updateModeChrome() {
-          var banner = document.querySelector('[data-ui="mode-banner"]');
           var meta = document.querySelector('[data-ui="dashboard-meta"]');
-          var auditPanel = document.querySelector('[data-ui="audit-panel"]');
-          var decisionsCard = document.querySelector('[data-ui="replay-decisions-card"]');
           var replaySelect = document.querySelector('[data-ui="replay-run-select"]');
-          var weeklySection = document.querySelector('[data-ui="report-section"]');
+          var segment = document.querySelector('[data-ui="data-mode-segment"]');
           var segmentBtns = document.querySelectorAll('[data-ui="data-mode-segment"] .segment__btn');
 
           segmentBtns.forEach(function (btn) {
             btn.classList.toggle("is-active", btn.getAttribute("data-mode") === dataMode);
           });
 
+          if (useReplayPagesJson() && segment) {
+            segment.style.display = "none";
+            dataMode = "replay";
+          }
+
           if (replaySelect) {
             replaySelect.classList.toggle("is-visible", dataMode === "replay");
           }
-          if (auditPanel) {
-            auditPanel.hidden = dataMode !== "replay";
-            auditPanel.classList.toggle("is-visible", dataMode === "replay");
-          }
-          if (decisionsCard) {
-            decisionsCard.hidden = dataMode !== "replay";
-            decisionsCard.classList.toggle("is-visible", dataMode === "replay");
-          }
-          if (weeklySection) {
-            weeklySection.style.display = "";
-          }
-          var monthlySection = document.querySelector('[data-ui="monthly-report-section"]');
-          if (monthlySection) {
-            monthlySection.style.display = dataMode === "replay" ? "" : "none";
-          }
-          var finalSection = document.querySelector('[data-ui="final-report-section"]');
-          if (finalSection) {
-            var showFinal = dataMode === "replay" && FINAL_REPORT;
-            finalSection.hidden = !showFinal;
-            finalSection.style.display = showFinal ? "" : "none";
-          }
-
-          if (banner) {
-            banner.classList.remove("mode-banner--live");
-            if (dataMode === "replay") {
-              banner.hidden = false;
-              banner.classList.add("is-visible");
-              var runLabel = replayRunId || "(run 미선택)";
-              var td = replayMeta && replayMeta.tradingDate ? replayMeta.tradingDate : "";
-              banner.textContent =
-                "REPLAY 테스트 데이터이며 LIVE 성과에 반영되지 않음 · run " + runLabel +
-                (td ? " · 기준일 " + td : "");
-            } else {
-              banner.hidden = false;
-              banner.classList.add("is-visible", "mode-banner--live");
-              banner.textContent = "LIVE 운용 데이터 (REPLAY 결과와 분리됨)";
-            }
-          }
 
           if (meta) {
-            if (dataMode === "replay" && campaignProgress && campaignProgress.progressLabel) {
-              meta.textContent = campaignProgress.progressLabel;
-              if (campaignId) {
-                meta.textContent += " · campaign " + campaignId;
-              }
-              if (campaignProgress.needsResume && campaignProgress.nextTradingDate) {
-                meta.textContent += " · 다음 거래일 " + campaignProgress.nextTradingDate;
-              }
-            } else if (dataMode === "replay" && replayMeta) {
-              meta.textContent =
-                "REPLAY · decision " + (replayMeta.decisionAt || "-") +
-                " · fill " + (replayMeta.fillDate || "-") +
-                " · 초기 시드 500,000원";
-            } else if (competitionLoaded) {
-              meta.textContent = "LIVE competition 데이터 · 초기 시드 500,000원";
-            }
+            meta.textContent = formatDashboardMetaLine();
           }
         }
 
@@ -3176,7 +3283,8 @@
         }
 
         function formatMoney(value) {
-          return value.toLocaleString("ko-KR") + "원";
+          if (value == null || value === "" || isNaN(Number(value))) return "-";
+          return Number(value).toLocaleString("ko-KR") + "원";
         }
 
         function computeWeeklySummary(agents) {
@@ -3309,9 +3417,36 @@
             "</div>";
         }
 
+        function renderWeeklyEmpty() {
+          var row = document.querySelector('[data-ui="weekly-kpi-row"]');
+          var grid = document.querySelector('[data-ui="weekly-agent-grid"]');
+          var overall = document.querySelector('[data-ui="weekly-overall"]');
+          var weekSelect = document.querySelector('[data-ui="weekly-week-select"]');
+          if (row) row.innerHTML = "";
+          if (grid) {
+            grid.innerHTML = '<p class="empty-state-inline">아직 생성된 주간 리포트가 없습니다.</p>';
+          }
+          if (overall) overall.innerHTML = "";
+          if (weekSelect) weekSelect.style.display = "none";
+        }
+
+        function renderWeeklyReportState() {
+          var keys = Object.keys(WEEKLY_REPORTS || {});
+          if (!keys.length) {
+            renderWeeklyEmpty();
+            return;
+          }
+          var weekSelect = document.querySelector('[data-ui="weekly-week-select"]');
+          if (weekSelect) weekSelect.style.display = "";
+          renderWeeklyReport(keys[0]);
+        }
+
         function renderWeeklyReport(weekKey) {
           var report = WEEKLY_REPORTS[weekKey];
-          if (!report) return;
+          if (!report) {
+            renderWeeklyEmpty();
+            return;
+          }
           weeklyReportState.weekKey = weekKey;
           renderWeeklySummary(report);
           renderWeeklyAgents(report);
@@ -3356,7 +3491,7 @@
             if (!wrap.contains(e.target)) closeMenu();
           });
 
-          renderWeeklyReport(weeklyReportState.weekKey);
+          renderWeeklyReportState();
         }
 
         function formatAxisMoney(value) {
@@ -3601,8 +3736,28 @@
           replayMeta = data.replayMeta || null;
           if (data.campaignId) campaignId = data.campaignId;
           if (data.campaignProgress) campaignProgress = data.campaignProgress;
+          payloadSummary = {
+            totalAssets: data.totalAssets,
+            bestAgentKey: data.bestAgentKey,
+            bestAgentReturnPct: data.bestAgentReturnPct,
+            bestStockName: data.bestStockName,
+            bestStockReturnPct: data.bestStockReturnPct,
+            competitionStatus: data.competitionStatus,
+            operatingDays: data.operatingDays,
+          };
+          if (dataMode === "replay") {
+            state.stockAgent = pickDefaultStockAgent();
+            var stockLabel = document.querySelector('[data-ui="stock-agent-label"]');
+            if (stockLabel && AGENT_META[state.stockAgent]) {
+              stockLabel.textContent = AGENT_META[state.stockAgent].name;
+            }
+            document.querySelectorAll('[data-ui="stock-agent-select"] .select-menu__item').forEach(function (item) {
+              var agent = item.getAttribute("data-agent");
+              item.classList.toggle("is-selected", agent === state.stockAgent);
+            });
+          }
           rebuildReportSelectors();
-          renderFinalReport();
+          renderWeeklyReportState();
           applyUrlReportFocus();
         }
 
@@ -3886,8 +4041,7 @@
           }
           picker.innerHTML = replayRuns.map(function (run) {
             var label = (run.tradingDate || "?") + " · " + (run.replayRunId || "");
-            var leak = run.leakageSummary ? " [" + run.leakageSummary + "]" : "";
-            return '<option value="' + run.replayRunId + '">' + label + leak + "</option>";
+            return '<option value="' + run.replayRunId + '">' + label + "</option>";
           }).join("");
           if (!replayRunId && replayRuns[0]) {
             replayRunId = replayRuns[0].replayRunId;
@@ -3897,12 +4051,9 @@
 
         function showReplayEmptyState(message) {
           clearReplayTemplateShell();
+          payloadSummary = null;
           var meta = document.querySelector('[data-ui="dashboard-meta"]');
           if (meta) meta.textContent = message;
-          var grid = document.querySelector('[data-ui="audit-grid"]');
-          if (grid) {
-            grid.innerHTML = '<p class="empty-state-inline">' + message + "</p>";
-          }
           refreshDashboard();
         }
 

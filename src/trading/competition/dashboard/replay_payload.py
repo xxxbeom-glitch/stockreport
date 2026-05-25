@@ -47,6 +47,35 @@ def _badge_css(badge_class: str) -> str:
     return badge_class if badge_class.startswith("badge--") else "badge--speed"
 
 
+def _agent_display_name(team_id: str) -> str:
+    try:
+        idx = TEAM_IDS.index(team_id) + 1
+    except ValueError:
+        idx = 1
+    return f"에이전트 {idx}호"
+
+
+def _display_reason(label: Any, detail: Any = None) -> str:
+    lbl = str(label or "").strip()
+    det = str(detail or "").strip()
+    if not lbl and not det:
+        return "-"
+    low = det.lower()
+    if "mock provider" in low or low.startswith("mock:") or low.startswith("mock "):
+        return lbl or "-"
+    return lbl or det or "-"
+
+
+def _is_executed_trade(tr: dict[str, Any]) -> bool:
+    if int(tr.get("quantity") or 0) <= 0:
+        return False
+    if int(tr.get("fill_price_krw") or 0) <= 0:
+        return False
+    if not (tr.get("trade_id") or tr.get("executed_at") or tr.get("fill_at")):
+        return False
+    return True
+
+
 def _prefer_firestore() -> bool:
     return os.getenv("COMPETITION_REPLAY_READ_FIRESTORE", "1").lower() in ("1", "true", "yes")
 
@@ -208,8 +237,9 @@ def _build_from_manifest(
             best_team_return = ret
             best_team_key = agent_key
 
+        display = _agent_display_name(tid)
         agent_meta[agent_key] = {
-            "name": meta["display_name"],
+            "name": display,
             "badge": meta["type_label"],
             "badgeClass": _badge_css(meta["badge_class"]),
             "strategy": meta["strategy_label"],
@@ -222,7 +252,7 @@ def _build_from_manifest(
         timeline_series.append(
             {
                 "key": agent_key,
-                "label": meta["display_name"],
+                "label": display,
                 "color": ["#4f8cff", "#34c759", "#ff9500", "#af52de"][TEAM_IDS.index(tid)],
                 "data": [INITIAL_CASH_KRW, total],
             }
@@ -240,12 +270,14 @@ def _build_from_manifest(
             if ret_pct > best_stock_return:
                 best_stock_return = ret_pct
                 best_stock_name = pname
-            block = {"avg": avg, "current": cur, "returnPct": ret_pct, "pnl": pnl}
+            tgt = int(pos.get("target_price_krw") or 0) or None
+            block = {"avg": avg, "current": cur, "returnPct": ret_pct, "pnl": pnl, "targetPrice": tgt}
             if code not in stock_catalog:
                 stock_catalog[code] = {
                     "name": pname,
                     "agents": [],
-                    "reason": pos.get("buy_reason_label") or "-",
+                    "reason": _display_reason(pos.get("buy_reason_label"), pos.get("buy_reason_detail")),
+                    "targetPrice": tgt,
                     "all": dict(block),
                     "7d": dict(block),
                     "14d": dict(block),
@@ -253,13 +285,16 @@ def _build_from_manifest(
             if agent_key not in stock_catalog[code]["agents"]:
                 stock_catalog[code]["agents"].append(agent_key)
 
-    for i, tr in enumerate(trades):
+    trade_idx = 0
+    for tr in trades:
+        if not _is_executed_trade(tr):
+            continue
         tid = tr.get("team_id", "A")
         agent_key = TEAM_TO_AGENT.get(tid, "agent1")
         code = str(tr.get("ticker") or "")
         trade_history[agent_key].append(
             {
-                "dayIndex": min(i, 1),
+                "dayIndex": trade_idx,
                 "date": (tr.get("executed_at") or tr.get("fill_at") or fill_date or "")[:10],
                 "name": tr.get("name") or names.get(code) or code,
                 "code": code,
@@ -267,11 +302,12 @@ def _build_from_manifest(
                 "price": tr.get("fill_price_krw"),
                 "qty": tr.get("quantity"),
                 "pnl": tr.get("realized_pnl_krw"),
-                "reason": tr.get("reason_label") or tr.get("reason"),
+                "reason": _display_reason(tr.get("reason_label"), tr.get("reason_detail")),
                 "fillDate": tr.get("fill_date") or fill_date,
                 "historical": True,
             }
         )
+        trade_idx += 1
 
     for dec in decisions:
         tid = dec.get("team_id", "A")
@@ -395,7 +431,7 @@ def _build_campaign_timeline(
         meta = TEAM_META[tid]
         series_by_agent[agent_key] = {
             "key": agent_key,
-            "label": meta["display_name"],
+            "label": _agent_display_name(tid),
             "color": ["#4f8cff", "#34c759", "#ff9500", "#af52de"][TEAM_IDS.index(tid)],
             "data": [INITIAL_CASH_KRW],
         }
@@ -513,13 +549,16 @@ def build_campaign_dashboard_payload(
 
     trade_history: dict[str, list] = {f"agent{i}": [] for i in range(1, 5)}
     fill_date = synthetic_manifest.get("fill_date") or ""
-    for i, tr in enumerate(all_trades):
+    trade_idx = 0
+    for tr in all_trades:
+        if not _is_executed_trade(tr):
+            continue
         tid = tr.get("team_id", "A")
         agent_key = TEAM_TO_AGENT.get(tid, "agent1")
         code = str(tr.get("ticker") or "")
         trade_history[agent_key].append(
             {
-                "dayIndex": i,
+                "dayIndex": trade_idx,
                 "date": (tr.get("executed_at") or tr.get("fill_at") or fill_date or "")[:10],
                 "name": tr.get("name") or names.get(code) or code,
                 "code": code,
@@ -527,11 +566,12 @@ def build_campaign_dashboard_payload(
                 "price": tr.get("fill_price_krw"),
                 "qty": tr.get("quantity"),
                 "pnl": tr.get("realized_pnl_krw"),
-                "reason": tr.get("reason_label") or tr.get("reason"),
+                "reason": _display_reason(tr.get("reason_label"), tr.get("reason_detail")),
                 "fillDate": tr.get("fill_date") or fill_date,
                 "historical": True,
             }
         )
+        trade_idx += 1
     payload["tradeHistory"] = trade_history
 
     if detail_replay_run_id and detail_replay_run_id != latest_run_id:
