@@ -1,0 +1,1626 @@
+[
+  {
+    "input_candidates": [
+      {
+        "ticker": "319400",
+        "name": "현대무벡스",
+        "scout_score": 20.97089720179436,
+        "scout_reason_label": "tv_ratio_2.1x",
+        "scout_metrics": {
+          "tv_ratio_20d": 2.097089720179436,
+          "change_rate_pct": 0.0,
+          "current_price_krw": 23700
+        },
+        "evidence_id": "scout:A:319400:20260102",
+        "fact_package": {
+          "ticker": "319400",
+          "name": "현대무벡스",
+          "market": "KOSDAQ",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 23700,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 2.1,
+            "avg_trading_value_20d_krw": 189220977072,
+            "current_trading_value_krw": 396813365860,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 18580,
+                "trading_value_krw": 870441397690,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 19260,
+                "trading_value_krw": 511245422420,
+                "change_rate_pct": 3.66
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 20350,
+                "trading_value_krw": 341067267080,
+                "change_rate_pct": 5.66
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 18790,
+                "trading_value_krw": 194890923965,
+                "change_rate_pct": -7.67
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 23700,
+                "trading_value_krw": 396813365860,
+                "change_rate_pct": 26.13
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [
+              "volume_surge"
+            ],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 28429067945,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "[기재정정]금전대여결정",
+              "published_at": "2025-12-30T09:00:00+09:00",
+              "source_id": "dart:20251230900910",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251230900910"
+            },
+            {
+              "type": "dart",
+              "title": "단일판매ㆍ공급계약체결",
+              "published_at": "2025-12-01T09:00:00+09:00",
+              "source_id": "dart:20251201900305",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251201900305"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "090710",
+        "name": "휴림로봇",
+        "scout_score": 17.531289113652967,
+        "scout_reason_label": "tv_ratio_1.8x",
+        "scout_metrics": {
+          "tv_ratio_20d": 1.7531289113652966,
+          "change_rate_pct": 0.0,
+          "current_price_krw": 8190
+        },
+        "evidence_id": "scout:A:090710:20260102",
+        "fact_package": {
+          "ticker": "090710",
+          "name": "휴림로봇",
+          "market": "KOSDAQ",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 8190,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 1.75,
+            "avg_trading_value_20d_krw": 183729405018,
+            "current_trading_value_krw": 322101331805,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 6540,
+                "trading_value_krw": 275926943905,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 6200,
+                "trading_value_krw": 137418540490,
+                "change_rate_pct": -5.2
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 7980,
+                "trading_value_krw": 743026581430,
+                "change_rate_pct": 28.71
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 7450,
+                "trading_value_krw": 193066520670,
+                "change_rate_pct": -6.64
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 8190,
+                "trading_value_krw": 322101331805,
+                "change_rate_pct": 9.93
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [
+              "volume_surge"
+            ],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 8338229080,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "[기재정정]단일판매ㆍ공급계약체결(자율공시)",
+              "published_at": "2025-12-30T09:00:00+09:00",
+              "source_id": "dart:20251230900785",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251230900785"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등거래계획보고서",
+              "published_at": "2025-12-29T09:00:00+09:00",
+              "source_id": "dart:20251229000723",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251229000723"
+            },
+            {
+              "type": "dart",
+              "title": "주주명부폐쇄기간또는기준일설정",
+              "published_at": "2025-12-12T09:00:00+09:00",
+              "source_id": "dart:20251212901038",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251212901038"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "035420",
+        "name": "NAVER",
+        "scout_score": 16.720101826403816,
+        "scout_reason_label": "tv_ratio_1.7x",
+        "scout_metrics": {
+          "tv_ratio_20d": 1.6720101826403817,
+          "change_rate_pct": 0.0,
+          "current_price_krw": 247000
+        },
+        "evidence_id": "scout:A:035420:20260102",
+        "fact_package": {
+          "ticker": "035420",
+          "name": "NAVER",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 247000,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 1.67,
+            "avg_trading_value_20d_krw": 199679918350,
+            "current_trading_value_krw": 333866856750,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 236500,
+                "trading_value_krw": 151135015000,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 231500,
+                "trading_value_krw": 172018651750,
+                "change_rate_pct": -2.11
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 242000,
+                "trading_value_krw": 255466754000,
+                "change_rate_pct": 4.54
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 242500,
+                "trading_value_krw": 158307346250,
+                "change_rate_pct": 0.21
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 247000,
+                "trading_value_krw": 333866856750,
+                "change_rate_pct": 1.86
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [
+              "volume_surge"
+            ],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 38778323750,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-31T09:00:00+09:00",
+              "source_id": "dart:20251231000459",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251231000459"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-29T09:00:00+09:00",
+              "source_id": "dart:20251229000488",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251229000488"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-29T09:00:00+09:00",
+              "source_id": "dart:20251229000455",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251229000455"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      }
+    ],
+    "team_id": "A",
+    "agent_key": "agent1",
+    "decision_id": "sr_dec_23f6bc6376d3",
+    "run_id": "simple_replay_20260102_6dfa07e5",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "BUY",
+    "selected_stock": {
+      "stock_code": "319400",
+      "stock_name": "현대무벡스"
+    },
+    "target_price": 26000,
+    "reason_label": "거래대금 급증·가격 돌파",
+    "reason_summary": "거래대금이 20일 평균 대비 2.1배 급증, 주가 26.13% 상승으로 강한 돌파 신호. 외국인 순매수 284억원 유입. 기술적 신호 'volume_surge' 확인.",
+    "supporting_facts": [
+      {
+        "type": "price",
+        "summary": "2026-01-02 종가 23,700원, 전일 대비 +26.13% 급등",
+        "source_id": "pykrx_bulk:319400:20260102",
+        "published_at": "2026-01-02T15:30:00+09:00"
+      },
+      {
+        "type": "volume",
+        "summary": "거래대금 20일 평균 대비 2.1배 (약 3,968억원)",
+        "source_id": "scout:A:319400:20260102",
+        "published_at": "2026-01-02T15:30:00+09:00"
+      },
+      {
+        "type": "flow",
+        "summary": "외국인 순매수 284억원",
+        "source_id": "flow:319400:20260102",
+        "published_at": "2026-01-02T15:30:00+09:00"
+      }
+    ],
+    "risk_factors": [
+      "당일 26% 급등에 따른 단기 과열 및 차익실현 가능성",
+      "금전대여 결정 정정 공시로 인한 불확실성",
+      "최근 주가 변동성 확대"
+    ],
+    "why_not_other_candidates": "휴림로봇은 임원·주요주주 거래계획 보고(매도 가능성)로 부정적 신호, NAVER는 가격 상승폭(1.86%)이 미미하여 돌파 기준 미달.",
+    "confidence": "medium",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T12:09:34+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  },
+  {
+    "input_candidates": [
+      {
+        "ticker": "000660",
+        "name": "SK하이닉스",
+        "scout_score": 9504.828154679,
+        "scout_reason_label": "material_linked",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 9404828154679
+        },
+        "evidence_id": "scout:B:000660:20260102",
+        "fact_package": {
+          "ticker": "000660",
+          "name": "SK하이닉스",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 677000,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.3,
+            "avg_trading_value_20d_krw": 9404828154679,
+            "current_trading_value_krw": 2778983677000,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 588000,
+                "trading_value_krw": 1272669995000,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 599000,
+                "trading_value_krw": 2542663330000,
+                "change_rate_pct": 1.87
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 640000,
+                "trading_value_krw": 2641815287000,
+                "change_rate_pct": 6.84
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 651000,
+                "trading_value_krw": 2662508688140,
+                "change_rate_pct": 1.72
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 677000,
+                "trading_value_krw": 2778983677000,
+                "change_rate_pct": 3.99
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": -73063579500,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "동일인등출자계열회사와의상품ㆍ용역거래",
+              "published_at": "2025-12-26T09:00:00+09:00",
+              "source_id": "dart:20251226000225",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251226000225"
+            },
+            {
+              "type": "dart",
+              "title": "동일인등출자계열회사와의상품ㆍ용역거래",
+              "published_at": "2025-12-26T09:00:00+09:00",
+              "source_id": "dart:20251226000223",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251226000223"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인에대한증여",
+              "published_at": "2025-12-23T09:00:00+09:00",
+              "source_id": "dart:20251223000681",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251223000681"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인에대한부동산임대",
+              "published_at": "2025-12-23T09:00:00+09:00",
+              "source_id": "dart:20251223000666",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251223000666"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인에대한부동산임대",
+              "published_at": "2025-12-23T09:00:00+09:00",
+              "source_id": "dart:20251223000651",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251223000651"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "005930",
+        "name": "삼성전자",
+        "scout_score": 8738.322391481,
+        "scout_reason_label": "material_linked",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 8638322391481
+        },
+        "evidence_id": "scout:B:005930:20260102",
+        "fact_package": {
+          "ticker": "005930",
+          "name": "삼성전자",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 128500,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.44,
+            "avg_trading_value_20d_krw": 8638322391481,
+            "current_trading_value_krw": 3805940517494,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 111100,
+                "trading_value_krw": 1392948448100,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 117000,
+                "trading_value_krw": 3930507591746,
+                "change_rate_pct": 5.31
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 119500,
+                "trading_value_krw": 2342292714700,
+                "change_rate_pct": 2.14
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 119900,
+                "trading_value_krw": 2375903831735,
+                "change_rate_pct": 0.33
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 128500,
+                "trading_value_krw": 3805940517494,
+                "change_rate_pct": 7.17
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 298363479800,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-31T09:00:00+09:00",
+              "source_id": "dart:20251231000603",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251231000603"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-30T09:00:00+09:00",
+              "source_id": "dart:20251230000010",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251230000010"
+            },
+            {
+              "type": "dart",
+              "title": "중대재해발생(종속회사의주요경영사항)",
+              "published_at": "2025-12-24T09:00:00+09:00",
+              "source_id": "dart:20251224800811",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251224800811"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-18T09:00:00+09:00",
+              "source_id": "dart:20251218000407",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251218000407"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-17T09:00:00+09:00",
+              "source_id": "dart:20251217000017",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251217000017"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "005380",
+        "name": "현대차",
+        "scout_score": 1620.459254556,
+        "scout_reason_label": "material_linked",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 1520459254556
+        },
+        "evidence_id": "scout:B:005380:20260102",
+        "fact_package": {
+          "ticker": "005380",
+          "name": "현대차",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 298500,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.19,
+            "avg_trading_value_20d_krw": 1520459254556,
+            "current_trading_value_krw": 284589571750,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 289000,
+                "trading_value_krw": 380589865750,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 286000,
+                "trading_value_krw": 243316490160,
+                "change_rate_pct": -1.04
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 293500,
+                "trading_value_krw": 202241004250,
+                "change_rate_pct": 2.62
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 296500,
+                "trading_value_krw": 184961535500,
+                "change_rate_pct": 1.02
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 298500,
+                "trading_value_krw": 284589571750,
+                "change_rate_pct": 0.67
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": -27172096250,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "대표이사(대표집행임원)변경(안내공시)",
+              "published_at": "2025-12-31T09:00:00+09:00",
+              "source_id": "dart:20251231800663",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251231800663"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-19T09:00:00+09:00",
+              "source_id": "dart:20251219000239",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251219000239"
+            },
+            {
+              "type": "dart",
+              "title": "주주명부폐쇄기간또는기준일설정",
+              "published_at": "2025-12-15T09:00:00+09:00",
+              "source_id": "dart:20251215801175",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251215801175"
+            },
+            {
+              "type": "dart",
+              "title": "기타경영사항(자율공시)              (배당기준일 변경 안내)",
+              "published_at": "2025-12-15T09:00:00+09:00",
+              "source_id": "dart:20251215801179",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251215801179"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인으로부터기타유가증권매수",
+              "published_at": "2025-12-09T09:00:00+09:00",
+              "source_id": "dart:20251209000335",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251209000335"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "402340",
+        "name": "SK스퀘어",
+        "scout_score": 1139.780291843,
+        "scout_reason_label": "material_linked",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 1039780291843
+        },
+        "evidence_id": "scout:B:402340:20260102",
+        "fact_package": {
+          "ticker": "402340",
+          "name": "SK스퀘어",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 392000,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.16,
+            "avg_trading_value_20d_krw": 1039780291843,
+            "current_trading_value_krw": 161568007250,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 321000,
+                "trading_value_krw": 68900665500,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 334500,
+                "trading_value_krw": 154812816000,
+                "change_rate_pct": 4.21
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 346000,
+                "trading_value_krw": 127545111750,
+                "change_rate_pct": 3.44
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 368000,
+                "trading_value_krw": 202952315500,
+                "change_rate_pct": 6.36
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 392000,
+                "trading_value_krw": 161568007250,
+                "change_rate_pct": 6.52
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": -34777965250,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "주식등의대량보유상황보고서(약식)",
+              "published_at": "2026-01-02T09:00:00+09:00",
+              "source_id": "dart:20260102000398",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20260102000398"
+            },
+            {
+              "type": "dart",
+              "title": "지주회사의자회사탈퇴",
+              "published_at": "2026-01-02T09:00:00+09:00",
+              "source_id": "dart:20260102800464",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20260102800464"
+            },
+            {
+              "type": "dart",
+              "title": "주식등의대량보유상황보고서(약식)",
+              "published_at": "2025-12-10T09:00:00+09:00",
+              "source_id": "dart:20251210000421",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251210000421"
+            },
+            {
+              "type": "dart",
+              "title": "주식등의대량보유상황보고서(약식)",
+              "published_at": "2025-12-08T09:00:00+09:00",
+              "source_id": "dart:20251208000160",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251208000160"
+            },
+            {
+              "type": "dart",
+              "title": "[기재정정]타법인주식및출자증권취득결정(자회사의 주요경영사항)",
+              "published_at": "2025-12-03T09:00:00+09:00",
+              "source_id": "dart:20251203800009",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251203800009"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "009150",
+        "name": "삼성전기",
+        "scout_score": 1137.14782484,
+        "scout_reason_label": "material_linked",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 1037147824840
+        },
+        "evidence_id": "scout:B:009150:20260102",
+        "fact_package": {
+          "ticker": "009150",
+          "name": "삼성전기",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 270000,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.18,
+            "avg_trading_value_20d_krw": 1037147824840,
+            "current_trading_value_krw": 188238414500,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 253500,
+                "trading_value_krw": 71327232750,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 259000,
+                "trading_value_krw": 160632135750,
+                "change_rate_pct": 2.17
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 257500,
+                "trading_value_krw": 96686446500,
+                "change_rate_pct": -0.58
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 255000,
+                "trading_value_krw": 89318738250,
+                "change_rate_pct": -0.97
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 270000,
+                "trading_value_krw": 188238414500,
+                "change_rate_pct": 5.88
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 9939947250,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "주식등의대량보유상황보고서(약식)",
+              "published_at": "2026-01-02T09:00:00+09:00",
+              "source_id": "dart:20260102000209",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20260102000209"
+            },
+            {
+              "type": "dart",
+              "title": "주주명부폐쇄기간또는기준일설정",
+              "published_at": "2025-12-16T09:00:00+09:00",
+              "source_id": "dart:20251216801333",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251216801333"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-16T09:00:00+09:00",
+              "source_id": "dart:20251216000272",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251216000272"
+            },
+            {
+              "type": "dart",
+              "title": "최대주주등소유주식변동신고서",
+              "published_at": "2025-12-01T09:00:00+09:00",
+              "source_id": "dart:20251201800432",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251201800432"
+            },
+            {
+              "type": "dart",
+              "title": "대규모기업집단현황공시[분기별공시(개별회사용)]",
+              "published_at": "2025-12-01T09:00:00+09:00",
+              "source_id": "dart:20251201000321",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251201000321"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      }
+    ],
+    "team_id": "B",
+    "agent_key": "agent2",
+    "decision_id": "sr_dec_2418647c8edc",
+    "run_id": "simple_replay_20260102_6dfa07e5",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "SKIP",
+    "selected_stock": {
+      "stock_code": "000000",
+      "stock_name": null
+    },
+    "target_price": null,
+    "reason_label": "재료 부재 및 선반영",
+    "reason_summary": "후보군 DART 공시는 대부분 경영보고서, 지분변동 등 일상적 공시로 가격에 충분히 반영되었거나 영향력이 낮음. 뉴스 없음. SK스퀘어 자회사 탈퇴 이벤트는 당일 6.5% 상승으로 이미 반영된 것으로 판단, 외국인 순매도 수반. 현대차 대표이사 변경은 주가 반응 미미하나 불확실성 큼.",
+    "supporting_facts": [
+      {
+        "type": "dart",
+        "summary": "SK스퀘어 지주회사 자회사 탈퇴 공시 (구조조정 이벤트, 당일 주가 급등)",
+        "source_id": "dart:20260102800464",
+        "published_at": "2026-01-02T09:00:00+09:00"
+      },
+      {
+        "type": "dart",
+        "summary": "삼성전자 종속회사 중대재해 발생 공시 (부정적 이벤트, 이후 주가 상승)",
+        "source_id": "dart:20251224800811",
+        "published_at": "2025-12-24T09:00:00+09:00"
+      },
+      {
+        "type": "dart",
+        "summary": "현대차 대표이사 변경 공시 (잠재적 경영 변화, 주가 반응 제한적)",
+        "source_id": "dart:20251231800663",
+        "published_at": "2025-12-31T09:00:00+09:00"
+      }
+    ],
+    "risk_factors": [
+      "전종목 뉴스 부재로 재료 확산 동력 낮음",
+      "SK스퀘어 급등 당일 외국인 순매도, 거래대금 평균대비 16%",
+      "SK하이닉스, 삼성전자, 삼성전기 등은 명확한 촉매 부재",
+      "현대차 대표이사 변경은 호재성 여부 불확실"
+    ],
+    "why_not_other_candidates": "SK하이닉스: 단순 계열사 거래 공시로 호재 아님. 삼성전자: 중대재해 부정적 공시 이후 상승했으나 호재 없음. 현대차: CEO 변경 공시 있으나 주가 변동 미미, 방향성 불투명. 삼성전기: 대량보유 보고 외 이벤트 없음.",
+    "confidence": "low",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T12:11:24+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  },
+  {
+    "input_candidates": [
+      {
+        "ticker": "005930",
+        "name": "삼성전자",
+        "scout_score": 11621.957189481,
+        "scout_reason_label": "supply_persistence",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 8638322391481,
+          "foreign_net": 298363479800.0
+        },
+        "evidence_id": "scout:C:005930:20260102",
+        "fact_package": {
+          "ticker": "005930",
+          "name": "삼성전자",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 128500,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.44,
+            "avg_trading_value_20d_krw": 8638322391481,
+            "current_trading_value_krw": 3805940517494,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 111100,
+                "trading_value_krw": 1392948448100,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 117000,
+                "trading_value_krw": 3930507591746,
+                "change_rate_pct": 5.31
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 119500,
+                "trading_value_krw": 2342292714700,
+                "change_rate_pct": 2.14
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 119900,
+                "trading_value_krw": 2375903831735,
+                "change_rate_pct": 0.33
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 128500,
+                "trading_value_krw": 3805940517494,
+                "change_rate_pct": 7.17
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 298363479800,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-31T09:00:00+09:00",
+              "source_id": "dart:20251231000603",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251231000603"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-30T09:00:00+09:00",
+              "source_id": "dart:20251230000010",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251230000010"
+            },
+            {
+              "type": "dart",
+              "title": "중대재해발생(종속회사의주요경영사항)",
+              "published_at": "2025-12-24T09:00:00+09:00",
+              "source_id": "dart:20251224800811",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251224800811"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-18T09:00:00+09:00",
+              "source_id": "dart:20251218000407",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251218000407"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-17T09:00:00+09:00",
+              "source_id": "dart:20251217000017",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251217000017"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "000660",
+        "name": "SK하이닉스",
+        "scout_score": 8674.192359679,
+        "scout_reason_label": "supply_persistence",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 9404828154679,
+          "foreign_net": -73063579500.0
+        },
+        "evidence_id": "scout:C:000660:20260102",
+        "fact_package": {
+          "ticker": "000660",
+          "name": "SK하이닉스",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 677000,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.3,
+            "avg_trading_value_20d_krw": 9404828154679,
+            "current_trading_value_krw": 2778983677000,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 588000,
+                "trading_value_krw": 1272669995000,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 599000,
+                "trading_value_krw": 2542663330000,
+                "change_rate_pct": 1.87
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 640000,
+                "trading_value_krw": 2641815287000,
+                "change_rate_pct": 6.84
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 651000,
+                "trading_value_krw": 2662508688140,
+                "change_rate_pct": 1.72
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 677000,
+                "trading_value_krw": 2778983677000,
+                "change_rate_pct": 3.99
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": -73063579500,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "동일인등출자계열회사와의상품ㆍ용역거래",
+              "published_at": "2025-12-26T09:00:00+09:00",
+              "source_id": "dart:20251226000225",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251226000225"
+            },
+            {
+              "type": "dart",
+              "title": "동일인등출자계열회사와의상품ㆍ용역거래",
+              "published_at": "2025-12-26T09:00:00+09:00",
+              "source_id": "dart:20251226000223",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251226000223"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인에대한증여",
+              "published_at": "2025-12-23T09:00:00+09:00",
+              "source_id": "dart:20251223000681",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251223000681"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인에대한부동산임대",
+              "published_at": "2025-12-23T09:00:00+09:00",
+              "source_id": "dart:20251223000666",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251223000666"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인에대한부동산임대",
+              "published_at": "2025-12-23T09:00:00+09:00",
+              "source_id": "dart:20251223000651",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251223000651"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "042700",
+        "name": "한미반도체",
+        "scout_score": 1890.033058819,
+        "scout_reason_label": "supply_persistence",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 567147066819,
+          "foreign_net": 132288599200.0
+        },
+        "evidence_id": "scout:C:042700:20260102",
+        "fact_package": {
+          "ticker": "042700",
+          "name": "한미반도체",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 144500,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.83,
+            "avg_trading_value_20d_krw": 567147066819,
+            "current_trading_value_krw": 469801983250,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 124600,
+                "trading_value_krw": 146670292200,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 132600,
+                "trading_value_krw": 485756804650,
+                "change_rate_pct": 6.42
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 130400,
+                "trading_value_krw": 258080186100,
+                "change_rate_pct": -1.66
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 127400,
+                "trading_value_krw": 204655261050,
+                "change_rate_pct": -2.3
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 144500,
+                "trading_value_krw": 469801983250,
+                "change_rate_pct": 13.42
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 132288599200,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "수시공시의무관련사항(공정공시)",
+              "published_at": "2026-01-02T09:00:00+09:00",
+              "source_id": "dart:20260102800120",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20260102800120"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-30T09:00:00+09:00",
+              "source_id": "dart:20251230000226",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251230000226"
+            },
+            {
+              "type": "dart",
+              "title": "기업설명회(IR)개최(안내공시)",
+              "published_at": "2025-12-30T09:00:00+09:00",
+              "source_id": "dart:20251230800053",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251230800053"
+            },
+            {
+              "type": "dart",
+              "title": "기업가치제고계획(자율공시)",
+              "published_at": "2025-12-26T09:00:00+09:00",
+              "source_id": "dart:20251226800082",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251226800082"
+            },
+            {
+              "type": "dart",
+              "title": "주주명부폐쇄기간또는기준일설정",
+              "published_at": "2025-12-15T09:00:00+09:00",
+              "source_id": "dart:20251215800041",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251215800041"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "005380",
+        "name": "현대차",
+        "scout_score": 1248.7382920559999,
+        "scout_reason_label": "supply_persistence",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 1520459254556,
+          "foreign_net": -27172096250.0
+        },
+        "evidence_id": "scout:C:005380:20260102",
+        "fact_package": {
+          "ticker": "005380",
+          "name": "현대차",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 298500,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.19,
+            "avg_trading_value_20d_krw": 1520459254556,
+            "current_trading_value_krw": 284589571750,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 289000,
+                "trading_value_krw": 380589865750,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 286000,
+                "trading_value_krw": 243316490160,
+                "change_rate_pct": -1.04
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 293500,
+                "trading_value_krw": 202241004250,
+                "change_rate_pct": 2.62
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 296500,
+                "trading_value_krw": 184961535500,
+                "change_rate_pct": 1.02
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 298500,
+                "trading_value_krw": 284589571750,
+                "change_rate_pct": 0.67
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": -27172096250,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "대표이사(대표집행임원)변경(안내공시)",
+              "published_at": "2025-12-31T09:00:00+09:00",
+              "source_id": "dart:20251231800663",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251231800663"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-19T09:00:00+09:00",
+              "source_id": "dart:20251219000239",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251219000239"
+            },
+            {
+              "type": "dart",
+              "title": "주주명부폐쇄기간또는기준일설정",
+              "published_at": "2025-12-15T09:00:00+09:00",
+              "source_id": "dart:20251215801175",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251215801175"
+            },
+            {
+              "type": "dart",
+              "title": "기타경영사항(자율공시)              (배당기준일 변경 안내)",
+              "published_at": "2025-12-15T09:00:00+09:00",
+              "source_id": "dart:20251215801179",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251215801179"
+            },
+            {
+              "type": "dart",
+              "title": "특수관계인으로부터기타유가증권매수",
+              "published_at": "2025-12-09T09:00:00+09:00",
+              "source_id": "dart:20251209000335",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251209000335"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      },
+      {
+        "ticker": "009150",
+        "name": "삼성전기",
+        "scout_score": 1136.5472973400001,
+        "scout_reason_label": "supply_persistence",
+        "scout_metrics": {
+          "avg_trading_value_20d_krw": 1037147824840,
+          "foreign_net": 9939947250.0
+        },
+        "evidence_id": "scout:C:009150:20260102",
+        "fact_package": {
+          "ticker": "009150",
+          "name": "삼성전기",
+          "market": "KOSPI",
+          "as_of_datetime": "2026-01-02T15:30:00+09:00",
+          "price": {
+            "as_of_date": "20260102",
+            "current_price_krw": 270000,
+            "change_rate_pct": 0.0,
+            "tv_ratio_20d": 0.18,
+            "avg_trading_value_20d_krw": 1037147824840,
+            "current_trading_value_krw": 188238414500,
+            "price_history": [
+              {
+                "date": "20251224",
+                "close_price_krw": 253500,
+                "trading_value_krw": 71327232750,
+                "change_rate_pct": null
+              },
+              {
+                "date": "20251226",
+                "close_price_krw": 259000,
+                "trading_value_krw": 160632135750,
+                "change_rate_pct": 2.17
+              },
+              {
+                "date": "20251229",
+                "close_price_krw": 257500,
+                "trading_value_krw": 96686446500,
+                "change_rate_pct": -0.58
+              },
+              {
+                "date": "20251230",
+                "close_price_krw": 255000,
+                "trading_value_krw": 89318738250,
+                "change_rate_pct": -0.97
+              },
+              {
+                "date": "20260102",
+                "close_price_krw": 270000,
+                "trading_value_krw": 188238414500,
+                "change_rate_pct": 5.88
+              }
+            ],
+            "price_history_basis": "pykrx_bulk_sessions:20251224..20260102",
+            "technical_signals": [],
+            "missing": []
+          },
+          "flow": {
+            "foreign_net_krw": 9939947250,
+            "inst_net_krw": null,
+            "foreign_net_status": "available",
+            "inst_net_status": "missing",
+            "collection_errors": [
+              "inst_net_unavailable:KOSPI",
+              "inst_net_unavailable:KOSDAQ"
+            ],
+            "missing": [
+              "inst_net"
+            ],
+            "note": "추정 금지 — None은 데이터 없음"
+          },
+          "dart_disclosures": [
+            {
+              "type": "dart",
+              "title": "주식등의대량보유상황보고서(약식)",
+              "published_at": "2026-01-02T09:00:00+09:00",
+              "source_id": "dart:20260102000209",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20260102000209"
+            },
+            {
+              "type": "dart",
+              "title": "주주명부폐쇄기간또는기준일설정",
+              "published_at": "2025-12-16T09:00:00+09:00",
+              "source_id": "dart:20251216801333",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251216801333"
+            },
+            {
+              "type": "dart",
+              "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+              "published_at": "2025-12-16T09:00:00+09:00",
+              "source_id": "dart:20251216000272",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251216000272"
+            },
+            {
+              "type": "dart",
+              "title": "최대주주등소유주식변동신고서",
+              "published_at": "2025-12-01T09:00:00+09:00",
+              "source_id": "dart:20251201800432",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251201800432"
+            },
+            {
+              "type": "dart",
+              "title": "대규모기업집단현황공시[분기별공시(개별회사용)]",
+              "published_at": "2025-12-01T09:00:00+09:00",
+              "source_id": "dart:20251201000321",
+              "url": "https://opendart.fss.or.kr/dsab007/detail.do?rcept_no=20251201000321"
+            }
+          ],
+          "dart_status": "available",
+          "news": [],
+          "news_status": "none_as_of_date"
+        }
+      }
+    ],
+    "team_id": "C",
+    "agent_key": "agent3",
+    "decision_id": "sr_dec_13b1f7ad8312",
+    "run_id": "simple_replay_20260102_6dfa07e5",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "BUY",
+    "selected_stock": {
+      "stock_code": "042700",
+      "stock_name": "한미반도체"
+    },
+    "target_price": null,
+    "reason_label": "외국인 강력 순매수 + 거래대금 집중",
+    "reason_summary": "외국인이 1,323억원 순매수하며 수급을 주도했고, 당일 거래대금이 20일 평균의 83%로 지속성을 입증함. 공정공시 및 기업가치제고계획 등 긍정적 재료도 확인.",
+    "supporting_facts": [
+      {
+        "type": "flow",
+        "summary": "외국인 순매수 1,322.9억원 (당일 기준)",
+        "source_id": "scout:C:042700:20260102",
+        "published_at": "2026-01-02T15:30:00+09:00"
+      },
+      {
+        "type": "price",
+        "summary": "당일 거래대금 4,698억원, 20일 평균 대비 83% 기록",
+        "source_id": "scout:C:042700:20260102",
+        "published_at": "2026-01-02T15:30:00+09:00"
+      },
+      {
+        "type": "dart",
+        "summary": "수시공시의무관련사항(공정공시) 발표",
+        "source_id": "dart:20260102800120",
+        "published_at": "2026-01-02T09:00:00+09:00"
+      },
+      {
+        "type": "dart",
+        "summary": "기업가치제고계획 자율공시",
+        "source_id": "dart:20251226800082",
+        "published_at": "2025-12-26T09:00:00+09:00"
+      }
+    ],
+    "risk_factors": [
+      "기관 순매수 데이터 누락으로 전체 수급 확인 불가",
+      "당일 13.42% 급등에 따른 단기 과열 위험",
+      "반도체 업황 변동성 노출"
+    ],
+    "why_not_other_candidates": "삼성전자는 거래대금 비율 0.44로 외국인 매수에도 유입 강도 약함. SK하이닉스는 외국인 순매도(-731억원)와 거래대금 비율 0.30으로 수급 약화. 현대차와 삼성전기는 거래대금 비율이 0.19~0.18로 수급 지속성이 매우 낮음.",
+    "confidence": "medium",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T12:12:33+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  },
+  {
+    "input_candidates": [],
+    "team_id": "D",
+    "agent_key": "agent4",
+    "decision_id": "sr_dec_a8cba6ff20c8",
+    "run_id": "simple_replay_20260102_6dfa07e5",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "SKIP",
+    "selected_stock": {
+      "stock_code": "000000",
+      "stock_name": null
+    },
+    "target_price": null,
+    "reason_label": "매수 후보 없음",
+    "reason_summary": "입력 데이터에 후보 종목이 존재하지 않으며, 사실 기반 매수 조건을 충족하는 종목이 없습니다.",
+    "supporting_facts": [],
+    "risk_factors": [],
+    "why_not_other_candidates": "",
+    "confidence": "low",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T12:12:41+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  }
+]

@@ -1,0 +1,123 @@
+{
+  "run_id": "simple_replay_20260102_6dfa07e5",
+  "status": "completed",
+  "decision_date": "20260102",
+  "buy_date": "20260105",
+  "evaluation_dates": [
+    "20260105",
+    "20260106",
+    "20260107",
+    "20260108",
+    "20260109"
+  ],
+  "evaluation_horizons": {
+    "5": {
+      "horizon_days": 5,
+      "dates": [
+        "20260105",
+        "20260106",
+        "20260107",
+        "20260108",
+        "20260109"
+      ],
+      "status": "complete",
+      "last_date": "20260109"
+    },
+    "10": {
+      "horizon_days": 10,
+      "dates": [
+        "20260105",
+        "20260106",
+        "20260107",
+        "20260108",
+        "20260109",
+        "20260112",
+        "20260113",
+        "20260114",
+        "20260115",
+        "20260116"
+      ],
+      "status": "complete",
+      "last_date": "20260116"
+    },
+    "20": {
+      "horizon_days": 20,
+      "dates": [
+        "20260105",
+        "20260106",
+        "20260107",
+        "20260108",
+        "20260109",
+        "20260112",
+        "20260113",
+        "20260114",
+        "20260115",
+        "20260116",
+        "20260119",
+        "20260120",
+        "20260121",
+        "20260122",
+        "20260123",
+        "20260126",
+        "20260127",
+        "20260128",
+        "20260129",
+        "20260130"
+      ],
+      "status": "complete",
+      "last_date": "20260130"
+    }
+  },
+  "observation_days": 5,
+  "facts_meta": {
+    "material_tickers": [
+      "000270",
+      "000660",
+      "001440",
+      "005380",
+      "005490",
+      "005930",
+      "006340",
+      "006400",
+      "006800",
+      "009150",
+      "010120",
+      "010170",
+      "012330",
+      "012450",
+      "027360",
+      "028260",
+      "034020",
+      "036930",
+      "042700",
+      "047040",
+      "066570",
+      "080220",
+      "329180",
+      "402340"
+    ],
+    "foreign_net_tickers": 2643,
+    "inst_net_tickers": 0,
+    "dart_prefetch_n": 24,
+    "foreign_errors": [],
+    "inst_errors": [
+      "inst_net_unavailable:KOSPI",
+      "inst_net_unavailable:KOSDAQ"
+    ]
+  },
+  "decision_at": "20260102T15:30:00+09:00",
+  "cost_model_applied": false,
+  "cost_model_note": "SIMPLE_REPLAY MVP에서는 거래비용 미반영",
+  "calendar_source": "kis_daily_chart",
+  "completed_at": "2026-05-25T12:13:21+09:00",
+  "notifications": [
+    {
+      "notification_id": "sr_simple_replay_20260102_6dfa07e5_done",
+      "category": "report",
+      "title": "SIMPLE REPLAY 완료",
+      "sub": "기준일 20260102 · 5거래일 성과 리포트 생성",
+      "created_at": "2026-05-25T12:13:21+09:00",
+      "read": false
+    }
+  ]
+}

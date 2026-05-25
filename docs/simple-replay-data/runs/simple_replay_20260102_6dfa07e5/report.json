@@ -1,0 +1,828 @@
+{
+  "label": "01.02 추천 · 5거래일 검증",
+  "period": "기준일 20260102 → 매수 20260105 → 평가 20260105, 20260106, 20260107, 20260108, 20260109",
+  "agents": [
+    {
+      "key": "agent1",
+      "startAsset": 500000,
+      "endAsset": 495800,
+      "returnPct": -0.84,
+      "contributionLabel": "거래대금 급증·가격 돌파",
+      "contributionStock": "현대무벡스 (-0.84%)",
+      "contributionPnl": -4200,
+      "tierEval": "거래대금 돌파",
+      "selfEval": "거래대금이 20일 평균 대비 2.1배 급증, 주가 26.13% 상승으로 강한 돌파 신호. 외국인 순매수 284억원 유입. 기술적 신호 'volume_surge' 확인.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    },
+    {
+      "key": "agent2",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "재료 부재 및 선반영",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "재료 확산",
+      "selfEval": "후보군 DART 공시는 대부분 경영보고서, 지분변동 등 일상적 공시로 가격에 충분히 반영되었거나 영향력이 낮음. 뉴스 없음. SK스퀘어 자회사 탈퇴 이벤트는 당일 6.5% 상승으로 이미 반영된 것으로 판단, 외국인 순매도 수반. 현대차 대표이사 변경은 주가 반응 미미하나 불확실성 큼.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    },
+    {
+      "key": "agent3",
+      "startAsset": 500000,
+      "endAsset": 564200,
+      "returnPct": 12.84,
+      "contributionLabel": "외국인 강력 순매수 + 거래대금 집중",
+      "contributionStock": "한미반도체 (+13.82%)",
+      "contributionPnl": 64200,
+      "tierEval": "수급 확인",
+      "selfEval": "외국인이 1,323억원 순매수하며 수급을 주도했고, 당일 거래대금이 20일 평균의 83%로 지속성을 입증함. 공정공시 및 기업가치제고계획 등 긍정적 재료도 확인.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    },
+    {
+      "key": "agent4",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "매수 후보 없음",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "역전 회복",
+      "selfEval": "입력 데이터에 후보 종목이 존재하지 않으며, 사실 기반 매수 조건을 충족하는 종목이 없습니다.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    }
+  ],
+  "overall": [
+    "에이전트 1호(거래대금 돌파): 최종자산 495,800원, 수익률 -0.84%",
+    "에이전트 2호(재료 확산): 최종자산 500,000원, 수익률 +0.00%",
+    "에이전트 3호(수급 확인): 최종자산 564,200원, 수익률 +12.84%",
+    "에이전트 4호(역전 회복): 최종자산 500,000원, 수익률 +0.00%",
+    "최고 수익 추천: 한미반도체 +13.82% (에이전트 3호)",
+    "최대 손실 추천: 현대무벡스 -0.84% — 거래대금 급증·가격 돌파",
+    "추천 없음 팀: 에이전트 2호, 에이전트 4호 — 후보 부족 또는 팩트 근거 미달",
+    "이번 구간 가장 유효한 전략: 수급 확인 (에이전트 3호)"
+  ],
+  "best_pick": {
+    "team_id": "C",
+    "ticker": "042700",
+    "name": "한미반도체",
+    "buy_date": "20260105",
+    "buy_price": 154900,
+    "quantity": 3,
+    "invested_amount": 464700,
+    "remaining_cash": 35300,
+    "target_price": null,
+    "reason_label": "외국인 강력 순매수 + 거래대금 집중",
+    "fill_source": "kis_daily_chart_open",
+    "evaluations": {
+      "5": {
+        "horizon_days": 5,
+        "status": "complete",
+        "daily_evaluations": [
+          {
+            "date": "20260105",
+            "close_price": 167300,
+            "market_value": 501900,
+            "unrealized_pnl": 37200,
+            "return_pct": 8.01,
+            "target_reached": false
+          },
+          {
+            "date": "20260106",
+            "close_price": 183700,
+            "market_value": 551100,
+            "unrealized_pnl": 86400,
+            "return_pct": 18.59,
+            "target_reached": false
+          },
+          {
+            "date": "20260107",
+            "close_price": 186500,
+            "market_value": 559500,
+            "unrealized_pnl": 94800,
+            "return_pct": 20.4,
+            "target_reached": false
+          },
+          {
+            "date": "20260108",
+            "close_price": 185700,
+            "market_value": 557100,
+            "unrealized_pnl": 92400,
+            "return_pct": 19.88,
+            "target_reached": false
+          },
+          {
+            "date": "20260109",
+            "close_price": 176300,
+            "market_value": 528900,
+            "unrealized_pnl": 64200,
+            "return_pct": 13.82,
+            "target_reached": false
+          }
+        ],
+        "highest_return_pct": 20.4,
+        "lowest_return_pct": 8.01,
+        "final_return_pct": 13.82,
+        "target_reached_date": null,
+        "final_close_price": 176300,
+        "final_unrealized_pnl": 64200,
+        "errors": []
+      },
+      "10": {
+        "horizon_days": 10,
+        "status": "complete",
+        "daily_evaluations": [
+          {
+            "date": "20260105",
+            "close_price": 167300,
+            "market_value": 501900,
+            "unrealized_pnl": 37200,
+            "return_pct": 8.01,
+            "target_reached": false
+          },
+          {
+            "date": "20260106",
+            "close_price": 183700,
+            "market_value": 551100,
+            "unrealized_pnl": 86400,
+            "return_pct": 18.59,
+            "target_reached": false
+          },
+          {
+            "date": "20260107",
+            "close_price": 186500,
+            "market_value": 559500,
+            "unrealized_pnl": 94800,
+            "return_pct": 20.4,
+            "target_reached": false
+          },
+          {
+            "date": "20260108",
+            "close_price": 185700,
+            "market_value": 557100,
+            "unrealized_pnl": 92400,
+            "return_pct": 19.88,
+            "target_reached": false
+          },
+          {
+            "date": "20260109",
+            "close_price": 176300,
+            "market_value": 528900,
+            "unrealized_pnl": 64200,
+            "return_pct": 13.82,
+            "target_reached": false
+          },
+          {
+            "date": "20260112",
+            "close_price": 167600,
+            "market_value": 502800,
+            "unrealized_pnl": 38100,
+            "return_pct": 8.2,
+            "target_reached": false
+          },
+          {
+            "date": "20260113",
+            "close_price": 173200,
+            "market_value": 519600,
+            "unrealized_pnl": 54900,
+            "return_pct": 11.81,
+            "target_reached": false
+          },
+          {
+            "date": "20260114",
+            "close_price": 177800,
+            "market_value": 533400,
+            "unrealized_pnl": 68700,
+            "return_pct": 14.78,
+            "target_reached": false
+          },
+          {
+            "date": "20260115",
+            "close_price": 180000,
+            "market_value": 540000,
+            "unrealized_pnl": 75300,
+            "return_pct": 16.2,
+            "target_reached": false
+          },
+          {
+            "date": "20260116",
+            "close_price": 178500,
+            "market_value": 535500,
+            "unrealized_pnl": 70800,
+            "return_pct": 15.24,
+            "target_reached": false
+          }
+        ],
+        "highest_return_pct": 20.4,
+        "lowest_return_pct": 8.01,
+        "final_return_pct": 15.24,
+        "target_reached_date": null,
+        "final_close_price": 178500,
+        "final_unrealized_pnl": 70800,
+        "errors": []
+      },
+      "20": {
+        "horizon_days": 20,
+        "status": "complete",
+        "daily_evaluations": [
+          {
+            "date": "20260105",
+            "close_price": 167300,
+            "market_value": 501900,
+            "unrealized_pnl": 37200,
+            "return_pct": 8.01,
+            "target_reached": false
+          },
+          {
+            "date": "20260106",
+            "close_price": 183700,
+            "market_value": 551100,
+            "unrealized_pnl": 86400,
+            "return_pct": 18.59,
+            "target_reached": false
+          },
+          {
+            "date": "20260107",
+            "close_price": 186500,
+            "market_value": 559500,
+            "unrealized_pnl": 94800,
+            "return_pct": 20.4,
+            "target_reached": false
+          },
+          {
+            "date": "20260108",
+            "close_price": 185700,
+            "market_value": 557100,
+            "unrealized_pnl": 92400,
+            "return_pct": 19.88,
+            "target_reached": false
+          },
+          {
+            "date": "20260109",
+            "close_price": 176300,
+            "market_value": 528900,
+            "unrealized_pnl": 64200,
+            "return_pct": 13.82,
+            "target_reached": false
+          },
+          {
+            "date": "20260112",
+            "close_price": 167600,
+            "market_value": 502800,
+            "unrealized_pnl": 38100,
+            "return_pct": 8.2,
+            "target_reached": false
+          },
+          {
+            "date": "20260113",
+            "close_price": 173200,
+            "market_value": 519600,
+            "unrealized_pnl": 54900,
+            "return_pct": 11.81,
+            "target_reached": false
+          },
+          {
+            "date": "20260114",
+            "close_price": 177800,
+            "market_value": 533400,
+            "unrealized_pnl": 68700,
+            "return_pct": 14.78,
+            "target_reached": false
+          },
+          {
+            "date": "20260115",
+            "close_price": 180000,
+            "market_value": 540000,
+            "unrealized_pnl": 75300,
+            "return_pct": 16.2,
+            "target_reached": false
+          },
+          {
+            "date": "20260116",
+            "close_price": 178500,
+            "market_value": 535500,
+            "unrealized_pnl": 70800,
+            "return_pct": 15.24,
+            "target_reached": false
+          },
+          {
+            "date": "20260119",
+            "close_price": 177500,
+            "market_value": 532500,
+            "unrealized_pnl": 67800,
+            "return_pct": 14.59,
+            "target_reached": false
+          },
+          {
+            "date": "20260120",
+            "close_price": 172100,
+            "market_value": 516300,
+            "unrealized_pnl": 51600,
+            "return_pct": 11.1,
+            "target_reached": false
+          },
+          {
+            "date": "20260121",
+            "close_price": 172200,
+            "market_value": 516600,
+            "unrealized_pnl": 51900,
+            "return_pct": 11.17,
+            "target_reached": false
+          },
+          {
+            "date": "20260122",
+            "close_price": 170400,
+            "market_value": 511200,
+            "unrealized_pnl": 46500,
+            "return_pct": 10.01,
+            "target_reached": false
+          },
+          {
+            "date": "20260123",
+            "close_price": 171100,
+            "market_value": 513300,
+            "unrealized_pnl": 48600,
+            "return_pct": 10.46,
+            "target_reached": false
+          },
+          {
+            "date": "20260126",
+            "close_price": 169500,
+            "market_value": 508500,
+            "unrealized_pnl": 43800,
+            "return_pct": 9.43,
+            "target_reached": false
+          },
+          {
+            "date": "20260127",
+            "close_price": 174800,
+            "market_value": 524400,
+            "unrealized_pnl": 59700,
+            "return_pct": 12.85,
+            "target_reached": false
+          },
+          {
+            "date": "20260128",
+            "close_price": 182000,
+            "market_value": 546000,
+            "unrealized_pnl": 81300,
+            "return_pct": 17.5,
+            "target_reached": false
+          },
+          {
+            "date": "20260129",
+            "close_price": 203500,
+            "market_value": 610500,
+            "unrealized_pnl": 145800,
+            "return_pct": 31.38,
+            "target_reached": false
+          },
+          {
+            "date": "20260130",
+            "close_price": 211000,
+            "market_value": 633000,
+            "unrealized_pnl": 168300,
+            "return_pct": 36.22,
+            "target_reached": false
+          }
+        ],
+        "highest_return_pct": 36.22,
+        "lowest_return_pct": 8.01,
+        "final_return_pct": 36.22,
+        "target_reached_date": null,
+        "final_close_price": 211000,
+        "final_unrealized_pnl": 168300,
+        "errors": []
+      }
+    },
+    "daily_evaluations": [
+      {
+        "date": "20260105",
+        "close_price": 167300,
+        "market_value": 501900,
+        "unrealized_pnl": 37200,
+        "return_pct": 8.01,
+        "target_reached": false
+      },
+      {
+        "date": "20260106",
+        "close_price": 183700,
+        "market_value": 551100,
+        "unrealized_pnl": 86400,
+        "return_pct": 18.59,
+        "target_reached": false
+      },
+      {
+        "date": "20260107",
+        "close_price": 186500,
+        "market_value": 559500,
+        "unrealized_pnl": 94800,
+        "return_pct": 20.4,
+        "target_reached": false
+      },
+      {
+        "date": "20260108",
+        "close_price": 185700,
+        "market_value": 557100,
+        "unrealized_pnl": 92400,
+        "return_pct": 19.88,
+        "target_reached": false
+      },
+      {
+        "date": "20260109",
+        "close_price": 176300,
+        "market_value": 528900,
+        "unrealized_pnl": 64200,
+        "return_pct": 13.82,
+        "target_reached": false
+      }
+    ],
+    "highest_return_pct": 20.4,
+    "lowest_return_pct": 8.01,
+    "final_return_pct": 13.82,
+    "target_reached_date": null,
+    "final_close_price": 176300,
+    "final_unrealized_pnl": 64200
+  },
+  "worst_pick": {
+    "team_id": "A",
+    "ticker": "319400",
+    "name": "현대무벡스",
+    "buy_date": "20260105",
+    "buy_price": 23700,
+    "quantity": 21,
+    "invested_amount": 497700,
+    "remaining_cash": 2300,
+    "target_price": 26000,
+    "reason_label": "거래대금 급증·가격 돌파",
+    "fill_source": "kis_daily_chart_open",
+    "evaluations": {
+      "5": {
+        "horizon_days": 5,
+        "status": "complete",
+        "daily_evaluations": [
+          {
+            "date": "20260105",
+            "close_price": 24000,
+            "market_value": 504000,
+            "unrealized_pnl": 6300,
+            "return_pct": 1.27,
+            "target_reached": false
+          },
+          {
+            "date": "20260106",
+            "close_price": 24200,
+            "market_value": 508200,
+            "unrealized_pnl": 10500,
+            "return_pct": 2.11,
+            "target_reached": false
+          },
+          {
+            "date": "20260107",
+            "close_price": 24100,
+            "market_value": 506100,
+            "unrealized_pnl": 8400,
+            "return_pct": 1.69,
+            "target_reached": false
+          },
+          {
+            "date": "20260108",
+            "close_price": 22450,
+            "market_value": 471450,
+            "unrealized_pnl": -26250,
+            "return_pct": -5.27,
+            "target_reached": false
+          },
+          {
+            "date": "20260109",
+            "close_price": 23500,
+            "market_value": 493500,
+            "unrealized_pnl": -4200,
+            "return_pct": -0.84,
+            "target_reached": false
+          }
+        ],
+        "highest_return_pct": 2.11,
+        "lowest_return_pct": -5.27,
+        "final_return_pct": -0.84,
+        "target_reached_date": null,
+        "final_close_price": 23500,
+        "final_unrealized_pnl": -4200,
+        "errors": []
+      },
+      "10": {
+        "horizon_days": 10,
+        "status": "complete",
+        "daily_evaluations": [
+          {
+            "date": "20260105",
+            "close_price": 24000,
+            "market_value": 504000,
+            "unrealized_pnl": 6300,
+            "return_pct": 1.27,
+            "target_reached": false
+          },
+          {
+            "date": "20260106",
+            "close_price": 24200,
+            "market_value": 508200,
+            "unrealized_pnl": 10500,
+            "return_pct": 2.11,
+            "target_reached": false
+          },
+          {
+            "date": "20260107",
+            "close_price": 24100,
+            "market_value": 506100,
+            "unrealized_pnl": 8400,
+            "return_pct": 1.69,
+            "target_reached": false
+          },
+          {
+            "date": "20260108",
+            "close_price": 22450,
+            "market_value": 471450,
+            "unrealized_pnl": -26250,
+            "return_pct": -5.27,
+            "target_reached": false
+          },
+          {
+            "date": "20260109",
+            "close_price": 23500,
+            "market_value": 493500,
+            "unrealized_pnl": -4200,
+            "return_pct": -0.84,
+            "target_reached": false
+          },
+          {
+            "date": "20260112",
+            "close_price": 22900,
+            "market_value": 480900,
+            "unrealized_pnl": -16800,
+            "return_pct": -3.38,
+            "target_reached": false
+          },
+          {
+            "date": "20260113",
+            "close_price": 24300,
+            "market_value": 510300,
+            "unrealized_pnl": 12600,
+            "return_pct": 2.53,
+            "target_reached": false
+          },
+          {
+            "date": "20260114",
+            "close_price": 24550,
+            "market_value": 515550,
+            "unrealized_pnl": 17850,
+            "return_pct": 3.59,
+            "target_reached": false
+          },
+          {
+            "date": "20260115",
+            "close_price": 27950,
+            "market_value": 586950,
+            "unrealized_pnl": 89250,
+            "return_pct": 17.93,
+            "target_reached": true
+          },
+          {
+            "date": "20260116",
+            "close_price": 29000,
+            "market_value": 609000,
+            "unrealized_pnl": 111300,
+            "return_pct": 22.36,
+            "target_reached": true
+          }
+        ],
+        "highest_return_pct": 22.36,
+        "lowest_return_pct": -5.27,
+        "final_return_pct": 22.36,
+        "target_reached_date": "20260115",
+        "final_close_price": 29000,
+        "final_unrealized_pnl": 111300,
+        "errors": []
+      },
+      "20": {
+        "horizon_days": 20,
+        "status": "complete",
+        "daily_evaluations": [
+          {
+            "date": "20260105",
+            "close_price": 24000,
+            "market_value": 504000,
+            "unrealized_pnl": 6300,
+            "return_pct": 1.27,
+            "target_reached": false
+          },
+          {
+            "date": "20260106",
+            "close_price": 24200,
+            "market_value": 508200,
+            "unrealized_pnl": 10500,
+            "return_pct": 2.11,
+            "target_reached": false
+          },
+          {
+            "date": "20260107",
+            "close_price": 24100,
+            "market_value": 506100,
+            "unrealized_pnl": 8400,
+            "return_pct": 1.69,
+            "target_reached": false
+          },
+          {
+            "date": "20260108",
+            "close_price": 22450,
+            "market_value": 471450,
+            "unrealized_pnl": -26250,
+            "return_pct": -5.27,
+            "target_reached": false
+          },
+          {
+            "date": "20260109",
+            "close_price": 23500,
+            "market_value": 493500,
+            "unrealized_pnl": -4200,
+            "return_pct": -0.84,
+            "target_reached": false
+          },
+          {
+            "date": "20260112",
+            "close_price": 22900,
+            "market_value": 480900,
+            "unrealized_pnl": -16800,
+            "return_pct": -3.38,
+            "target_reached": false
+          },
+          {
+            "date": "20260113",
+            "close_price": 24300,
+            "market_value": 510300,
+            "unrealized_pnl": 12600,
+            "return_pct": 2.53,
+            "target_reached": false
+          },
+          {
+            "date": "20260114",
+            "close_price": 24550,
+            "market_value": 515550,
+            "unrealized_pnl": 17850,
+            "return_pct": 3.59,
+            "target_reached": false
+          },
+          {
+            "date": "20260115",
+            "close_price": 27950,
+            "market_value": 586950,
+            "unrealized_pnl": 89250,
+            "return_pct": 17.93,
+            "target_reached": true
+          },
+          {
+            "date": "20260116",
+            "close_price": 29000,
+            "market_value": 609000,
+            "unrealized_pnl": 111300,
+            "return_pct": 22.36,
+            "target_reached": true
+          },
+          {
+            "date": "20260119",
+            "close_price": 34950,
+            "market_value": 733950,
+            "unrealized_pnl": 236250,
+            "return_pct": 47.47,
+            "target_reached": true
+          },
+          {
+            "date": "20260120",
+            "close_price": 38950,
+            "market_value": 817950,
+            "unrealized_pnl": 320250,
+            "return_pct": 64.35,
+            "target_reached": true
+          },
+          {
+            "date": "20260121",
+            "close_price": 46350,
+            "market_value": 973350,
+            "unrealized_pnl": 475650,
+            "return_pct": 95.57,
+            "target_reached": true
+          },
+          {
+            "date": "20260122",
+            "close_price": 46350,
+            "market_value": 973350,
+            "unrealized_pnl": 475650,
+            "return_pct": 95.57,
+            "target_reached": true
+          },
+          {
+            "date": "20260123",
+            "close_price": 33550,
+            "market_value": 704550,
+            "unrealized_pnl": 206850,
+            "return_pct": 41.56,
+            "target_reached": true
+          },
+          {
+            "date": "20260126",
+            "close_price": 31550,
+            "market_value": 662550,
+            "unrealized_pnl": 164850,
+            "return_pct": 33.12,
+            "target_reached": true
+          },
+          {
+            "date": "20260127",
+            "close_price": 31500,
+            "market_value": 661500,
+            "unrealized_pnl": 163800,
+            "return_pct": 32.91,
+            "target_reached": true
+          },
+          {
+            "date": "20260128",
+            "close_price": 31850,
+            "market_value": 668850,
+            "unrealized_pnl": 171150,
+            "return_pct": 34.39,
+            "target_reached": true
+          },
+          {
+            "date": "20260129",
+            "close_price": 32800,
+            "market_value": 688800,
+            "unrealized_pnl": 191100,
+            "return_pct": 38.4,
+            "target_reached": true
+          },
+          {
+            "date": "20260130",
+            "close_price": 31600,
+            "market_value": 663600,
+            "unrealized_pnl": 165900,
+            "return_pct": 33.33,
+            "target_reached": true
+          }
+        ],
+        "highest_return_pct": 95.57,
+        "lowest_return_pct": -5.27,
+        "final_return_pct": 33.33,
+        "target_reached_date": "20260115",
+        "final_close_price": 31600,
+        "final_unrealized_pnl": 165900,
+        "errors": []
+      }
+    },
+    "daily_evaluations": [
+      {
+        "date": "20260105",
+        "close_price": 24000,
+        "market_value": 504000,
+        "unrealized_pnl": 6300,
+        "return_pct": 1.27,
+        "target_reached": false
+      },
+      {
+        "date": "20260106",
+        "close_price": 24200,
+        "market_value": 508200,
+        "unrealized_pnl": 10500,
+        "return_pct": 2.11,
+        "target_reached": false
+      },
+      {
+        "date": "20260107",
+        "close_price": 24100,
+        "market_value": 506100,
+        "unrealized_pnl": 8400,
+        "return_pct": 1.69,
+        "target_reached": false
+      },
+      {
+        "date": "20260108",
+        "close_price": 22450,
+        "market_value": 471450,
+        "unrealized_pnl": -26250,
+        "return_pct": -5.27,
+        "target_reached": false
+      },
+      {
+        "date": "20260109",
+        "close_price": 23500,
+        "market_value": 493500,
+        "unrealized_pnl": -4200,
+        "return_pct": -0.84,
+        "target_reached": false
+      }
+    ],
+    "highest_return_pct": 2.11,
+    "lowest_return_pct": -5.27,
+    "final_return_pct": -0.84,
+    "target_reached_date": null,
+    "final_close_price": 23500,
+    "final_unrealized_pnl": -4200
+  }
+}

@@ -9,6 +9,14 @@
       "dashboardPath": "runs/simple_replay_20260102_fecbc938/dashboard.json"
     },
     {
+      "runId": "simple_replay_20260102_6dfa07e5",
+      "decisionDate": "20260102",
+      "buyDate": "20260105",
+      "observationDays": 5,
+      "completedAt": "2026-05-25T12:13:21+09:00",
+      "dashboardPath": "runs/simple_replay_20260102_6dfa07e5/dashboard.json"
+    },
+    {
       "runId": "simple_replay_20250304_d82e3123",
       "decisionDate": "20250304",
       "buyDate": "20250305",
@@ -17,5 +25,5 @@
       "dashboardPath": "runs/simple_replay_20250304_d82e3123/dashboard.json"
     }
   ],
-  "updatedAt": "2026-05-25T12:07:22.157482"
+  "updatedAt": "2026-05-25T12:13:51.017637"
 }
