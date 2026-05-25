@@ -1,0 +1,91 @@
+# SIMPLE_REPLAY — single-shot 5-trading-day recommendation validation
+name: 간단 추천 검증 실행 (5거래일)
+
+on:
+  workflow_dispatch:
+    inputs:
+      decision_date:
+        description: "추천 기준일 (YYYYMMDD)"
+        required: true
+        default: "20260102"
+      observation_days:
+        description: "관찰 거래일수"
+        required: true
+        default: "5"
+      force_regenerate:
+        description: "기존 완료 결과 무시하고 다시 생성 (true/false)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  simple-replay:
+    runs-on: ubuntu-latest
+    env:
+      COMPETITION_EXECUTION_MODE: simple_replay
+      SIMPLE_REPLAY_REQUIRE_REAL_LLM: "1"
+      KIS_MAX_REQUESTS_PER_RUN: "60"
+      SIMPLE_REPLAY_UNIVERSE_CAP: "120"
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+      KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+      KIS_ACCOUNT_NO: ${{ secrets.KIS_ACCOUNT_NO }}
+      DART_API_KEY: ${{ secrets.DART_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt 2>/dev/null || pip install requests python-dotenv google-generativeai
+
+      - name: Run SIMPLE_REPLAY
+        id: run
+        run: |
+          set -e
+          python scripts/run_simple_replay.py \
+            --decision-date "${{ inputs.decision_date }}" \
+            --observation-days "${{ inputs.observation_days }}" \
+            $([ "${{ inputs.force_regenerate }}" = "true" ] && echo --force) \
+            --result-out simple_replay_result.json
+          python -c "import json; r=json.load(open('simple_replay_result.json')); assert r.get('ok'), r"
+
+      - name: Publish Pages data
+        if: success()
+        run: python scripts/publish_simple_replay_pages.py
+
+      - name: Stage dashboard for Pages
+        if: success()
+        run: |
+          mkdir -p _pages_staging/template/dashboard_desktop
+          cp -r template/dashboard_desktop/* _pages_staging/template/dashboard_desktop/
+          mkdir -p _pages_staging/docs/simple-replay-data
+          cp -r docs/simple-replay-data/* _pages_staging/docs/simple-replay-data/ 2>/dev/null || true
+
+      - name: Upload Pages artifact
+        if: success()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages_staging
+
+  deploy:
+    if: success()
+    needs: simple-replay
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

@@ -1,0 +1,64 @@
+{
+  "label": "01.02 추천 · 5거래일 검증",
+  "period": "기준일 20260102 → 매수 20260105 → 평가 20260105, 20260106, 20260107, 20260108, 20260109",
+  "agents": [
+    {
+      "key": "agent1",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "사실 부족",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "거래대금 돌파",
+      "selfEval": "거래대금 비율은 높으나, 거래량 급증·가격 돌파 관련 사실(뉴스, 공시 등)이 없어 매수 조건 미충족.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    },
+    {
+      "key": "agent2",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "재료 부족",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "재료 확산",
+      "selfEval": "후보 종목 모두에 대해 DART·뉴스·정책 이벤트 등 구체적 재료가 제공되지 않아 전략 조건을 충족하지 못함.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    },
+    {
+      "key": "agent3",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "근거 부족",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "수급 확인",
+      "selfEval": "지원하는 사실(출처ID 및 게시일)이 없어 매수 불가.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    },
+    {
+      "key": "agent4",
+      "startAsset": 500000,
+      "endAsset": 500000,
+      "returnPct": 0.0,
+      "contributionLabel": "후보 없음",
+      "contributionStock": "-",
+      "contributionPnl": 0,
+      "tierEval": "역전 회복",
+      "selfEval": "입력에 후보 종목이 없어 사실 기반 추천이 불가능합니다.",
+      "nextWeek": "SIMPLE_REPLAY 5거래일 관찰 종료"
+    }
+  ],
+  "overall": [
+    "에이전트 1호(거래대금 돌파): 최종자산 500,000원, 수익률 +0.00%",
+    "에이전트 2호(재료 확산): 최종자산 500,000원, 수익률 +0.00%",
+    "에이전트 3호(수급 확인): 최종자산 500,000원, 수익률 +0.00%",
+    "에이전트 4호(역전 회복): 최종자산 500,000원, 수익률 +0.00%",
+    "추천 없음 팀: 에이전트 1호, 에이전트 2호, 에이전트 3호, 에이전트 4호 — 후보 부족 또는 팩트 근거 미달",
+    "이번 구간 가장 유효한 전략: 거래대금 돌파 (에이전트 1호)"
+  ],
+  "best_pick": null,
+  "worst_pick": null
+}

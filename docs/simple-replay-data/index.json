@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "runId": "simple_replay_20260102_fecbc938",
+      "decisionDate": "20260102",
+      "buyDate": "20260105",
+      "observationDays": 5,
+      "completedAt": "2026-05-25T11:52:26+09:00",
+      "dashboardPath": "runs/simple_replay_20260102_fecbc938/dashboard.json"
+    }
+  ],
+  "updatedAt": "2026-05-25T11:52:26.312356"
+}

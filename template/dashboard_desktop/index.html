@@ -1533,9 +1533,13 @@
         <div class="header__controls">
           <div class="segment" data-ui="data-mode-segment" role="tablist" aria-label="데이터 모드">
             <button type="button" class="segment__btn is-active" data-mode="live" role="tab">LIVE</button>
-            <button type="button" class="segment__btn" data-mode="replay" role="tab">REPLAY</button>
+            <button type="button" class="segment__btn" data-mode="simple" role="tab">SIMPLE REPLAY</button>
           </div>
-          <div class="replay-run-select" data-ui="replay-run-select">
+          <div class="replay-run-select" data-ui="simple-replay-run-select">
+            <span class="replay-run-select__label">검증 run</span>
+            <select class="replay-run-select__input" data-ui="simple-replay-run-picker" aria-label="SIMPLE REPLAY run 선택"></select>
+          </div>
+          <div class="replay-run-select" data-ui="replay-run-select" hidden>
             <span class="replay-run-select__label">REPLAY run</span>
             <select class="replay-run-select__input" data-ui="replay-run-picker" aria-label="REPLAY run 선택"></select>
             <span class="replay-run-select__hint" data-ui="replay-hint" hidden title="REPLAY 데이터는 LIVE 성과에 반영되지 않습니다">LIVE 미반영</span>
@@ -1863,6 +1867,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="replay-pages-data.js"></script>
+    <script src="simple-replay-pages-data.js"></script>
     <script>
       (function () {
         var CASH_AMOUNT = 148200;
@@ -2223,6 +2228,9 @@
 
         var dataMode = "live";
         var replayRunId = null;
+        var simpleReplayRunId = null;
+        var simpleReplayRuns = [];
+        var simpleReplayMeta = null;
         var campaignId = null;
         var campaignProgress = null;
         var replayRuns = [];
@@ -2244,11 +2252,19 @@
 
         function parseDashboardUrl() {
           var params = new URLSearchParams(window.location.search);
+          if (params.get("mode") === "simple" || params.get("mode") === "simple_replay") dataMode = "simple";
           if (params.get("mode") === "replay") dataMode = "replay";
+          if (params.get("simple_run_id")) simpleReplayRunId = params.get("simple_run_id");
           if (params.get("replay_run_id")) replayRunId = params.get("replay_run_id");
           if (params.get("campaign")) campaignId = params.get("campaign");
           if (params.get("report")) urlReportKey = params.get("report");
           if (params.get("reportType")) urlReportType = params.get("reportType");
+          if (
+            (window.location.hostname || "").indexOf("github.io") >= 0 &&
+            !params.get("mode")
+          ) {
+            dataMode = "simple";
+          }
         }
         parseDashboardUrl();
 
@@ -2275,7 +2291,7 @@
           CASH_AMOUNT = 0;
         }
 
-        if (dataMode === "replay") {
+        if (dataMode === "replay" || dataMode === "simple") {
           clearReplayTemplateShell();
         }
 
@@ -2378,6 +2394,16 @@
         }
 
         function formatDashboardMetaLine() {
+          if (dataMode === "simple" && competitionLoaded) {
+            if (simpleReplayMeta && simpleReplayMeta.decisionDateLabel) {
+              return (
+                "추천 기준일 " +
+                simpleReplayMeta.decisionDateLabel +
+                " · 초기 시드 에이전트별 500,000원 · SIMPLE REPLAY 완료"
+              );
+            }
+            return "아직 완료된 추천 검증 결과가 없습니다.";
+          }
           if (dataMode === "replay" && replayMeta) {
             var basis = formatReplayTradingDate(replayMeta.tradingDate);
             return "기준일 " + basis + " · 초기 시드 500,000원 · REPLAY 운용 중";
@@ -2389,6 +2415,10 @@
         }
 
         function resolveBestAgentKpi(agentStats) {
+          if (payloadSummary && payloadSummary.bestAgentSub) {
+            var maxFromPayload = payloadSummary.bestAgentReturnPct;
+            return { returnPct: maxFromPayload, sub: payloadSummary.bestAgentSub };
+          }
           if (!agentStats.length) {
             return { returnPct: null, sub: "-" };
           }
@@ -2409,7 +2439,7 @@
           var meta = AGENT_META[winner.key] || {};
           return {
             returnPct: maxReturn,
-            sub: (meta.name || winner.label) + " · " + (meta.badge || "-"),
+            sub: (meta.name || winner.label) + " · " + (meta.strategy || meta.badge || "-"),
           };
         }
 
@@ -2489,8 +2519,11 @@
             ? payloadSummary.totalAssets
             : agentStats.reduce(function (sum, a) { return sum + a.asset; }, 0);
           var totalReturn;
-          if (dataMode === "replay" && competitionLoaded) {
-            totalReturn = calcReturnPct(INITIAL_TOTAL_SEED, totalEnd);
+          if ((dataMode === "replay" || dataMode === "simple") && competitionLoaded) {
+            totalReturn =
+              payloadSummary && payloadSummary.portfolioReturnPct != null
+                ? payloadSummary.portfolioReturnPct
+                : calcReturnPct(INITIAL_TOTAL_SEED, totalEnd);
           } else {
             var range = getPeriodRange();
             var totalStart = TIMELINE.series
@@ -2803,6 +2836,7 @@
         function updateModeChrome() {
           var meta = document.querySelector('[data-ui="dashboard-meta"]');
           var replaySelect = document.querySelector('[data-ui="replay-run-select"]');
+          var simpleSelect = document.querySelector('[data-ui="simple-replay-run-select"]');
           var replayHint = document.querySelector('[data-ui="replay-hint"]');
           var segmentBtns = document.querySelectorAll('[data-ui="data-mode-segment"] .segment__btn');
 
@@ -2812,13 +2846,21 @@
 
           if (replaySelect) {
             replaySelect.classList.toggle("is-visible", dataMode === "replay");
+            replaySelect.hidden = dataMode !== "replay";
+          }
+          if (simpleSelect) {
+            simpleSelect.classList.toggle("is-visible", dataMode === "simple");
+            simpleSelect.hidden = dataMode !== "simple";
           }
           if (replayHint) {
             replayHint.hidden = dataMode !== "replay";
           }
 
           if (meta) {
-            meta.textContent = formatDashboardMetaLine();
+            meta.textContent =
+              payloadSummary && payloadSummary.headerMeta
+                ? payloadSummary.headerMeta
+                : formatDashboardMetaLine();
           }
         }
 
@@ -3516,14 +3558,19 @@
           if (data.monthlyReports) MONTHLY_REPORTS = data.monthlyReports;
           if (data.finalReport) FINAL_REPORT = data.finalReport;
           replayMeta = data.replayMeta || null;
+          simpleReplayMeta = data.simpleReplayMeta || null;
           if (data.campaignId) campaignId = data.campaignId;
           if (data.campaignProgress) campaignProgress = data.campaignProgress;
           payloadSummary = {
             totalAssets: data.totalAssets,
             bestAgentKey: data.bestAgentKey,
             bestAgentReturnPct: data.bestAgentReturnPct,
+            bestAgentSub: data.bestAgentSub,
             bestStockName: data.bestStockName,
             bestStockReturnPct: data.bestStockReturnPct,
+            bestStockSub: data.bestStockSub,
+            portfolioReturnPct: data.portfolioReturnPct,
+            headerMeta: data.headerMeta,
             competitionStatus: data.competitionStatus,
             operatingDays: data.operatingDays,
           };
@@ -3808,10 +3855,102 @@
           refreshDashboard();
         }
 
+        function useSimpleReplayPagesJson() {
+          return window.CompetitionSimpleReplayPages && CompetitionSimpleReplayPages.preferPagesJson();
+        }
+
+        function loadSimpleReplayRuns() {
+          if (useSimpleReplayPagesJson()) {
+            return CompetitionSimpleReplayPages.listCompletedRuns().then(function (runs) {
+              simpleReplayRuns = runs || [];
+            });
+          }
+          return fetch("/api/trading-competition/simple-replay/runs")
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+              simpleReplayRuns = (j && j.runs) || [];
+            });
+        }
+
+        function loadSimpleReplayDashboard(runId) {
+          if (useSimpleReplayPagesJson()) {
+            return CompetitionSimpleReplayPages.loadRunDashboard(runId);
+          }
+          return fetch(
+            "/api/trading-competition/simple-replay/dashboard?run_id=" + encodeURIComponent(runId)
+          )
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+              if (!j.ok) throw new Error(j.error || "load failed");
+              return j.data;
+            });
+        }
+
+        function populateSimpleReplayRunPicker() {
+          var picker = document.querySelector('[data-ui="simple-replay-run-picker"]');
+          if (!picker) return;
+          if (!simpleReplayRuns.length) {
+            picker.innerHTML = '<option value="">완료된 run 없음</option>';
+            return;
+          }
+          picker.innerHTML = simpleReplayRuns
+            .map(function (r) {
+              var label =
+                (r.decisionDate || r.runId) +
+                " · " +
+                (r.observationDays || 5) +
+                "거래일";
+              return (
+                '<option value="' +
+                r.runId +
+                '">' +
+                label +
+                "</option>"
+              );
+            })
+            .join("");
+          if (simpleReplayRunId) picker.value = simpleReplayRunId;
+          else simpleReplayRunId = simpleReplayRuns[0].runId;
+        }
+
+        function showSimpleReplayEmptyState(message) {
+          clearReplayTemplateShell();
+          payloadSummary = null;
+          simpleReplayMeta = null;
+          var meta = document.querySelector('[data-ui="dashboard-meta"]');
+          if (meta) meta.textContent = message;
+          refreshDashboard();
+        }
+
         function loadCompetitionData() {
           updateModeChrome();
+          if (dataMode === "simple") {
+            replayMeta = null;
+            return loadSimpleReplayRuns()
+              .then(function () {
+                populateSimpleReplayRunPicker();
+                if (!simpleReplayRunId && simpleReplayRuns.length) {
+                  simpleReplayRunId = simpleReplayRuns[0].runId;
+                }
+                if (!simpleReplayRunId) {
+                  showSimpleReplayEmptyState(
+                    "아직 완료된 추천 검증 결과가 없습니다."
+                  );
+                  return;
+                }
+                return loadSimpleReplayDashboard(simpleReplayRunId).then(function (data) {
+                  applyCompetitionPayload(data);
+                });
+              })
+              .catch(function (err) {
+                showSimpleReplayEmptyState(
+                  "SIMPLE REPLAY 로드 실패: " + (err && err.message ? err.message : "unknown")
+                );
+              });
+          }
           if (dataMode === "live") {
             replayMeta = null;
+            simpleReplayMeta = null;
             return loadLiveDashboard().catch(function () {
               STOCK_CATALOG = {};
               TRADE_HISTORY = { agent1: [], agent2: [], agent3: [], agent4: [] };
@@ -3882,8 +4021,29 @@
           });
         }
 
+        function initSimpleReplayRunPicker() {
+          var picker = document.querySelector('[data-ui="simple-replay-run-picker"]');
+          if (!picker) return;
+          picker.addEventListener("change", function () {
+            simpleReplayRunId = picker.value || null;
+            if (!simpleReplayRunId) return;
+            loadSimpleReplayDashboard(simpleReplayRunId)
+              .then(function (data) {
+                applyCompetitionPayload(data);
+                refreshDashboard();
+                updateModeChrome();
+              })
+              .catch(function (err) {
+                showSimpleReplayEmptyState(
+                  "SIMPLE REPLAY run 로드 실패: " + (err && err.message ? err.message : "unknown")
+                );
+              });
+          });
+        }
+
         initDataModeSegment();
         initReplayRunPicker();
+        initSimpleReplayRunPicker();
         updateModeChrome();
         loadCompetitionData().finally(refreshDashboard);
       })();

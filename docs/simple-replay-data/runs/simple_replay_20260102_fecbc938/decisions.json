@@ -1,0 +1,109 @@
+[
+  {
+    "team_id": "A",
+    "agent_key": "agent1",
+    "decision_id": "sr_dec_6b654fe3ae2b",
+    "run_id": "simple_replay_20260102_fecbc938",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "SKIP",
+    "selected_stock": {
+      "stock_code": "000000",
+      "stock_name": null
+    },
+    "target_price": null,
+    "reason_label": "사실 부족",
+    "reason_summary": "거래대금 비율은 높으나, 거래량 급증·가격 돌파 관련 사실(뉴스, 공시 등)이 없어 매수 조건 미충족.",
+    "supporting_facts": [],
+    "risk_factors": [],
+    "why_not_other_candidates": "모든 후보 종목에 대해 거래대금 비율 외 검증 가능한 사실이 없음.",
+    "confidence": "low",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T11:51:33+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  },
+  {
+    "team_id": "B",
+    "agent_key": "agent2",
+    "decision_id": "sr_dec_0889c085b2b5",
+    "run_id": "simple_replay_20260102_fecbc938",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "SKIP",
+    "selected_stock": {
+      "stock_code": "000000",
+      "stock_name": null
+    },
+    "target_price": null,
+    "reason_label": "재료 부족",
+    "reason_summary": "후보 종목 모두에 대해 DART·뉴스·정책 이벤트 등 구체적 재료가 제공되지 않아 전략 조건을 충족하지 못함.",
+    "supporting_facts": [],
+    "risk_factors": [],
+    "why_not_other_candidates": "모든 후보군이 유동성 점수만 제공되고 재료 이벤트가 없어 선정 불가.",
+    "confidence": "low",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T11:51:50+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  },
+  {
+    "team_id": "C",
+    "agent_key": "agent3",
+    "decision_id": "sr_dec_c0e30a4d03c9",
+    "run_id": "simple_replay_20260102_fecbc938",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "SKIP",
+    "selected_stock": {
+      "stock_code": "000000",
+      "stock_name": null
+    },
+    "target_price": null,
+    "reason_label": "근거 부족",
+    "reason_summary": "지원하는 사실(출처ID 및 게시일)이 없어 매수 불가.",
+    "supporting_facts": [],
+    "risk_factors": [
+      "수급 지속성 판단을 위한 외국인/기관 순매수 데이터가 모두 0으로 제공되어 신뢰도가 낮음.",
+      "후보 종목 선정 근거가 scout 메트릭에만 의존하며, 실제 뉴스·공시·거래 흐름 등 팩트 데이터가 전무함."
+    ],
+    "why_not_other_candidates": "모든 후보 종목에 대해 source_id와 published_at을 포함한 실질적인 사실 데이터가 없음. 규칙상 BUY를 위해서는 그러한 사실이 필요하므로 어떤 종목도 매수할 수 없음.",
+    "confidence": "low",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T11:52:15+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  },
+  {
+    "team_id": "D",
+    "agent_key": "agent4",
+    "decision_id": "sr_dec_ebc78baf0625",
+    "run_id": "simple_replay_20260102_fecbc938",
+    "decision_date": "20260102",
+    "as_of_datetime": "2026-01-02T15:30:00+09:00",
+    "action": "SKIP",
+    "selected_stock": {
+      "stock_code": "000000",
+      "stock_name": null
+    },
+    "target_price": null,
+    "reason_label": "후보 없음",
+    "reason_summary": "입력에 후보 종목이 없어 사실 기반 추천이 불가능합니다.",
+    "supporting_facts": [],
+    "risk_factors": [],
+    "why_not_other_candidates": "",
+    "confidence": "low",
+    "model_provider": "deepseek",
+    "model_name": "deepseek-reasoner",
+    "used_mock": false,
+    "created_at": "2026-05-25T11:52:26+09:00",
+    "future_data_leakage_checked": true,
+    "future_data_leakage_items": []
+  }
+]

@@ -71,6 +71,12 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
         if path == "/api/trading-competition/replay/campaigns":
             self._handle_competition_replay_campaigns()
             return
+        if path == "/api/trading-competition/simple-replay/runs":
+            self._handle_simple_replay_runs()
+            return
+        if path == "/api/trading-competition/simple-replay/dashboard":
+            self._handle_simple_replay_dashboard()
+            return
         super().do_GET()
 
     def do_POST(self) -> None:
@@ -256,6 +262,31 @@ class MockTradingHandler(SimpleHTTPRequestHandler):
 
         self._json_response(200, {"ok": True, "notifications": load_notifications()})
 
+    def _handle_simple_replay_runs(self) -> None:
+        from src.trading.simple_replay.api import list_runs_for_dashboard
+
+        self._json_response(
+            200,
+            {"ok": True, "dataSource": "simple_replay_index", "runs": list_runs_for_dashboard()},
+        )
+
+    def _handle_simple_replay_dashboard(self) -> None:
+        from src.trading.simple_replay.api import load_dashboard_for_run
+
+        run_id = self._query_param("run_id").strip()
+        if not run_id:
+            self._json_response(400, {"ok": False, "error": "run_id required"})
+            return
+        try:
+            data = load_dashboard_for_run(run_id)
+        except FileNotFoundError:
+            self._json_response(404, {"ok": False, "error": "simple_replay_run_not_found"})
+            return
+        self._json_response(
+            200,
+            {"ok": True, "dataSource": "simple_replay", "runId": run_id, "data": data},
+        )
+
     def _handle_competition_session(self) -> None:
         from src.trading.competition.ops.session import run_competition_session
 
@@ -294,6 +325,8 @@ def main() -> int:
     print("  GET  /api/trading-competition/dashboard")
     print("  GET  /api/trading-competition/replay/runs")
     print("  GET  /api/trading-competition/replay/dashboard?replay_run_id=...")
+    print("  GET  /api/trading-competition/simple-replay/runs")
+    print("  GET  /api/trading-competition/simple-replay/dashboard?run_id=...")
     print("  GET  /api/trading-competition/weekly-reports")
     print("  GET  /api/trading-competition/notifications")
     print("  POST /api/trading-competition/session")
