@@ -1,0 +1,137 @@
+{
+  "dataSource": "replay",
+  "replayRunId": null,
+  "campaignId": "short_5days_20260102_20260108_740447",
+  "cashAmount": 2000000,
+  "totalAssets": 2000000,
+  "bestAgentKey": null,
+  "bestAgentReturnPct": 0.0,
+  "bestAgentTiedCount": 4,
+  "bestStockName": "-",
+  "bestStockReturnPct": 0,
+  "timeline": {
+    "labels": [
+      "시작",
+      "현재"
+    ],
+    "series": [
+      {
+        "key": "agent1",
+        "label": "에이전트 1호",
+        "color": "#4f8cff",
+        "data": [
+          500000
+        ]
+      },
+      {
+        "key": "agent2",
+        "label": "에이전트 2호",
+        "color": "#34c759",
+        "data": [
+          500000
+        ]
+      },
+      {
+        "key": "agent3",
+        "label": "에이전트 3호",
+        "color": "#ff9500",
+        "data": [
+          500000
+        ]
+      },
+      {
+        "key": "agent4",
+        "label": "에이전트 4호",
+        "color": "#af52de",
+        "data": [
+          500000
+        ]
+      }
+    ]
+  },
+  "agentMeta": {
+    "agent1": {
+      "name": "에이전트 1호",
+      "badge": "빠른실행",
+      "badgeClass": "badge--speed",
+      "strategy": "거래대금·돌파",
+      "cashKrw": 500000,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "replay"
+    },
+    "agent2": {
+      "name": "에이전트 2호",
+      "badge": "빠른실행",
+      "badgeClass": "badge--speed",
+      "strategy": "공시·재료확산",
+      "cashKrw": 500000,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "replay"
+    },
+    "agent3": {
+      "name": "에이전트 3호",
+      "badge": "검증승인",
+      "badgeClass": "badge--verify",
+      "strategy": "수급·지속성확인",
+      "cashKrw": 500000,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "replay"
+    },
+    "agent4": {
+      "name": "에이전트 4호",
+      "badge": "검증승인",
+      "badgeClass": "badge--verify",
+      "strategy": "눌림·반등회복",
+      "cashKrw": 500000,
+      "totalAssetsKrw": 500000,
+      "returnPct": 0.0,
+      "status": "replay"
+    }
+  },
+  "stockCatalog": {},
+  "tradeHistory": {
+    "agent1": [],
+    "agent2": [],
+    "agent3": [],
+    "agent4": []
+  },
+  "notifications": [],
+  "weeklyReports": {},
+  "monthlyReports": {},
+  "finalReport": null,
+  "competitionStatus": "checkpoint_waiting_resume",
+  "operatingDays": 0,
+  "replayMeta": {
+    "tradingDate": null,
+    "decisionAt": null,
+    "fillDate": null,
+    "executionMode": null,
+    "sessionId": null,
+    "snapshotId": null,
+    "performanceStatus": "formal_strategy_performance",
+    "formalStrategyPerformanceAllowed": true
+  },
+  "latestReplayRunId": null,
+  "campaignProgress": {
+    "campaignId": "short_5days_20260102_20260108_740447",
+    "replayType": "short_5days",
+    "startDate": "20260102",
+    "endDate": "20260108",
+    "competitionStatus": "checkpoint_waiting_resume",
+    "needsResume": true,
+    "nextTradingDate": "20260102",
+    "progressLabel": "REPLAY 진행 중 · 0 / 5 거래일 완료",
+    "daysCompleted": 0,
+    "daysTotal": 5,
+    "lastCompletedDate": null,
+    "doNotResume": null,
+    "campaignKind": null,
+    "performanceStatus": "formal_strategy_performance",
+    "formalStrategyPerformanceAllowed": true,
+    "validationDashboardLabel": "REPLAY 정식 성과"
+  },
+  "publishedFor": "github_pages"
+}
