@@ -120,7 +120,7 @@ jobs:
 
       - name: Run REPLAY (new campaign)
         if: steps.mode.outputs.run_mode == 'new'
-        id: replay_run
+        id: replay_new_run
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
         run: |
@@ -136,7 +136,7 @@ jobs:
 
       - name: Run REPLAY (resume batch)
         if: steps.mode.outputs.run_mode == 'resume' && steps.select.outputs.campaign_id != ''
-        id: replay_run
+        id: replay_resume_run
         env:
           COMPETITION_EXECUTION_MODE: replay_smoke
           REPLAY_RESUME_CAMPAIGN: "true"
@@ -154,11 +154,19 @@ jobs:
           exit $EXIT_CODE
 
       - name: Resolve replay outputs
-        if: always() && steps.replay_run.outcome != 'skipped'
+        if: >-
+          always() && (
+          steps.replay_new_run.outcome != 'skipped' ||
+          steps.replay_resume_run.outcome != 'skipped'
+          )
         id: replay
         run: |
           if [ -f replay_result.json ]; then
             python scripts/replay_workflow_outputs.py replay_result.json
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "campaign_id=" >> "$GITHUB_OUTPUT"
+            echo "needs_resume=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish public REPLAY JSON
@@ -212,7 +220,9 @@ jobs:
           fi
 
       - name: Upload replay artifact
-        if: steps.replay_run.outcome == 'success' || steps.replay_run.outcome == 'failure'
+        if: >-
+          steps.replay_new_run.outcome == 'success' || steps.replay_new_run.outcome == 'failure' ||
+          steps.replay_resume_run.outcome == 'success' || steps.replay_resume_run.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: competition-replay-${{ github.run_id }}

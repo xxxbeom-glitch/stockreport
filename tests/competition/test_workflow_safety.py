@@ -44,7 +44,17 @@ class ReplayWorkflowTest(unittest.TestCase):
         self.assertIn("run_mode=resume", self.text)
         self.assertIn("select_resumable_replay_campaign.py", self.text)
         self.assertIn("--resume-existing-campaign", self.text)
+        self.assertIn("id: replay_new_run", self.text)
+        self.assertIn("id: replay_resume_run", self.text)
         self.assertNotIn("resume-existing-campaign", self.text.replace("--resume-existing-campaign", ""))
+
+    def test_no_duplicate_step_ids(self) -> None:
+        import re
+
+        ids = re.findall(r"^\s+id:\s+(\S+)\s*$", self.text, re.MULTILINE)
+        dupes = sorted({i for i in ids if ids.count(i) > 1})
+        self.assertEqual(dupes, [], f"duplicate step ids: {dupes}")
+        self.assertNotIn("replay_run", ids)
 
     def test_pages_staging_not_full_repo(self) -> None:
         self.assertIn("stage_replay_pages_artifact.py", self.text)
