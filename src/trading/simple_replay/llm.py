@@ -72,14 +72,7 @@ def build_agent_package(
         "as_of_datetime": decision_cutoff_iso(decision_date),
         "initial_cash_krw": 500_000,
         "strategy": AGENT_UI[team_id]["strategy_label"],
-        "candidates": [
-            {
-                **c,
-                "source_id": c.get("evidence_id"),
-                "published_at": decision_cutoff_iso(decision_date),
-            }
-            for c in candidates
-        ],
+        "candidates": candidates,
         "rules": [
             "SKIP if no fact-backed candidate",
             "BUY requires supporting_facts with source_id and published_at",
@@ -138,6 +131,7 @@ def run_agent_decision(
         ticker = None
 
     decision: dict[str, Any] = {
+        "input_candidates": candidates,
         "team_id": team_id,
         "agent_key": AGENT_UI[team_id]["agent_key"],
         "decision_id": f"sr_dec_{uuid.uuid4().hex[:12]}",
@@ -163,14 +157,33 @@ def run_agent_decision(
     }
     if action == "BUY" and not decision["supporting_facts"] and candidates:
         top = candidates[0]
-        decision["supporting_facts"] = [
-            {
-                "type": "price",
-                "summary": str(top.get("reason_label") or "scout_candidate"),
-                "source_id": str(top.get("evidence_id") or f"scout:{team_id}:{top.get('ticker')}"),
-                "published_at": package["as_of_datetime"],
-            }
-        ]
+        fp = top.get("fact_package") or {}
+        facts_pool: list[dict[str, Any]] = []
+        for block in (fp.get("dart_disclosures") or [])[:2]:
+            facts_pool.append(block)
+        for block in (fp.get("news") or [])[:2]:
+            facts_pool.append(block)
+        price = fp.get("price") or {}
+        if price.get("technical_signals"):
+            facts_pool.append(
+                {
+                    "type": "price",
+                    "summary": ",".join(price["technical_signals"]),
+                    "source_id": top.get("evidence_id"),
+                    "published_at": package["as_of_datetime"],
+                }
+            )
+        if facts_pool:
+            decision["supporting_facts"] = facts_pool
+        elif top.get("evidence_id"):
+            decision["supporting_facts"] = [
+                {
+                    "type": "volume",
+                    "summary": str(top.get("scout_reason_label") or "scout"),
+                    "source_id": str(top.get("evidence_id")),
+                    "published_at": package["as_of_datetime"],
+                }
+            ]
     if action == "BUY" and not decision["supporting_facts"]:
         raise SimpleReplayError("buy_without_facts", detail=f"team={team_id}")
     return decision

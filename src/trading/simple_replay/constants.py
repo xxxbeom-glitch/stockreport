@@ -7,6 +7,8 @@ from typing import Final, TypedDict
 INITIAL_CASH_KRW: Final[int] = 500_000
 TOTAL_SEED_KRW: Final[int] = 2_000_000
 DEFAULT_OBSERVATION_DAYS: Final[int] = 5
+EVALUATION_HORIZONS: Final[tuple[int, ...]] = (5, 10, 20)
+UI_EVALUATION_HORIZON: Final[int] = 5
 MAX_ENTRY_PRICE_KRW: Final[int] = 100_000
 MIN_AVG_TRADING_VALUE_KRW: Final[int] = 3_000_000_000
 UNIVERSE_CAP: Final[int] = 120

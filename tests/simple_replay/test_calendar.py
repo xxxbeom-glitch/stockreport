@@ -28,6 +28,10 @@ class CalendarTests(unittest.TestCase):
                 out = resolve_schedule("20260102", 5)
         self.assertEqual(out["buy_date"], "20260105")
         self.assertEqual(len(out["evaluation_dates"]), 5)
+        horizons = out.get("evaluation_horizons") or {}
+        self.assertIn("5", horizons)
+        self.assertIn("10", horizons)
+        self.assertIn("20", horizons)
 
 
 if __name__ == "__main__":

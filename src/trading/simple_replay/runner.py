@@ -11,14 +11,15 @@ from src.trading.simple_replay.calendar import normalize_yyyymmdd, resolve_sched
 from src.trading.simple_replay.constants import INITIAL_CASH_KRW, TEAM_IDS
 from src.trading.simple_replay.dashboard_payload import build_dashboard_payload
 from src.trading.simple_replay.errors import SimpleReplayError
-from src.trading.simple_replay.evaluation import build_timeline, evaluate_position, team_totals
+from src.trading.simple_replay.evaluation import build_timeline, evaluate_position_horizons, team_totals
+from src.trading.simple_replay.facts import build_team_candidate_inputs
 from src.trading.simple_replay.leakage import check_decision_leakage
 from src.trading.simple_replay.llm import run_agent_decision
 from src.trading.simple_replay.paths import ensure_dirs
 from src.trading.simple_replay.publish import publish_run
 from src.trading.simple_replay.report import build_performance_report
 from src.trading.simple_replay.storage import load_manifest, save_run_artifacts
-from src.trading.simple_replay.universe import load_candidate_pool, scout_candidates
+from src.trading.simple_replay.universe import load_candidate_pool
 from src.trading.simple_replay.virtual_buy import virtual_buy
 
 
@@ -82,13 +83,14 @@ def run_simple_replay(
     schedule = resolve_schedule(decision_date, observation_days)
     buy_date = str(schedule["buy_date"])
     evaluation_dates = list(schedule["evaluation_dates"])
+    evaluation_horizons = dict(schedule.get("evaluation_horizons") or {})
 
     run_id = f"simple_replay_{decision_date}_{uuid.uuid4().hex[:8]}"
     ensure_dirs()
 
     try:
         pool = load_candidate_pool(decision_date)
-        scouts = scout_candidates(pool)
+        team_inputs, facts_meta = build_team_candidate_inputs(pool, decision_date)
         name_by = {str(r["ticker"]).zfill(6): str(r.get("name") or r["ticker"]) for r in pool}
 
         _kis_budget_ok_for_decisions()
@@ -98,7 +100,7 @@ def run_simple_replay(
             dec = run_agent_decision(
                 tid,
                 decision_date=decision_date,
-                candidates=scouts.get(tid, []),
+                candidates=team_inputs.get(tid, []),
                 run_id=run_id,
             )
             leak = check_decision_leakage(dec, decision_date)
@@ -112,7 +114,7 @@ def run_simple_replay(
         for dec in decisions:
             pos = virtual_buy(dec, buy_date=buy_date, name_by_ticker=name_by)
             if pos:
-                positions.append(evaluate_position(pos, evaluation_dates))
+                positions.append(evaluate_position_horizons(pos, evaluation_horizons))
 
         team_total_map: dict[str, dict[str, Any]] = {}
         team_snapshots: dict[str, list[int]] = {}
@@ -136,7 +138,9 @@ def run_simple_replay(
             "decision_date": decision_date,
             "buy_date": buy_date,
             "evaluation_dates": evaluation_dates,
+            "evaluation_horizons": evaluation_horizons,
             "observation_days": observation_days,
+            "facts_meta": facts_meta,
             "decision_at": schedule.get("decision_cutoff") or f"{decision_date}T15:30:00+09:00",
             "cost_model_applied": False,
             "cost_model_note": "SIMPLE_REPLAY MVP에서는 거래비용 미반영",
@@ -177,6 +181,7 @@ def run_simple_replay(
             positions=positions,
             dashboard=dashboard,
             report=report,
+            team_candidate_inputs={"teams": team_inputs, "meta": facts_meta},
         )
         if publish_pages:
             publish_run(run_id)

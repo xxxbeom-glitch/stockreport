@@ -38,6 +38,9 @@ def main() -> int:
         publish_pages=not args.no_publish,
     )
     out = {k: v for k, v in result.items() if k != "dashboard"}
+    import sys
+
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     print(json.dumps(out, ensure_ascii=False, indent=2))
     if args.result_out:
         Path(args.result_out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")

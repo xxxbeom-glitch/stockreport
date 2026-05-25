@@ -22,6 +22,7 @@ def save_run_artifacts(
     positions: list[dict[str, Any]],
     dashboard: dict[str, Any],
     report: dict[str, Any],
+    team_candidate_inputs: dict[str, Any] | None = None,
 ) -> Path:
     ensure_dirs()
     root = run_dir(run_id)
@@ -30,6 +31,8 @@ def save_run_artifacts(
     _write_json(root / "positions.json", positions)
     _write_json(root / "dashboard.json", dashboard)
     _write_json(root / "report.json", report)
+    if team_candidate_inputs is not None:
+        _write_json(root / "team_candidate_inputs.json", team_candidate_inputs)
     return root
 
 

@@ -1,4 +1,4 @@
-"""Five trading-day close evaluation after virtual buy."""
+"""Multi-horizon evaluation after virtual buy (5 / 10 / 20 trading days)."""
 
 from __future__ import annotations
 
@@ -8,9 +8,11 @@ from src.trading.competition.replay.market_data import close_price_krw
 from src.trading.simple_replay.errors import SimpleReplayError
 
 
-def evaluate_position(
+def _evaluate_dates(
     position: dict[str, Any],
     evaluation_dates: list[str],
+    *,
+    allow_partial: bool = False,
 ) -> dict[str, Any]:
     ticker = position["ticker"]
     buy_price = int(position["buy_price"])
@@ -20,10 +22,14 @@ def evaluate_position(
     daily: list[dict[str, Any]] = []
     returns: list[float] = []
     target_reached_date = None
+    errors: list[str] = []
 
     for d in evaluation_dates:
         close, err = close_price_krw(ticker, d)
         if not close or close <= 0:
+            errors.append(f"{d}:{err}")
+            if allow_partial and daily:
+                break
             raise SimpleReplayError("evaluation_price_missing", detail=f"{ticker}:{d}:{err}")
         mv = close * qty
         pnl = (close - buy_price) * qty
@@ -44,8 +50,9 @@ def evaluate_position(
         returns.append(ret)
 
     final_ret = returns[-1] if returns else 0.0
+    status = "complete" if len(daily) == len(evaluation_dates) else "evaluation_pending"
     return {
-        **position,
+        "status": status,
         "daily_evaluations": daily,
         "highest_return_pct": max(returns) if returns else 0.0,
         "lowest_return_pct": min(returns) if returns else 0.0,
@@ -53,7 +60,70 @@ def evaluate_position(
         "target_reached_date": target_reached_date,
         "final_close_price": daily[-1]["close_price"] if daily else 0,
         "final_unrealized_pnl": daily[-1]["unrealized_pnl"] if daily else 0,
+        "errors": errors,
     }
+
+
+def evaluate_position(
+    position: dict[str, Any],
+    evaluation_dates: list[str],
+) -> dict[str, Any]:
+    """Backward-compatible single-horizon evaluate."""
+    block = _evaluate_dates(position, evaluation_dates)
+    return {
+        **position,
+        **{k: v for k, v in block.items() if k != "status"},
+        "daily_evaluations": block["daily_evaluations"],
+    }
+
+
+def evaluate_position_horizons(
+    position: dict[str, Any],
+    evaluation_horizons: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Attach evaluations['5'|'10'|'20'] plus UI-default daily_evaluations."""
+    evaluations: dict[str, Any] = {}
+    for key, spec in evaluation_horizons.items():
+        dates = list(spec.get("dates") or [])
+        target_n = int(spec.get("horizon_days") or key)
+        if not dates:
+            evaluations[key] = {
+                "horizon_days": target_n,
+                "status": spec.get("status") or "insufficient_future_data",
+                "daily_evaluations": [],
+                "final_return_pct": None,
+            }
+            continue
+        allow_partial = len(dates) < target_n
+        try:
+            block = _evaluate_dates(position, dates, allow_partial=allow_partial)
+            if len(dates) < target_n:
+                block["status"] = (
+                    "evaluation_pending" if block.get("daily_evaluations") else "insufficient_future_data"
+                )
+            evaluations[key] = {"horizon_days": target_n, **block}
+        except SimpleReplayError as exc:
+            evaluations[key] = {
+                "horizon_days": target_n,
+                "status": "evaluation_pending",
+                "error": exc.code,
+                "detail": exc.detail,
+                "daily_evaluations": [],
+            }
+
+    ui = evaluations.get("5") or {}
+    out = {
+        **position,
+        "evaluations": evaluations,
+        "daily_evaluations": ui.get("daily_evaluations") or [],
+        "highest_return_pct": ui.get("highest_return_pct", 0),
+        "lowest_return_pct": ui.get("lowest_return_pct", 0),
+        "final_return_pct": ui.get("final_return_pct", 0),
+        "target_reached_date": ui.get("target_reached_date"),
+        "final_close_price": ui.get("final_close_price", 0),
+        "final_unrealized_pnl": ui.get("final_unrealized_pnl", 0),
+    }
+    return out
 
 
 def team_totals(
@@ -61,6 +131,7 @@ def team_totals(
     *,
     position: dict[str, Any] | None,
     skip: bool,
+    horizon_key: str = "5",
 ) -> dict[str, Any]:
     from src.trading.simple_replay.constants import INITIAL_CASH_KRW
 
@@ -71,9 +142,13 @@ def team_totals(
             "holding_market_value": 0,
             "total_asset": INITIAL_CASH_KRW,
             "cumulative_return_pct": 0.0,
+            "horizon": horizon_key,
         }
+
+    ev = (position.get("evaluations") or {}).get(horizon_key) or {}
+    daily = ev.get("daily_evaluations") or position.get("daily_evaluations") or []
     cash = int(position.get("remaining_cash") or 0)
-    mv = int(position["daily_evaluations"][-1]["market_value"]) if position.get("daily_evaluations") else 0
+    mv = int(daily[-1]["market_value"]) if daily else 0
     total = cash + mv
     ret = round((total - INITIAL_CASH_KRW) / INITIAL_CASH_KRW * 100, 2)
     return {
@@ -82,6 +157,7 @@ def team_totals(
         "holding_market_value": mv,
         "total_asset": total,
         "cumulative_return_pct": ret,
+        "horizon": horizon_key,
     }
 
 
@@ -89,7 +165,6 @@ def build_timeline(
     evaluation_dates: list[str],
     team_snapshots: dict[str, list[int]],
 ) -> dict[str, Any]:
-    """One total_asset point per evaluation session close."""
     from src.trading.simple_replay.constants import AGENT_UI, TEAM_IDS
 
     labels = [f"{d[:4]}.{d[4:6]}.{d[6:8]}" for d in evaluation_dates]
@@ -105,4 +180,4 @@ def build_timeline(
                 "data": team_snapshots.get(tid, []),
             }
         )
-    return {"labels": labels, "series": series}
+    return {"labels": labels, "series": series, "horizon_days": 5}

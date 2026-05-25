@@ -159,9 +159,11 @@ def build_dashboard_payload(
             "decisionDateLabel": dd_label,
             "buyDate": manifest.get("buy_date"),
             "evaluationDates": manifest.get("evaluation_dates"),
+            "evaluationHorizons": manifest.get("evaluation_horizons"),
             "observationDays": manifest.get("observation_days"),
             "status": "completed",
             "costModelApplied": manifest.get("cost_model_applied", False),
+            "factsMeta": manifest.get("facts_meta"),
         },
         "headerMeta": (
             f"추천 기준일 {dd_label} · 초기 시드 에이전트별 500,000원 · SIMPLE REPLAY 완료"
