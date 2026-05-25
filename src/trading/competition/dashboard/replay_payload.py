@@ -214,8 +214,7 @@ def _build_from_manifest(
 
     cash_total = 0
     asset_total = 0
-    best_team_return = -999.0
-    best_team_key = "agent1"
+    team_returns: list[tuple[str, float]] = []
     best_stock_return = -999.0
     best_stock_name = "-"
     timeline_series: list[dict[str, Any]] = []
@@ -233,9 +232,7 @@ def _build_from_manifest(
         ret = _return_pct(INITIAL_CASH_KRW, total)
         cash_total += cash
         asset_total += total
-        if ret > best_team_return:
-            best_team_return = ret
-            best_team_key = agent_key
+        team_returns.append((agent_key, ret))
 
         display = _agent_display_name(tid)
         agent_meta[agent_key] = {
@@ -284,6 +281,10 @@ def _build_from_manifest(
                 }
             if agent_key not in stock_catalog[code]["agents"]:
                 stock_catalog[code]["agents"].append(agent_key)
+
+    best_team_return = max((r for _, r in team_returns), default=0.0)
+    tied_agents = [k for k, r in team_returns if abs(r - best_team_return) < 0.0001]
+    best_team_key = tied_agents[0] if len(tied_agents) == 1 else None
 
     trade_idx = 0
     for tr in trades:
@@ -358,7 +359,8 @@ def _build_from_manifest(
         "cashAmount": cash_total,
         "totalAssets": asset_total,
         "bestAgentKey": best_team_key,
-        "bestAgentReturnPct": best_team_return if best_team_return > -999 else 0,
+        "bestAgentReturnPct": best_team_return,
+        "bestAgentTiedCount": len(tied_agents) if len(tied_agents) > 1 else 0,
         "bestStockName": best_stock_name,
         "bestStockReturnPct": best_stock_return if best_stock_return > -999 else 0,
         "timeline": {"labels": [label_decision, label_fill], "series": timeline_series},

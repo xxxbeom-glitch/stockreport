@@ -149,107 +149,24 @@
         font-size: 12px;
       }
 
-      .mode-banner {
-        display: none;
-        margin-bottom: 14px;
-        padding: 10px 14px;
-        border-radius: 10px;
-        border: 1px solid rgba(67, 199, 207, 0.45);
-        background: rgba(67, 199, 207, 0.08);
-        color: var(--accent-cyan);
-        font-size: 13px;
-        font-weight: 500;
-      }
-
-      .mode-banner.is-visible {
-        display: block;
-      }
-
-      .mode-banner--live {
-        border-color: rgba(77, 163, 255, 0.45);
-        background: rgba(77, 163, 255, 0.08);
-        color: var(--accent-blue);
-      }
-
-      .audit-panel {
-        display: none;
-        margin-bottom: 18px;
-      }
-
-      .audit-panel.is-visible {
-        display: block;
-      }
-
-      .audit-panel__grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-      }
-
-      .audit-panel__item {
-        padding: 14px 16px;
-        background: var(--card-inner);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-      }
-
-      .audit-panel__label {
+      .replay-run-select__hint {
+        margin-left: 8px;
         font-size: 11px;
         color: var(--text-secondary);
-        margin-bottom: 6px;
       }
 
-      .audit-panel__value {
-        font-size: 15px;
-        font-weight: 600;
+      .chart-area {
+        position: relative;
       }
 
-      .audit-panel__value--pass {
-        color: var(--accent-cyan);
-      }
-
-      .audit-panel__value--fail {
-        color: var(--positive);
-      }
-
-      .audit-panel__value--warn {
-        color: #ffbe4d;
-      }
-
-      .audit-panel__sub {
-        margin-top: 6px;
-        font-size: 11px;
-        color: var(--text-secondary);
-        line-height: 1.4;
-      }
-
-      [data-ui="audit-panel"],
-      [data-ui="replay-decisions-card"],
-      [data-ui="monthly-report-section"],
-      [data-ui="final-report-section"],
-      [data-ui="mode-banner"] {
-        display: none !important;
-      }
-
-      .replay-decisions-card {
-        display: none;
-        margin-bottom: 18px;
-      }
-
-      .replay-decisions-card.is-visible {
-        display: block;
-      }
-
-      .replay-decisions-table td,
-      .replay-decisions-table th {
-        font-size: 12px;
-        vertical-align: top;
-      }
-
-      .replay-decisions-table .col-detail {
-        max-width: 360px;
-        color: var(--text-secondary);
-        line-height: 1.45;
+      .chart-area [data-ui="chart-empty"] {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        pointer-events: none;
       }
 
       .empty-state-inline {
@@ -1377,33 +1294,29 @@
         border-bottom: none;
       }
 
-      /* Stock return table — column grid */
+      /* Stock return table — column grid (colgroup 28/14/12/17/15/14 = 100%) */
       .stock-return-table col.col-stock {
-        width: 24%;
+        width: 28%;
       }
 
       .stock-return-table col.col-avg-price {
-        width: 12%;
-      }
-
-      .stock-return-table col.col-current-price {
-        width: 10%;
-      }
-
-      .stock-return-table col.col-return {
         width: 14%;
       }
 
-      .stock-return-table col.col-pnl {
+      .stock-return-table col.col-current-price {
         width: 12%;
       }
 
-      .stock-return-table col.col-target {
-        width: 10%;
+      .stock-return-table col.col-return {
+        width: 17%;
+      }
+
+      .stock-return-table col.col-pnl {
+        width: 15%;
       }
 
       .stock-return-table col.col-reason {
-        width: 18%;
+        width: 14%;
       }
 
       /* Trade history — 좌(날짜+종목) | gap | 우(거래정보) 그룹 grid */
@@ -1625,6 +1538,7 @@
           <div class="replay-run-select" data-ui="replay-run-select">
             <span class="replay-run-select__label">REPLAY run</span>
             <select class="replay-run-select__input" data-ui="replay-run-picker" aria-label="REPLAY run 선택"></select>
+            <span class="replay-run-select__hint" data-ui="replay-hint" hidden title="REPLAY 데이터는 LIVE 성과에 반영되지 않습니다">LIVE 미반영</span>
           </div>
           <div class="notify-wrap" data-ui="notify-wrap">
           <button type="button" class="notify-btn" data-ui="notify-trigger" aria-label="알림" aria-expanded="false" aria-haspopup="true">
@@ -1650,17 +1564,7 @@
           </div>
         </div>
       </header>
-      <div class="mode-banner mode-banner--live" data-ui="mode-banner" hidden></div>
       <p class="meta" data-ui="dashboard-meta">기준일 2026.05.31 · 초기 시드 500,000원 · 총 9개 계좌 운용 중</p>
-
-      <section class="audit-panel card" data-ui="audit-panel" aria-label="REPLAY 감사 요약" hidden>
-        <div class="content-card__header">
-          <h2 class="content-card__title">REPLAY · AUDIT 요약</h2>
-        </div>
-        <div class="content-card__body">
-          <div class="audit-panel__grid" data-ui="audit-grid"></div>
-        </div>
-      </section>
 
       <!-- KPI -->
       <section class="kpi-row" aria-label="요약 KPI">
@@ -1690,30 +1594,6 @@
           <p class="kpi__value sign-value num-up kpi__value--rate" data-ui="kpi-best-stock-rate"><svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="M4 1.5 7.5 6.5H.5Z"/></svg>11.67%</p>
           <p class="kpi__sub" data-ui="kpi-best-stock-sub">삼성전자 · 에이전트 1호, 3호 보유</p>
         </article>
-      </section>
-
-      <section class="replay-decisions-card card content-card" data-ui="replay-decisions-card" aria-label="팀별 판단 근거" hidden>
-        <div class="content-card__header">
-          <h2 class="content-card__title">팀별 판단 근거 · 목표가</h2>
-        </div>
-        <div class="content-card__body">
-          <div class="bottom-grid-table-wrap">
-            <table class="data-table replay-decisions-table">
-              <thead>
-                <tr>
-                  <th>에이전트</th>
-                  <th>판단</th>
-                  <th>종목</th>
-                  <th>목표가</th>
-                  <th>미래데이터</th>
-                  <th>체결</th>
-                  <th class="col-detail">근거</th>
-                </tr>
-              </thead>
-              <tbody data-ui="replay-decisions-body"></tbody>
-            </table>
-          </div>
-        </div>
       </section>
 
       <!-- Agent compare (unified) -->
@@ -1808,7 +1688,6 @@
                   <col class="col-price col-current-price" />
                   <col class="col-return" />
                   <col class="col-pnl" />
-                  <col class="col-target" />
                   <col class="col-reason" />
                 </colgroup>
                 <thead>
@@ -1818,7 +1697,6 @@
                     <th class="col-price col-current-price">현재가</th>
                     <th class="col-return">매수 이후 수익률</th>
                     <th class="col-pnl">평가손익</th>
-                    <th class="col-target">목표가</th>
                     <th class="col-reason">매수 근거</th>
                   </tr>
                 </thead>
@@ -1832,7 +1710,6 @@
                   <col class="col-price col-current-price" />
                   <col class="col-return" />
                   <col class="col-pnl" />
-                  <col class="col-target" />
                   <col class="col-reason" />
                 </colgroup>
                 <tbody data-ui="stock-table-body">
@@ -1979,49 +1856,6 @@
             <div class="weekly-kpi-row" data-ui="weekly-kpi-row"></div>
             <div class="weekly-agent-grid" data-ui="weekly-agent-grid"></div>
             <div class="weekly-overall" data-ui="weekly-overall"></div>
-          </div>
-        </article>
-      </section>
-
-      <section class="weekly-section final-section" aria-label="REPLAY 최종 결과" data-ui="final-report-section" hidden>
-        <article class="card content-card weekly-card">
-          <div class="content-card__header weekly-card__header">
-            <div class="weekly-card__headline">
-              <h2 class="content-card__title">REPLAY 최종 결과</h2>
-              <p class="weekly-card__sub" data-ui="final-report-sub">2026년 1~4월 AI 투자대결 최종 종합 리포트</p>
-            </div>
-          </div>
-          <div class="content-card__body weekly-card__body">
-            <div class="weekly-kpi-row" data-ui="final-kpi-row"></div>
-            <div class="weekly-agent-grid" data-ui="final-agent-grid"></div>
-            <div class="weekly-overall" data-ui="final-benchmark"></div>
-            <div class="weekly-overall" data-ui="final-audit"></div>
-            <div class="weekly-overall" data-ui="final-overall"></div>
-          </div>
-        </article>
-      </section>
-
-      <section class="weekly-section monthly-section" aria-label="월간 성과 평가 리포트" data-ui="monthly-report-section">
-        <article class="card content-card weekly-card">
-          <div class="content-card__header weekly-card__header">
-            <div class="weekly-card__headline">
-              <h2 class="content-card__title">월간 성과 평가 리포트</h2>
-              <p class="weekly-card__sub" data-ui="monthly-report-sub">REPLAY 월간 집계</p>
-            </div>
-            <div class="weekly-card__actions">
-              <div class="select-wrap" data-ui="monthly-select">
-                <button type="button" class="select-fake" aria-haspopup="listbox" aria-expanded="false">
-                  <span data-ui="monthly-label">월간 리포트</span>
-                  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M2.5 4.5 6 8 9.5 4.5Z"/></svg>
-                </button>
-                <ul class="select-menu" role="listbox" hidden data-ui="monthly-menu"></ul>
-              </div>
-            </div>
-          </div>
-          <div class="content-card__body weekly-card__body">
-            <div class="weekly-kpi-row" data-ui="monthly-kpi-row"></div>
-            <div class="weekly-agent-grid" data-ui="monthly-agent-grid"></div>
-            <div class="weekly-overall" data-ui="monthly-overall"></div>
           </div>
         </article>
       </section>
@@ -2392,9 +2226,13 @@
         var campaignId = null;
         var campaignProgress = null;
         var replayRuns = [];
-        var auditSummary = null;
-        var teamDecisions = [];
         var replayMeta = null;
+        var BASELINE_STRATEGY = {
+          agent1: "모멘텀·수급",
+          agent2: "섹터 추세",
+          agent3: "공시·이벤트",
+          agent4: "보수 확인",
+        };
         var competitionLoaded = false;
         var payloadSummary = null;
         var INITIAL_SEED_PER_TEAM = 500000;
@@ -2433,8 +2271,6 @@
           WEEKLY_REPORTS = {};
           MONTHLY_REPORTS = {};
           FINAL_REPORT = null;
-          auditSummary = null;
-          teamDecisions = [];
           replayMeta = null;
           CASH_AMOUNT = 0;
         }
@@ -2500,20 +2336,21 @@
         }
 
         function getAgentPeriodStats() {
-          if (dataMode === "replay" && competitionLoaded) {
-            return Object.keys(AGENT_META).map(function (key) {
-              var m = AGENT_META[key];
-              return {
-                key: key,
-                label: m.name,
-                asset: m.totalAssetsKrw != null ? m.totalAssetsKrw : 0,
-                returnPct: m.returnPct != null ? m.returnPct : 0,
-                cashKrw: m.cashKrw,
-                strategy: m.strategy,
-                badge: m.badge,
-                badgeClass: m.badgeClass,
-              };
-            });
+          if (competitionLoaded && Object.keys(AGENT_META).length) {
+            return ["agent1", "agent2", "agent3", "agent4"]
+              .filter(function (key) { return AGENT_META[key]; })
+              .map(function (key) {
+                var m = AGENT_META[key];
+                return {
+                  key: key,
+                  label: m.name,
+                  asset: m.totalAssetsKrw != null ? m.totalAssetsKrw : 0,
+                  returnPct: m.returnPct != null ? m.returnPct : 0,
+                  cashKrw: m.cashKrw,
+                  badge: m.badge,
+                  badgeClass: m.badgeClass,
+                };
+              });
           }
           var range = getPeriodRange();
           var stats = [];
@@ -2531,18 +2368,6 @@
           return stats;
         }
 
-        function pickDefaultStockAgent() {
-          var order = ["agent1", "agent2", "agent3", "agent4"];
-          for (var i = 0; i < order.length; i++) {
-            var key = order[i];
-            var has = Object.keys(STOCK_CATALOG || {}).some(function (id) {
-              return (STOCK_CATALOG[id].agents || []).indexOf(key) >= 0;
-            });
-            if (has) return key;
-          }
-          return "agent1";
-        }
-
         function formatReplayTradingDate(raw) {
           if (!raw) return "-";
           var s = String(raw);
@@ -2555,42 +2380,87 @@
         function formatDashboardMetaLine() {
           if (dataMode === "replay" && replayMeta) {
             var basis = formatReplayTradingDate(replayMeta.tradingDate);
-            var status = payloadSummary && payloadSummary.competitionStatus
-              ? payloadSummary.competitionStatus
-              : "REPLAY";
-            return "기준일 " + basis + " · 초기 시드 500,000원 · 운용 " + status;
+            return "기준일 " + basis + " · 초기 시드 500,000원 · REPLAY 운용 중";
           }
-          if (dataMode === "replay" && campaignProgress && campaignProgress.progressLabel) {
-            return campaignProgress.progressLabel;
-          }
-          if (competitionLoaded && dataMode === "live") {
-            return "LIVE competition 데이터 · 초기 시드 500,000원";
+          if (dataMode === "live" && competitionLoaded) {
+            return "LIVE 운용 · 초기 시드 500,000원 · 운용 중";
           }
           return "기준일 - · 초기 시드 500,000원 · 운용 -";
         }
 
-        function getBestAgent(stats) {
-          return stats.reduce(function (best, cur) {
-            return !best || cur.returnPct > best.returnPct ? cur : best;
-          }, null);
+        function resolveBestAgentKpi(agentStats) {
+          if (!agentStats.length) {
+            return { returnPct: null, sub: "-" };
+          }
+          var maxReturn = Math.max.apply(
+            null,
+            agentStats.map(function (a) { return a.returnPct; })
+          );
+          var tied = agentStats.filter(function (a) {
+            return Math.abs(a.returnPct - maxReturn) < 0.0001;
+          });
+          if (tied.length > 1) {
+            return {
+              returnPct: maxReturn,
+              sub: "공동 1위 · " + tied.length + "개 팀",
+            };
+          }
+          var winner = tied[0];
+          var meta = AGENT_META[winner.key] || {};
+          return {
+            returnPct: maxReturn,
+            sub: (meta.name || winner.label) + " · " + (meta.badge || "-"),
+          };
         }
 
-        function getBestStock() {
-          var best = null;
-          Object.keys(STOCK_CATALOG).forEach(function (id) {
+        function resolveBestStockKpi() {
+          var ids = Object.keys(STOCK_CATALOG || {});
+          if (!ids.length) {
+            return { returnPct: null, sub: "-", hasData: false };
+          }
+          var rows = ids.map(function (id) {
             var stock = STOCK_CATALOG[id];
-            var data = stock.all;
-            if (!best || data.returnPct > best.returnPct) {
-              best = { id: id, name: stock.name, agents: stock.agents, returnPct: data.returnPct };
-            }
+            var data = stock.all || {};
+            var avg = Number(data.avg) || 0;
+            var cur = Number(data.current) || 0;
+            return {
+              id: id,
+              name: stock.name,
+              agents: stock.agents || [],
+              returnPct: data.returnPct != null ? data.returnPct : 0,
+              evaluable: avg > 0 && cur > 0,
+            };
           });
-          return best;
+          if (!rows.some(function (r) { return r.evaluable; })) {
+            return { returnPct: null, sub: "평가 데이터 없음", hasData: false };
+          }
+          var maxReturn = Math.max.apply(
+            null,
+            rows.map(function (r) { return r.returnPct; })
+          );
+          var tied = rows.filter(function (r) {
+            return Math.abs(r.returnPct - maxReturn) < 0.0001;
+          });
+          if (tied.length > 1) {
+            return {
+              returnPct: maxReturn,
+              sub: tied[0].name + " 외 · 동률",
+              hasData: true,
+            };
+          }
+          var best = tied[0];
+          return {
+            returnPct: maxReturn,
+            sub: best.name + " · " + agentAgentLabel(best.agents),
+            hasData: true,
+          };
         }
 
         function agentAgentLabel(agents) {
           return agents
             .map(function (key) {
-              return AGENT_META[key].name.replace("에이전트 ", "");
+              var meta = AGENT_META[key];
+              return meta ? meta.name.replace("에이전트 ", "") : key;
             })
             .join(", ") + " 보유";
         }
@@ -2629,46 +2499,32 @@
             totalReturn = calcReturnPct(totalStart, totalEnd);
           }
 
-          var bestAgent = getBestAgent(agentStats);
-          if (payloadSummary && payloadSummary.bestAgentKey && AGENT_META[payloadSummary.bestAgentKey]) {
-            bestAgent = {
-              key: payloadSummary.bestAgentKey,
-              returnPct: payloadSummary.bestAgentReturnPct != null ? payloadSummary.bestAgentReturnPct : bestAgent.returnPct,
-            };
-          }
-          var bestStock = getBestStock();
-          if (payloadSummary && payloadSummary.bestStockName && payloadSummary.bestStockName !== "-") {
-            bestStock = bestStock || { name: payloadSummary.bestStockName, agents: [], returnPct: 0 };
-            if (payloadSummary.bestStockReturnPct != null) {
-              bestStock.returnPct = payloadSummary.bestStockReturnPct;
-            }
-            if (!bestStock.name) bestStock.name = payloadSummary.bestStockName;
-          }
-          var meta = AGENT_META[bestAgent.key] || { name: "-", badge: "-" };
+          var bestAgentKpi = resolveBestAgentKpi(agentStats);
+          var bestStockKpi = resolveBestStockKpi();
 
           if (totalAssetEl) totalAssetEl.textContent = formatMoney(totalEnd);
           if (totalReturnWrap) totalReturnWrap.innerHTML = signValueHtml(totalReturn);
           if (cashEl) cashEl.textContent = formatMoney(CASH_AMOUNT);
-          if (bestAgentRate) {
-            bestAgentRate.className = "kpi__value sign-value kpi__value--rate " + (bestAgent.returnPct >= 0 ? "num-up" : "num-down");
+          if (bestAgentKpi.returnPct != null && bestAgentRate) {
+            bestAgentRate.className = "kpi__value sign-value kpi__value--rate " + (bestAgentKpi.returnPct >= 0 ? "num-up" : "num-down");
             bestAgentRate.innerHTML =
               '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
-              (bestAgent.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
-              '"/></svg>' + formatPctValue(bestAgent.returnPct);
+              (bestAgentKpi.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
+              '"/></svg>' + formatPctValue(bestAgentKpi.returnPct);
+          } else if (bestAgentRate) {
+            bestAgentRate.textContent = "-";
           }
-          if (bestAgentSub) bestAgentSub.textContent = meta.name + " · " + meta.badge;
-          if (bestStock && bestStock.name) {
-            if (bestStockRate) {
-              bestStockRate.className = "kpi__value sign-value kpi__value--rate " + (bestStock.returnPct >= 0 ? "num-up" : "num-down");
-              bestStockRate.innerHTML =
-                '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
-                (bestStock.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
-                '"/></svg>' + formatPctValue(bestStock.returnPct);
-            }
-            if (bestStockSub) bestStockSub.textContent = bestStock.name + " · " + agentAgentLabel(bestStock.agents || []);
+          if (bestAgentSub) bestAgentSub.textContent = bestAgentKpi.sub;
+          if (bestStockKpi.hasData && bestStockKpi.returnPct != null && bestStockRate) {
+            bestStockRate.className = "kpi__value sign-value kpi__value--rate " + (bestStockKpi.returnPct >= 0 ? "num-up" : "num-down");
+            bestStockRate.innerHTML =
+              '<svg class="sign-icon" viewBox="0 0 8 8" aria-hidden="true"><path fill="currentColor" d="' +
+              (bestStockKpi.returnPct >= 0 ? "M4 1.5 7.5 6.5H.5Z" : "M4 6.5 7.5 1.5H.5Z") +
+              '"/></svg>' + formatPctValue(bestStockKpi.returnPct);
+            if (bestStockSub) bestStockSub.textContent = bestStockKpi.sub;
           } else {
             if (bestStockRate) bestStockRate.textContent = "-";
-            if (bestStockSub) bestStockSub.textContent = "-";
+            if (bestStockSub) bestStockSub.textContent = bestStockKpi.sub || "-";
           }
         }
 
@@ -2689,7 +2545,7 @@
             }
             if (descEl) {
               var cashPart = m.cashKrw != null ? " · 현금 " + formatMoney(m.cashKrw) : "";
-              descEl.textContent = (m.strategy || "-") + cashPart;
+              descEl.textContent = (BASELINE_STRATEGY[key] || "-") + cashPart;
             }
             if (assetEl) assetEl.textContent = formatMoney(m.totalAssetsKrw);
             if (returnEl && m.returnPct != null) {
@@ -2699,7 +2555,7 @@
         }
 
         function updateAgentTiles(agentStats) {
-          if (dataMode === "replay" && competitionLoaded) {
+          if (competitionLoaded && Object.keys(AGENT_META).length) {
             syncAgentTilesFromMeta();
             return;
           }
@@ -2822,15 +2678,9 @@
           });
         }
 
-        function formatTargetPrice(value) {
-          if (value == null || value === "" || Number(value) <= 0) return "-";
-          return formatMoney(value);
-        }
-
         function renderStockTableRow(id, stock) {
           var data = stock.all;
           var agents = (stock.agents || []).join(" ");
-          var target = data.targetPrice != null ? data.targetPrice : stock.targetPrice;
           return (
             '<tr data-stock-id="' + id + '" data-agents="' + agents + '">' +
             '<td class="col-stock"><span class="stock-name">' + stock.name + '</span><span class="stock-code">' + id + "</span></td>" +
@@ -2838,7 +2688,6 @@
             '<td class="col-price">' + formatMoney(data.current) + "</td>" +
             '<td class="col-return">' + signValueHtml(data.returnPct) + "</td>" +
             '<td class="col-pnl">' + signValueHtml(data.pnl, { isMoney: true }) + "</td>" +
-            '<td class="col-target">' + formatTargetPrice(target) + "</td>" +
             '<td class="col-reason reason">' + (stock.reason || "-") + "</td>" +
             "</tr>"
           );
@@ -2849,7 +2698,7 @@
           if (!tbody) return;
           var ids = Object.keys(STOCK_CATALOG || {});
           if (!ids.length) {
-            tbody.innerHTML = '<tr><td class="empty-state-inline" colspan="7">보유 종목이 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td class="empty-state-inline" colspan="6">보유 종목이 없습니다.</td></tr>';
             return;
           }
           tbody.innerHTML = ids.map(function (id) {
@@ -2866,13 +2715,10 @@
             var priceCells = row.querySelectorAll(".col-price");
             var returnCell = row.querySelector(".col-return");
             var pnlCell = row.querySelector(".col-pnl");
-            var targetCell = row.querySelector(".col-target");
-            var target = data.targetPrice != null ? data.targetPrice : stock.targetPrice;
             if (priceCells[0]) priceCells[0].textContent = formatMoney(data.avg);
             if (priceCells[1]) priceCells[1].textContent = formatMoney(data.current);
             if (returnCell) returnCell.innerHTML = signValueHtml(data.returnPct);
             if (pnlCell) pnlCell.innerHTML = signValueHtml(data.pnl, { isMoney: true });
-            if (targetCell) targetCell.textContent = formatTargetPrice(target);
           });
         }
 
@@ -2902,6 +2748,29 @@
         function updateChart() {
           if (!assetChart) return;
           var sliced = sliceTimeline();
+          var chartArea = document.querySelector(".chart-area");
+          var emptyEl = chartArea && chartArea.querySelector('[data-ui="chart-empty"]');
+          var hasPoints = sliced.labels.length > 0 && sliced.series.some(function (s) {
+            return s.data && s.data.length > 0;
+          });
+
+          if (!hasPoints) {
+            if (chartArea && !emptyEl) {
+              var msg = document.createElement("p");
+              msg.className = "empty-state-inline";
+              msg.setAttribute("data-ui", "chart-empty");
+              msg.textContent = "자산 스냅샷 데이터가 없습니다.";
+              chartArea.appendChild(msg);
+            }
+            assetChart.data.labels = [];
+            assetChart.data.datasets.forEach(function (dataset) {
+              dataset.data = [];
+            });
+            assetChart.update();
+            return;
+          }
+          if (emptyEl) emptyEl.remove();
+
           activeChartSeries = sliced.series;
           var bounds = calcChartBounds(sliced.series);
 
@@ -2931,106 +2800,21 @@
           renderWeeklyReportState();
         }
 
-        function auditStatusClass(status) {
-          if (status === "PASS") return "audit-panel__value--pass";
-          if (status === "FAIL") return "audit-panel__value--fail";
-          return "audit-panel__value--warn";
-        }
-
-        function renderReplayAudit() {
-          var grid = document.querySelector('[data-ui="audit-grid"]');
-          if (!grid) return;
-          if (!auditSummary) {
-            grid.innerHTML = '<p class="empty-state-inline">AUDIT 요약 데이터가 없습니다.</p>';
-            return;
-          }
-          var leakage = auditSummary.leakageStatus || "UNVERIFIED";
-          var committeeText = auditSummary.committeeVerdict || "미구현";
-          if (auditSummary.committeeStatus === "skipped") {
-            committeeText = "미실행 (" + (auditSummary.committeeVerdict || "run_audit_ai=false") + ")";
-          } else if (auditSummary.committeeStatus === "not_implemented") {
-            committeeText = "미구현";
-          }
-          var strat = auditSummary.strategyDifferentiation || {};
-          var stratLine = strat.divergenceScore != null
-            ? "점수 " + strat.divergenceScore + " · 프로필 " + (strat.uniqueActionProfiles != null ? strat.uniqueActionProfiles : "-")
-            : "-";
-          grid.innerHTML =
-            '<div class="audit-panel__item"><p class="audit-panel__label">파이프라인 / 데이터</p>' +
-            '<p class="audit-panel__value">' + (auditSummary.pipelineHealth || "-") + "</p>" +
-            (auditSummary.providersSummary
-              ? '<p class="audit-panel__sub">' + auditSummary.providersSummary + "</p>"
-              : "") +
-            "</div>" +
-            '<div class="audit-panel__item"><p class="audit-panel__label">전략 차별성</p>' +
-            '<p class="audit-panel__value">' + stratLine + "</p></div>" +
-            '<div class="audit-panel__item"><p class="audit-panel__label">미래 데이터 침범</p>' +
-            '<p class="audit-panel__value ' + auditStatusClass(leakage) + '">' + leakage + "</p></div>" +
-            '<div class="audit-panel__item"><p class="audit-panel__label">규칙 위반 건수</p>' +
-            '<p class="audit-panel__value">' + (auditSummary.ruleViolationCount != null ? auditSummary.ruleViolationCount : "-") + "</p></div>" +
-            '<div class="audit-panel__item"><p class="audit-panel__label">평가위원회</p>' +
-            '<p class="audit-panel__value">' + committeeText + "</p></div>" +
-            '<div class="audit-panel__item"><p class="audit-panel__label">거래 비용 모델</p>' +
-            '<p class="audit-panel__value audit-panel__value--warn">' +
-            (auditSummary.costModel || "costs_not_implemented") + "</p>" +
-            (auditSummary.costsWarning
-              ? '<p class="audit-panel__sub audit-panel__sub--warn">' + auditSummary.costsWarning + "</p>"
-              : "") +
-            "</div>" +
-            '<div class="audit-panel__item"><p class="audit-panel__label">LIVE 시작 가능</p>' +
-            '<p class="audit-panel__value ' + (auditSummary.liveReady ? "audit-panel__value--pass" : "audit-panel__value--fail") + '">' +
-            (auditSummary.liveReady ? "가능" : "불가") + "</p>" +
-            (auditSummary.limitations && auditSummary.limitations.length
-              ? '<p class="audit-panel__sub">' + auditSummary.limitations.join(" · ") + "</p>"
-              : "") +
-            "</div>";
-        }
-
-        function renderReplayDecisions() {
-          var tbody = document.querySelector('[data-ui="replay-decisions-body"]');
-          if (!tbody) return;
-          if (!teamDecisions || !teamDecisions.length) {
-            tbody.innerHTML = '<tr><td class="empty-state-inline" colspan="7">판단 기록이 없습니다.</td></tr>';
-            return;
-          }
-          tbody.innerHTML = teamDecisions.map(function (d) {
-            var meta = AGENT_META[d.agentKey] || { name: d.agentKey };
-            var stockLabel = d.ticker
-              ? (d.tickerName || d.ticker) + " (" + d.ticker + ")"
-              : "-";
-            var target = d.targetPrice != null ? formatMoney(d.targetPrice) : "-";
-            var detail = (d.reasonDetail || d.reasonLabel || "-").replace(/</g, "&lt;");
-            return (
-              "<tr>" +
-              "<td>" + meta.name + "</td>" +
-              "<td>" + (d.action || "-") + "</td>" +
-              "<td>" + stockLabel + "</td>" +
-              "<td>" + target + "</td>" +
-              '<td class="' + auditStatusClass(d.leakageStatus) + '">' + (d.leakageStatus || "-") + "</td>" +
-              "<td>" + (d.fillStatus || "-") + "</td>" +
-              '<td class="col-detail">' + detail + "</td>" +
-              "</tr>"
-            );
-          }).join("");
-        }
-
         function updateModeChrome() {
           var meta = document.querySelector('[data-ui="dashboard-meta"]');
           var replaySelect = document.querySelector('[data-ui="replay-run-select"]');
-          var segment = document.querySelector('[data-ui="data-mode-segment"]');
+          var replayHint = document.querySelector('[data-ui="replay-hint"]');
           var segmentBtns = document.querySelectorAll('[data-ui="data-mode-segment"] .segment__btn');
 
           segmentBtns.forEach(function (btn) {
             btn.classList.toggle("is-active", btn.getAttribute("data-mode") === dataMode);
           });
 
-          if (useReplayPagesJson() && segment) {
-            segment.style.display = "none";
-            dataMode = "replay";
-          }
-
           if (replaySelect) {
             replaySelect.classList.toggle("is-visible", dataMode === "replay");
+          }
+          if (replayHint) {
+            replayHint.hidden = dataMode !== "replay";
           }
 
           if (meta) {
@@ -3424,7 +3208,7 @@
           var weekSelect = document.querySelector('[data-ui="weekly-week-select"]');
           if (row) row.innerHTML = "";
           if (grid) {
-            grid.innerHTML = '<p class="empty-state-inline">아직 생성된 주간 리포트가 없습니다.</p>';
+            grid.innerHTML = '<p class="empty-state-inline">아직 생성된 주간 성과 리포트가 없습니다.</p>';
           }
           if (overall) overall.innerHTML = "";
           if (weekSelect) weekSelect.style.display = "none";
@@ -3731,8 +3515,6 @@
           if (data.weeklyReports) WEEKLY_REPORTS = data.weeklyReports;
           if (data.monthlyReports) MONTHLY_REPORTS = data.monthlyReports;
           if (data.finalReport) FINAL_REPORT = data.finalReport;
-          auditSummary = data.auditSummary || null;
-          teamDecisions = data.teamDecisions || [];
           replayMeta = data.replayMeta || null;
           if (data.campaignId) campaignId = data.campaignId;
           if (data.campaignProgress) campaignProgress = data.campaignProgress;
@@ -3745,17 +3527,6 @@
             competitionStatus: data.competitionStatus,
             operatingDays: data.operatingDays,
           };
-          if (dataMode === "replay") {
-            state.stockAgent = pickDefaultStockAgent();
-            var stockLabel = document.querySelector('[data-ui="stock-agent-label"]');
-            if (stockLabel && AGENT_META[state.stockAgent]) {
-              stockLabel.textContent = AGENT_META[state.stockAgent].name;
-            }
-            document.querySelectorAll('[data-ui="stock-agent-select"] .select-menu__item').forEach(function (item) {
-              var agent = item.getAttribute("data-agent");
-              item.classList.toggle("is-selected", agent === state.stockAgent);
-            });
-          }
           rebuildReportSelectors();
           renderWeeklyReportState();
           applyUrlReportFocus();
@@ -3773,30 +3544,10 @@
               weeklyReportState.weekKey = keys[0];
             }
           }
-          var monthlyMenu = document.querySelector('[data-ui="monthly-menu"]');
-          if (monthlyMenu) {
-            var mkeys = Object.keys(MONTHLY_REPORTS || {});
-            if (mkeys.length) {
-              monthlyMenu.innerHTML = mkeys.map(function (k, i) {
-                var rep = MONTHLY_REPORTS[k];
-                return '<li><button type="button" class="select-menu__item' + (i === 0 ? " is-selected" : "") + '" data-month="' + k + '">' + (rep.label || k) + "</button></li>";
-              }).join("");
-            } else {
-              monthlyMenu.innerHTML = '<li><span class="empty-state-inline">REPLAY 월간 리포트 없음</span></li>';
-            }
-          }
         }
 
         function applyUrlReportFocus() {
-          if (urlReportType === "final" && FINAL_REPORT) {
-            renderFinalReport();
-            return;
-          }
           if (!urlReportKey) return;
-          if (urlReportType === "monthly" && MONTHLY_REPORTS[urlReportKey]) {
-            renderMonthlyReport(urlReportKey);
-            return;
-          }
           if (WEEKLY_REPORTS[urlReportKey]) {
             renderWeeklyReport(urlReportKey);
           }
@@ -4060,8 +3811,6 @@
         function loadCompetitionData() {
           updateModeChrome();
           if (dataMode === "live") {
-            auditSummary = null;
-            teamDecisions = [];
             replayMeta = null;
             return loadLiveDashboard().catch(function () {
               STOCK_CATALOG = {};
@@ -4135,7 +3884,6 @@
 
         initDataModeSegment();
         initReplayRunPicker();
-        initMonthlyReport();
         updateModeChrome();
         loadCompetitionData().finally(refreshDashboard);
       })();

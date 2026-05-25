@@ -71,6 +71,8 @@ class ReplayDashboardPayloadTests(unittest.TestCase):
             self.skipTest("smoke run missing")
         payload = build_replay_dashboard_payload("replay_20241218_16b6f721")
         self.assertEqual(payload["agentMeta"]["agent2"]["name"], "에이전트 2호")
+        self.assertIsNone(payload["bestAgentKey"])
+        self.assertEqual(payload.get("bestAgentTiedCount"), 4)
         self.assertIn("001440", payload["stockCatalog"])
         stock = payload["stockCatalog"]["001440"]
         self.assertEqual(stock.get("targetPrice"), 54000)
