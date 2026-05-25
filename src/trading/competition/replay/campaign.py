@@ -64,6 +64,12 @@ def _sync_campaign_batch(
     *,
     planned_dates: list[str],
 ) -> dict[str, Any]:
+    dip = checkpoint.get("day_in_progress")
+    if isinstance(dip, dict) and dip.get("trading_date"):
+        manifest["day_in_progress"] = dip
+        manifest["next_ticker"] = dip.get("next_ticker")
+        manifest["ohlcv_cursor_index"] = dip.get("ohlcv_cursor_index")
+        manifest["risk_cursor_index"] = dip.get("risk_cursor_index")
     manifest = sync_manifest_progress(campaign_id, manifest, checkpoint, planned_dates=planned_dates)
     manifest = attach_batch_progress(manifest)
     sync_replay_campaign(campaign_id, manifest)
@@ -358,6 +364,9 @@ def run_replay_campaign(
 
         accounts = day_result.get("accounts")
         rid = day_result["replay_run_id"]
+        from src.trading.competition.replay.day_progress import clear_day_progress
+
+        clear_day_progress(campaign_id, trading_date=trading_date)
         checkpoint = mark_day_completed(
             campaign_id,
             trading_date=trading_date,

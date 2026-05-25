@@ -164,6 +164,10 @@ def publish_campaign_meta(campaign_id: str) -> Path | None:
         "kisRequestsUsed": manifest.get("kis_requests_used"),
         "kisRequestsBudget": manifest.get("kis_requests_budget"),
         "lastBatchKisRequests": manifest.get("last_batch_kis_requests"),
+        "dayInProgress": manifest.get("day_in_progress"),
+        "nextTicker": manifest.get("next_ticker"),
+        "ohlcvCursorIndex": manifest.get("ohlcv_cursor_index"),
+        "riskCursorIndex": manifest.get("risk_cursor_index"),
     }
     meta = merge_validation_into_meta(meta, campaign_id)
     path = REPLAY_DATA_ROOT / "campaigns" / campaign_id / "meta.json"

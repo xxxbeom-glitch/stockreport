@@ -48,7 +48,7 @@ class ReplayUniverseBuildTests(unittest.TestCase):
                             rec["risk_check_status"] = "verified"
                             rec["risk_status"] = "normal"
                             rec["risk_exclude_new_entry"] = False
-                        return len(records), 0
+                        return len(records), 0, False, len(records)
 
                     with patch.object(ur, "enrich_risk_from_kis", side_effect=_mark_risk):
                         eligible, counts = ur.build_eligible_universe_for_replay("20260109")
@@ -64,8 +64,8 @@ class ReplayUniverseBuildTests(unittest.TestCase):
         with patch("src.trading.competition.replay.pykrx_safe.krx_credentials_configured", return_value=False):
             with patch.object(ur, "load_static_ticker_master", return_value=master):
                 with patch("src.trading.competition.universe.collector.collect_all_stocks") as mock_pykrx:
-                    with patch.object(ur, "enrich_records_for_trading_date", return_value=(2, [], 2)):
-                        with patch.object(ur, "enrich_risk_from_kis", return_value=(2, 0)):
+                    with patch.object(ur, "enrich_records_for_trading_date", return_value=(2, [], 2, False, 2)):
+                        with patch.object(ur, "enrich_risk_from_kis", return_value=(2, 0, False, 2)):
                             eligible, counts = ur.build_eligible_universe_for_replay("20260109")
         mock_pykrx.assert_not_called()
         self.assertEqual(counts.base_universe_source, "static_master")
@@ -96,7 +96,7 @@ class ReplayUniverseBuildTests(unittest.TestCase):
 
         with patch("src.trading.competition.replay.data_provider._kis_ready", return_value=True):
             with patch.object(ur, "_enrich_one_record", side_effect=_fake_enrich):
-                enriched, _, target_n = ur.enrich_records_for_trading_date(records, "20260109")
+                enriched, _, target_n, _, _ = ur.enrich_records_for_trading_date(records, "20260109")
         self.assertEqual(target_n, 60)
         self.assertEqual(enriched, 60)
         self.assertEqual(len(calls), 60)
@@ -108,7 +108,7 @@ class ReplayUniverseBuildTests(unittest.TestCase):
         ]
         with patch("src.trading.competition.replay.data_provider._kis_ready", return_value=True):
             with patch.object(ur, "_enrich_one_record", return_value=({}, False)) as mock_one:
-                _, _, target_n = ur.enrich_records_for_trading_date(records, "20260109")
+                _, _, target_n, _, _ = ur.enrich_records_for_trading_date(records, "20260109")
         self.assertEqual(target_n, 1)
         self.assertEqual(mock_one.call_count, 1)
 

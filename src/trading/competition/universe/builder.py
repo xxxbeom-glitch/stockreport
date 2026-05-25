@@ -43,8 +43,15 @@ def enrich_risk_from_kis(
     *,
     max_workers: int = 8,
     kis_fetcher: Callable[[str], dict[str, Any] | None] | None = None,
-) -> tuple[int, int]:
-    """Fetch KIS risk for records in-place. Returns (verified_count, failed_count)."""
+    start_index: int = 0,
+    sequential: bool = False,
+) -> tuple[int, int, bool, int]:
+    """
+    Fetch KIS risk in-place.
+    Returns (verified_count, failed_count, stopped_early, next_index).
+    """
+    from src.trading.competition.replay.day_progress import is_record_risk_enriched
+
     try:
         from data.kis_client import is_kis_auth_failed
 
@@ -54,7 +61,7 @@ def enrich_risk_from_kis(
                 rec["risk_status"] = "unknown"
                 rec["risk_exclude_new_entry"] = False
                 rec["risk_notes"] = ["kis_auth_failed"]
-            return 0, len(records)
+            return 0, len(records), False, 0
         from data.kis_client import is_kis_rate_limit_halted
 
         if is_kis_rate_limit_halted():
@@ -63,13 +70,14 @@ def enrich_risk_from_kis(
                 rec["risk_status"] = "unknown"
                 rec["risk_exclude_new_entry"] = False
                 rec["risk_notes"] = ["kis_rate_limit_exceeded"]
-            return 0, len(records)
+            return 0, len(records), True, start_index
     except Exception:
         pass
 
     fetcher = kis_fetcher or _kis_quote_fetcher
     verified = 0
     failed = 0
+    next_index = start_index
 
     def _one(rec: dict[str, Any]) -> bool:
         quote = fetcher(rec["ticker"])
@@ -90,6 +98,39 @@ def enrich_risk_from_kis(
             rec.setdefault("data_sources", []).append("kis")
         return True
 
+    use_sequential = sequential or max_workers <= 1
+    if use_sequential:
+        from data.kis_rate_limit import is_kis_request_budget_reached
+
+        for i, rec in enumerate(records):
+            if i < start_index:
+                if is_record_risk_enriched(rec):
+                    verified += 1
+                continue
+            if is_record_risk_enriched(rec):
+                verified += 1
+                next_index = i + 1
+                continue
+            try:
+                from data.kis_client import is_kis_rate_limit_halted
+
+                if is_kis_rate_limit_halted():
+                    return verified, failed, True, i
+                if is_kis_request_budget_reached():
+                    return verified, failed, True, i
+            except Exception:
+                pass
+            try:
+                if _one(rec):
+                    verified += 1
+                else:
+                    failed += 1
+            except Exception as exc:
+                failed += 1
+                logger.warning("KIS risk fetch error: %s", exc)
+            next_index = i + 1
+        return verified, failed, False, next_index
+
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = [pool.submit(_one, rec) for rec in records]
         for fut in as_completed(futures):
@@ -102,7 +143,7 @@ def enrich_risk_from_kis(
                 failed += 1
                 logger.warning("KIS risk fetch error: %s", exc)
 
-    return verified, failed
+    return verified, failed, False, len(records)
 
 
 def record_to_snapshot(rec: dict[str, Any]) -> SymbolSnapshot:
@@ -196,7 +237,7 @@ def build_universe(
     kis_verified = 0
     kis_failed = 0
     if enable_kis_risk and all_stocks:
-        kis_verified, kis_failed = enrich_risk_from_kis(
+        kis_verified, kis_failed, _, _ = enrich_risk_from_kis(
             all_stocks, max_workers=kis_workers, kis_fetcher=kis_fetcher
         )
     else:

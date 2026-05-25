@@ -29,6 +29,7 @@ def build_close_snapshot(
     trading_date: str,
     *,
     universe: list[dict[str, Any]] | None = None,
+    campaign_id: str | None = None,
 ) -> dict[str, Any]:
     """
     Sealed snapshot at market close for trading_date.
@@ -46,8 +47,19 @@ def build_close_snapshot(
                 "universe_build": {},
                 "kis_rate_limit": kis_rate_limit_observability(),
             }
-        stocks, universe_build = build_eligible_universe_for_replay(trading_date)
+        stocks, universe_build = build_eligible_universe_for_replay(
+            trading_date, campaign_id=campaign_id
+        )
         log_universe_counts(universe_build)
+        if universe_build.day_progress_stopped:
+            return {
+                "ok": False,
+                "error": universe_build.day_progress_reason or "kis_request_budget_reached",
+                "budget_checkpoint": True,
+                "batch_status": "checkpoint_waiting_resume",
+                "universe_build": universe_build.to_dict(),
+                "kis_rate_limit": kis_rate_limit_observability(),
+            }
         if is_kis_request_budget_reached():
             return {
                 "ok": False,

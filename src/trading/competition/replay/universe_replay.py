@@ -42,6 +42,11 @@ class UniverseStageCounts:
     collection_errors: list[str] = field(default_factory=list)
     kis_risk_verified: int = 0
     kis_risk_failed: int = 0
+    day_progress_stopped: bool = False
+    day_progress_reason: str | None = None
+    ohlcv_cursor_index: int = 0
+    risk_cursor_index: int = 0
+    next_ticker: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -180,57 +185,62 @@ def common_stock_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def enrich_records_for_trading_date(
     records: list[dict[str, Any]],
     trading_date: str,
-) -> tuple[int, list[str], int]:
+    *,
+    start_index: int = 0,
+) -> tuple[int, list[str], int, bool, int]:
     """
-    KIS OHLCV enrich for every common stock in records (no arbitrary cap).
-    Returns (enriched_count, errors, kis_enrich_target_count).
+    KIS OHLCV enrich for common stocks (sequential cursor; no repeat on resume).
+    Returns (enriched_count, errors, target_count, stopped_early, next_index).
     """
     from src.trading.competition.replay.data_provider import _kis_ready
+    from src.trading.competition.replay.day_progress import is_record_ohlcv_enriched
 
     if not _kis_ready():
-        return 0, ["kis_credentials_missing"], 0
+        return 0, ["kis_credentials_missing"], 0, False, 0
 
     from data.kis_client import is_kis_auth_failed
 
     if is_kis_auth_failed():
-        return 0, ["kis_auth_failed"], 0
+        return 0, ["kis_auth_failed"], 0, False, 0
 
     from data.kis_client import is_kis_rate_limit_halted
-    from data.kis_rate_limit import configured_enrich_max_workers
+    from data.kis_rate_limit import is_kis_request_budget_reached
 
     if is_kis_rate_limit_halted():
-        return 0, ["kis_rate_limit_exceeded"], 0
+        return 0, ["kis_rate_limit_exceeded"], 0, True, start_index
 
     start = (datetime.strptime(trading_date, "%Y%m%d") - timedelta(days=45)).strftime("%Y%m%d")
     candidates = common_stock_records(records)
     candidates.sort(key=lambda r: str(r.get("ticker") or "").zfill(6))
+    target_n = len(candidates)
 
     enriched = 0
     errors: list[str] = []
-    workers = configured_enrich_max_workers()
+    next_index = start_index
 
-    def _task(rec: dict[str, Any]) -> tuple[str, bool]:
+    for i, rec in enumerate(candidates):
+        if i < start_index:
+            if is_record_ohlcv_enriched(rec, trading_date):
+                enriched += 1
+            continue
+        if is_record_ohlcv_enriched(rec, trading_date):
+            enriched += 1
+            next_index = i + 1
+            continue
+        if is_kis_rate_limit_halted():
+            return enriched, errors + ["kis_rate_limit_exceeded"], target_n, True, i
+        if is_kis_request_budget_reached():
+            return enriched, errors + ["kis_request_budget_reached"], target_n, True, i
         row = dict(rec)
         _, ok = _enrich_one_record(row, trading_date, start)
         rec.clear()
         rec.update(row)
-        return str(rec.get("ticker")), ok
+        if ok:
+            rec["_ohlcv_enriched_date"] = trading_date
+            enriched += 1
+        next_index = i + 1
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(_task, rec): rec for rec in candidates}
-        for fut in as_completed(futures):
-            if is_kis_rate_limit_halted():
-                for pending in futures:
-                    pending.cancel()
-                break
-            try:
-                _, ok = fut.result()
-                if ok:
-                    enriched += 1
-            except Exception as exc:
-                errors.append(f"enrich_worker:{type(exc).__name__}")
-
-    return enriched, errors, len(candidates)
+    return enriched, errors, target_n, False, next_index
 
 
 def _count_filter_stages(records: list[dict[str, Any]]) -> tuple[int, int, int]:
@@ -254,7 +264,11 @@ def _count_filter_stages(records: list[dict[str, Any]]) -> tuple[int, int, int]:
     return price_pass, liquidity_pass, risk_pass
 
 
-def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str, Any]], UniverseStageCounts]:
+def build_eligible_universe_for_replay(
+    trading_date: str,
+    *,
+    campaign_id: str | None = None,
+) -> tuple[list[dict[str, Any]], UniverseStageCounts]:
     """
     Build as-of trading_date eligible universe for REPLAY snapshot.
     Never calls pykrx without KRX_ID/KRX_PW.
@@ -262,8 +276,23 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
     from src.trading.competition.replay.data_provider import _kis_ready
     from src.trading.competition.replay.pykrx_safe import krx_credentials_configured
 
+    from src.trading.competition.replay.day_progress import (
+        PHASE_OHLCV,
+        PHASE_RISK,
+        clear_day_progress,
+        load_day_progress,
+        load_partial_day_records,
+        merge_master_with_partial,
+        save_day_progress,
+    )
+
     counts = UniverseStageCounts(trading_date=trading_date)
     base: list[dict[str, Any]] = []
+    progress = load_day_progress(campaign_id) if campaign_id else None
+    if progress and str(progress.get("trading_date")) != trading_date:
+        clear_day_progress(campaign_id, trading_date=str(progress.get("trading_date") or ""))
+        progress = None
+    phase = str(progress.get("phase") or PHASE_OHLCV) if progress else PHASE_OHLCV
 
     if _kis_ready() and not krx_credentials_configured():
         from data.kis_client import preflight_kis_auth
@@ -282,15 +311,64 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
     else:
         master = load_static_ticker_master()
         if master:
-            base = master
+            partial = (
+                load_partial_day_records(campaign_id, trading_date)
+                if campaign_id and progress
+                else None
+            )
+            base = merge_master_with_partial(master, partial)
             counts.base_universe_source = "static_master"
             common_rows = common_stock_records(base)
             counts.common_stock_candidate_count = len(common_rows)
             counts.security_prefilter_excluded_count = len(base) - len(common_rows)
-            enriched, enrich_errs, target_n = enrich_records_for_trading_date(common_rows, trading_date)
-            counts.kis_enrich_target_count = target_n
-            counts.historical_price_enriched_count = enriched
-            counts.collection_errors.extend(enrich_errs[:20])
+            if phase == PHASE_OHLCV:
+                ohlcv_start = int(progress.get("ohlcv_cursor_index") or 0) if progress else 0
+                enriched, enrich_errs, target_n, stopped, next_idx = enrich_records_for_trading_date(
+                    common_rows,
+                    trading_date,
+                    start_index=ohlcv_start,
+                )
+                counts.kis_enrich_target_count = target_n
+                counts.historical_price_enriched_count = enriched
+                counts.ohlcv_cursor_index = next_idx
+                counts.collection_errors.extend(enrich_errs[:20])
+                if stopped:
+                    reason = enrich_errs[-1] if enrich_errs else "kis_request_budget_reached"
+                    counts.day_progress_stopped = True
+                    counts.day_progress_reason = reason
+                    next_t = (
+                        str(common_rows[next_idx].get("ticker")).zfill(6)
+                        if next_idx < len(common_rows)
+                        else None
+                    )
+                    counts.next_ticker = next_t
+                    if campaign_id:
+                        save_day_progress(
+                            campaign_id,
+                            {
+                                "trading_date": trading_date,
+                                "phase": PHASE_OHLCV,
+                                "ohlcv_cursor_index": next_idx,
+                                "risk_cursor_index": 0,
+                                "next_ticker": next_t,
+                                "resume_reason": reason,
+                            },
+                            records=base,
+                        )
+                    return [], counts
+                phase = PHASE_RISK
+                if campaign_id:
+                    save_day_progress(
+                        campaign_id,
+                        {
+                            "trading_date": trading_date,
+                            "phase": PHASE_RISK,
+                            "ohlcv_cursor_index": next_idx,
+                            "risk_cursor_index": 0,
+                            "next_ticker": None,
+                        },
+                        records=base,
+                    )
         else:
             base, errs = collect_base_universe_kis_volume(trading_date)
             counts.base_universe_source = "kis_volume_rank"
@@ -312,12 +390,47 @@ def build_eligible_universe_for_replay(trading_date: str) -> tuple[list[dict[str
     risk_targets = common_stock_records(base) if base else []
     from data.kis_rate_limit import configured_enrich_max_workers
 
-    verified, failed = enrich_risk_from_kis(
+    risk_start = int(progress.get("risk_cursor_index") or 0) if progress and phase == PHASE_RISK else 0
+    verified, failed, risk_stopped, risk_next = enrich_risk_from_kis(
         risk_targets,
         max_workers=configured_enrich_max_workers(),
+        start_index=risk_start,
+        sequential=True,
     )
     counts.kis_risk_verified = verified
     counts.kis_risk_failed = failed
+    counts.risk_cursor_index = risk_next
+    if risk_stopped:
+        reason = "kis_rate_limit_exceeded"
+        from data.kis_rate_limit import is_kis_request_budget_reached
+
+        if is_kis_request_budget_reached():
+            reason = "kis_request_budget_reached"
+        counts.day_progress_stopped = True
+        counts.day_progress_reason = reason
+        next_t = (
+            str(risk_targets[risk_next].get("ticker")).zfill(6)
+            if risk_next < len(risk_targets)
+            else None
+        )
+        counts.next_ticker = next_t
+        if campaign_id:
+            save_day_progress(
+                campaign_id,
+                {
+                    "trading_date": trading_date,
+                    "phase": PHASE_RISK,
+                    "ohlcv_cursor_index": counts.ohlcv_cursor_index or len(risk_targets),
+                    "risk_cursor_index": risk_next,
+                    "next_ticker": next_t,
+                    "resume_reason": reason,
+                },
+                records=base,
+            )
+        return [], counts
+
+    if campaign_id:
+        clear_day_progress(campaign_id, trading_date=trading_date)
 
     eligible: list[dict[str, Any]] = []
     exclusion: Counter[str] = Counter()

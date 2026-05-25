@@ -206,6 +206,9 @@ def _rebuild_completed_map(run_ids: list[str]) -> dict[str, str]:
 
 def find_run_for_trading_date(campaign_id: str, trading_date: str) -> str | None:
     ck = load_checkpoint(campaign_id)
+    dip = ck.get("day_in_progress")
+    if isinstance(dip, dict) and str(dip.get("trading_date")) == trading_date:
+        return None
     hit = (ck.get("completed_dates") or {}).get(trading_date)
     if hit:
         return hit

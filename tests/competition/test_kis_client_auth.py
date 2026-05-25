@@ -223,7 +223,9 @@ class KISAuthFailFastIntegrationTests(unittest.TestCase):
         kc._default_client._auth_failed = True
         with patch("src.trading.competition.replay.data_provider._kis_ready", return_value=True):
             with patch.object(ur, "_enrich_one_record") as mock_one:
-                enriched, errors, target = ur.enrich_records_for_trading_date(records, "20260109")
+                enriched, errors, target, stopped, _ = ur.enrich_records_for_trading_date(
+                    records, "20260109"
+                )
         mock_one.assert_not_called()
         self.assertEqual(enriched, 0)
         self.assertIn("kis_auth_failed", errors)

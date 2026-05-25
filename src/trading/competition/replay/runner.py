@@ -213,7 +213,7 @@ def run_replay_single_day(
 
     obs.log_pipeline("run_start", "ok", force_mock=force_mock)
 
-    snapshot = build_close_snapshot(trading_date)
+    snapshot = build_close_snapshot(trading_date, campaign_id=campaign_id)
     from data.kis_client import is_kis_rate_limit_halted, kis_rate_limit_summary
 
     rate_limit = kis_rate_limit_summary()
